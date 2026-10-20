@@ -2,6 +2,11 @@ import { notFound, unstable_rethrow } from "next/navigation";
 import { PublishedSite } from "@/components/published-site";
 import { studioMode, getStudioDb } from "@/lib/server/studio/database";
 import { publishedConfig } from "@/lib/server/studio/service";
+import {
+  LEGACY_SLUG_PATTERN,
+  SLUG_PATTERN,
+  RESERVED_SLUGS,
+} from "@/lib/studio";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const metadata = {
@@ -14,7 +19,11 @@ export default async function SitePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  if (!/^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$/.test(slug)) notFound();
+  if (
+    (!SLUG_PATTERN.test(slug) && !LEGACY_SLUG_PATTERN.test(slug)) ||
+    RESERVED_SLUGS.has(slug)
+  )
+    notFound();
   try {
     const mode = studioMode();
     if (mode === "disabled") notFound();

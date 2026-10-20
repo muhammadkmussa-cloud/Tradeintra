@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS tradeintra_studio.versions (
 );
 -- Internal routing reservations: never exposed as a list or trusted for identity.
 CREATE TABLE IF NOT EXISTS tradeintra_studio.subdomains (
- slug text PRIMARY KEY CHECK(slug ~ '^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$'), account_id uuid NOT NULL, site_id uuid NOT NULL,
+ slug text PRIMARY KEY CONSTRAINT subdomains_slug_format CHECK(slug ~ '^(?!.*--)[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$'), account_id uuid NOT NULL, site_id uuid NOT NULL,
  FOREIGN KEY(account_id,site_id) REFERENCES tradeintra_studio.sites(account_id,id)
 );
 CREATE TABLE IF NOT EXISTS tradeintra_studio.operations (

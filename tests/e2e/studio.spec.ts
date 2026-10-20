@@ -5,9 +5,9 @@ test("create → customize → validate → publish → persist → restore", as
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto("/");
+  await page.goto("/studio");
   await expect(
-    page.getByRole("heading", { name: "Let’s build something great." }),
+    page.getByRole("heading", { name: "Your operator desk." }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Create site", exact: true }).click();
   const dialog = page.getByRole("dialog");
@@ -18,7 +18,7 @@ test("create → customize → validate → publish → persist → restore", as
   ).toBeVisible();
   await dialog.getByLabel("Site name").fill("Kisii Markets");
   await dialog.getByLabel("Hero headline").fill("A new perspective.");
-  await dialog.getByRole("button", { name: "Use #A5C6B8 accent" }).click();
+  await dialog.getByRole("button", { name: "Use Forest accent" }).click();
   await dialog.getByRole("button", { name: "Continue", exact: true }).click();
   await dialog.getByLabel("About & contact").uncheck();
   await dialog.getByRole("button", { name: "Continue", exact: true }).click();
@@ -78,7 +78,7 @@ test("create → customize → validate → publish → persist → restore", as
 test("search, mock linking, discard warning, and delete confirmation", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/studio");
   await page.getByRole("button", { name: "Sites", exact: true }).click();
   await page.getByPlaceholder("Search sites…").fill("missing");
   await expect(page.getByText("No matching sites")).toBeVisible();
@@ -102,7 +102,7 @@ test("search, mock linking, discard warning, and delete confirmation", async ({
   ).toBeVisible();
   await page.getByRole("button", { name: "Stay", exact: true }).click();
   await expect(
-    page.getByRole("heading", { name: "Let’s bring your idea to life." }),
+    page.getByRole("heading", { name: "Configure the site." }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Close dialog" }).click();
   await page.getByRole("button", { name: "Confirm", exact: true }).click();
@@ -122,9 +122,9 @@ test("mobile navigation and responsive widths do not overflow", async ({
 }) => {
   for (const width of [360, 390, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 });
-    await page.goto("/");
+    await page.goto("/studio");
     await expect(
-      page.getByRole("heading", { name: "Let’s build something great." }),
+      page.getByRole("heading", { name: "Your operator desk." }),
     ).toBeVisible();
     expect(
       await page.evaluate(
@@ -136,7 +136,7 @@ test("mobile navigation and responsive widths do not overflow", async ({
   await page.getByRole("button", { name: "Open navigation" }).click();
   await page.getByRole("button", { name: "Domains", exact: true }).click();
   await expect(
-    page.getByRole("heading", { name: "Your home on the web." }),
+    page.getByRole("heading", { name: "Domain desk." }),
   ).toBeVisible();
   expect(
     await page.evaluate(
@@ -149,9 +149,9 @@ test("key desktop screens and wizard have no automated WCAG A/AA violations", as
   page,
 }) => {
   const { default: AxeBuilder } = await import("@axe-core/playwright");
-  await page.goto("/");
+  await page.goto("/studio");
   await expect(
-    page.getByRole("heading", { name: "Let’s build something great." }),
+    page.getByRole("heading", { name: "Your operator desk." }),
   ).toBeVisible();
   for (const name of [
     "Overview",
@@ -159,13 +159,26 @@ test("key desktop screens and wizard have no automated WCAG A/AA violations", as
     "Templates",
     "Domains",
     "Publish status",
+    "Billing",
+    "XML Bots",
+    "AI Bot Generator",
+    "AI Signals",
+    "Marketplace",
+    "Earnings",
+    "Announcements",
     "Settings",
     "Support",
+    "Admin",
   ]) {
     if (name === "Support")
       await page
         .getByRole("complementary")
         .getByRole("button", { name: "Help & resources", exact: true })
+        .click();
+    else if (name === "Announcements")
+      await page
+        .getByRole("complementary")
+        .getByRole("button", { name: "What’s new", exact: true })
         .click();
     else await page.getByRole("button", { name, exact: true }).click();
     const results = await new AxeBuilder({ page })

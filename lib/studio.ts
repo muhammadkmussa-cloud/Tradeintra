@@ -1,4 +1,28 @@
 export const STORAGE_KEY = "tradeintra-studio-v1";
+export const SLUG_PATTERN = /^(?!.*--)[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$/;
+export const LEGACY_SLUG_PATTERN = /^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$/;
+export const RESERVED_SLUGS = new Set([
+  "www",
+  "app",
+  "api",
+  "admin",
+  "support",
+  "billing",
+  "status",
+  "docs",
+  "mail",
+  "smtp",
+  "ftp",
+  "cdn",
+  "assets",
+  "static",
+  "preview",
+  "staging",
+  "dev",
+  "test",
+  "tradeintra",
+  "by-host",
+]);
 export const RISK =
   "Trading involves significant risk and may result in the loss of your capital. This is a mock demonstration, not investment advice. Tradeintra is independent of Deriv and does not execute trades or hold funds.";
 export type ModuleKey = "markets" | "terminal" | "about";
@@ -29,7 +53,7 @@ export type Studio = { sites: Site[]; derivLinked: boolean; workspace: string };
 export const defaultConfig: Config = {
   name: "",
   slug: "",
-  color: "#B5A0EA",
+  color: "#B08D57",
   headline: "Your markets. Your next move.",
   description:
     "A clear, focused space to explore the markets. Built around you.",
@@ -40,23 +64,24 @@ export const slugify = (name: string) =>
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "")
-    .slice(0, 40);
+    .slice(0, 40)
+    .replace(/-+$/g, "");
 export function validateConfig(
   config: Config,
   sites: Site[],
   ownId?: string,
+  options: { allowReserved?: boolean; allowLegacySlug?: boolean } = {},
 ): Record<string, string> {
   const errors: Record<string, string> = {};
   if (!config.name.trim() || config.name.length > 60)
     errors.name = "Enter a site name between 1 and 60 characters.";
-  if (!/^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])$/.test(config.slug))
+  const slugPattern = options.allowLegacySlug
+    ? LEGACY_SLUG_PATTERN
+    : SLUG_PATTERN;
+  if (!slugPattern.test(config.slug))
     errors.slug =
-      "Use 3–40 lowercase letters, numbers, or hyphens. Start and end with a letter or number.";
-  if (
-    ["www", "app", "admin", "api", "mail", "support", "tradeintra"].includes(
-      config.slug,
-    )
-  )
+      "Use 3–40 lowercase letters, numbers, or single hyphens. Start and end with a letter or number.";
+  if (!options.allowReserved && RESERVED_SLUGS.has(config.slug))
     errors.slug = "This subdomain is reserved. Try another name.";
   if (
     sites.some(
@@ -140,7 +165,7 @@ export function initialStudio(): Studio {
           ...structuredClone(defaultConfig),
           name: "Aurora Markets",
           slug: "aurora-markets",
-          color: "#B9A4EB",
+          color: "#B08D57",
         },
         versions: [],
       },
@@ -153,7 +178,7 @@ export function initialStudio(): Studio {
           ...structuredClone(defaultConfig),
           name: "Nova Trading",
           slug: "nova-trading",
-          color: "#A5C6B8",
+          color: "#2F6B4F",
           headline: "A fresh perspective on the markets.",
         },
         versions: [],
@@ -176,10 +201,21 @@ export function readStudio(raw: string): Studio {
         !s.id ||
         !s.draft ||
         !Array.isArray(s.versions) ||
-        Object.keys(validateConfig(s.draft, [], s.id)).length ||
+        Object.keys(
+          validateConfig(s.draft, [], s.id, {
+            allowReserved: true,
+            allowLegacySlug: true,
+          }),
+        ).length ||
         s.versions.some(
           (v) =>
-            !v.config || Object.keys(validateConfig(v.config, [], s.id)).length,
+            !v.config ||
+            Object.keys(
+              validateConfig(v.config, [], s.id, {
+                allowReserved: true,
+                allowLegacySlug: true,
+              }),
+            ).length,
         ),
     )
   )
@@ -199,6 +235,39 @@ export const relativeTime = (date: string) => {
         ? `${Math.floor(m / 60)}h ago`
         : `${Math.floor(m / 1440)}d ago`;
 };
+
+/** Lift an accent for use as a foreground on ink surfaces. */
+const channelLuminance = (value: number) => {
+  const channel = value / 255;
+  return channel <= 0.04045
+    ? channel / 12.92
+    : ((channel + 0.055) / 1.055) ** 2.4;
+};
+const relativeLuminance = (hex: string) => {
+  const channels = [1, 3, 5].map((offset) =>
+    channelLuminance(parseInt(hex.slice(offset, offset + 2), 16)),
+  );
+  return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+};
+const contrastOnInk = (hex: string) =>
+  (relativeLuminance(hex) + 0.05) / (relativeLuminance("#141019") + 0.05);
+
+/** Lift an accent until it clears 4.5:1 against the ink surface. */
+export function accentOnDark(hex: string): string {
+  if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return hex;
+  if (contrastOnInk(hex) >= 4.5) return hex;
+  for (let amount = 0.05; amount <= 1; amount += 0.05) {
+    const channels = [1, 3, 5].map((offset) =>
+      Math.round(
+        parseInt(hex.slice(offset, offset + 2), 16) * (1 - amount) +
+          255 * amount,
+      ),
+    );
+    const lifted = `#${channels.map((value) => value.toString(16).padStart(2, "0")).join("")}`;
+    if (contrastOnInk(lifted) >= 4.5) return lifted;
+  }
+  return "#F3F2F2";
+}
 
 /** Pick accessible text against an arbitrary validated brand accent. */
 export function accentInk(hex: string): "#0D000A" | "#FFFFFF" {

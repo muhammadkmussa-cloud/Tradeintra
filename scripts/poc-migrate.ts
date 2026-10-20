@@ -15,12 +15,15 @@ async function main() {
   const db = createPocDb();
   try {
     await assertSafeDatabaseRole(db);
-    const migration = await readFile(
-      new URL("../database/001-poc.sql", import.meta.url),
-      "utf8",
+    const migrations = await Promise.all(
+      ["001-poc.sql", "004-poc-slug-hardening.sql"].map((file) =>
+        readFile(new URL(`../database/${file}`, import.meta.url), "utf8"),
+      ),
     );
     await db.transaction().execute(async (trx) => {
-      await sql.raw(migration).execute(trx);
+      for (const migration of migrations) {
+        await sql.raw(migration).execute(trx);
+      }
     });
     console.log(
       "Staging POC schema applied. No production tables or provider resources were changed.",

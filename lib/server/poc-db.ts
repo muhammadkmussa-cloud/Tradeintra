@@ -111,8 +111,8 @@ const names: Record<TenantSlug, string> = {
   orbit: "Orbit Markets",
 };
 const colors: Record<TenantSlug, string> = {
-  aurora: "#B9A4EB",
-  nova: "#A5C6B8",
+  aurora: "#B08D57",
+  nova: "#2F6B4F",
   orbit: "#FEDD00",
 };
 export function demoConfig(slug: TenantSlug): Config {
@@ -215,7 +215,14 @@ export async function loadPublishedTenant(
       .where("sites.slug", "=", slug)
       .where("sites.account_id", "=", route.account_id)
       .executeTakeFirst();
-    if (!version || Object.keys(validateConfig(version.config, [])).length)
+    if (
+      !version ||
+      Object.keys(
+        validateConfig(version.config, [], undefined, {
+          allowLegacySlug: true,
+        }),
+      ).length
+    )
       return null;
     return version.config;
   });

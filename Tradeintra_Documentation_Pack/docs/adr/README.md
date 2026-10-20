@@ -30,3 +30,13 @@ Create one numbered ADR per material architecture decision.
 7. **Consequences:** Trade-offs, costs, risks, and operational effects.
 8. **Security/privacy implications**
 9. **Revisit trigger:** What evidence would justify reconsidering it?
+
+## Accepted additions — 2026-10-20
+
+- [0015](./0015-google-oauth-custom-sessions.md) — Google OAuth with existing custom sessions.
+- [0016](./0016-deepseek-ai.md) — DeepSeek AI provider for bots.
+- [0017](./0017-one-active-site.md) — one active site per account.
+- [0018](./0018-domain-lifecycle.md) — domain upgrade/removal and registrar ownership.
+- [0019](./0019-partner-commission-ledger.md) — 15% partner-commission ledger.
+- [0020](./0020-marketplace-signal-payouts.md) — seller/provider payouts.
+- [0021](./0021-ai-builder-config-only.md) — AI Builder configuration-only.

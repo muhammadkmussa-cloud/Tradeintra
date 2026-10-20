@@ -131,3 +131,120 @@ Deploy Tradeintra itself to Stellar Plus, prove wildcard routing/SSL, publish se
 - CI workflow is configured but not remotely executed. No GitHub push/deployment, real cPanel test, DNS change, paid resource, real account-provider call, or financial operation occurred.
 
 **Delivered:** the runnable local mock MVP documented in `mvp-delivery.md`. **Not delivered/certified:** the complete production PRD, real hosting/provider acceptance, verified email/recovery/2FA, full asset/brand controls, legal/retention/security operations, or a production launch. These remain explicit gates, not hidden working features.
+
+## 2026-10-20 — Premium control plane and Namecheap runtime pass
+
+- Reworked the control plane into the "Obsidian Ledger" direction: self-hosted Source Serif 4, Hanken Grotesk, and IBM Plex Mono; warm paper, ink structure, bullion accent; removed pastel/sparkle decoration; updated copy and tenant accents.
+- Rebuilt the overview, sites, templates, domains, launch ledger, settings, support, auth, wizard, preview, and responsive states with verified axe/contrast and 8/8 Playwright journeys.
+- Added a standalone cPanel release (`npm run package:cpanel`) with a 24 MB traced runtime, no symlinks, a guarded `cpanel-start.js`, a minimal release manifest, and `docs/cpanel-deploy.md`.
+- Added production-style tenant host routing: `TENANT_HOST_SUFFIX` free subdomains, `TENANT_CUSTOM_HOSTS` custom domains through active `host_mappings`, fail-closed unknown/malformed hosts, and tenant/API path isolation.
+- Hardened slugs across client, server, and database; preserved legacy reads while rejecting new consecutive-hyphen and reserved names; added RLS for custom-host mappings and account-scoped archive behavior.
+- Added `003`, `004`, `005`, `006`, and `007` migrations plus migration-runner coverage; typecheck, 67 unit tests, build, format, audit, and 8/8 e2e passed locally.
+- Actual Stellar Plus/Passenger startup, PostgreSQL 10, DNS/SSL, cron, and Namecheap API access remain unverified gates.
+
+## 2026-10-20 — Development-only mock operations
+
+- Added browser-local mock workflows for domain search/buy/connect/verify/renew/remove, custom host mapping, plans/subscription/credits, support tickets, XML bots, AI bot generation, AI signals, marketplace purchases, earnings/payouts, announcements, admin markup/jobs/audit, storage assets, backups, email verification/reset, mock 2FA, account-deletion grace, and account/mock export.
+- Every surface is labelled `DEVELOPMENT MOCK`, makes no external provider call, and is hidden from the production UI unless `NEXT_PUBLIC_MOCK_OPS=true` is set at build time. The mock component is dynamically imported.
+- Added defensive localStorage handling, canonical hostname validation, domain-price consistency, duplicate-purchase guards, negative-amount clamps, signal/ticket transition guards, and account-scoped duplicate checks.
+- Added 6 mock-state unit tests and 2 Playwright journey tests; expanded axe coverage to Billing, Admin, XML Bots, AI Bot Generator, AI Signals, Marketplace, Earnings, Announcements, Support, and Settings.
+- Local verification: 73 unit tests, 10/10 Playwright tests, typecheck, build, format, audit, standalone packaging with no symlinks. Real providers and host gates remain unverified.
+
+## 2026-10-20 — Public site, identity, referral, and Deriv gate
+
+- Split the public marketing surface at `/` from the operator studio at `/studio`; added `/login`, `/signup`, `/contact`, `/developers`, `/mcp`, `/terms`, and `/privacy`.
+- Added email/password signup with full name, referral code, 8+ character password requiring an uppercase letter and a number, email verification, 30 starter credits, and 30 referrer credits after verification.
+- Added Google OAuth start/callback adapters with PKCE and state; local development uses a labelled mock Google identity until credentials are supplied.
+- Added credential roles, auth identities, referrals, credit ledger, Deriv links, email verification, and password reset tables.
+- Enforced one active site per account and required email verification plus a linked Deriv account before site creation.
+- Added password reset tokens and verification/reset tests. Google sign-in is also tested through the local mock adapter.
+- Verified locally: 81 unit tests, 12 Playwright journeys, typecheck, build, format, audit.
+
+## 2026-10-20 — Commerce and provider adapters
+
+- Added `009-commerce.sql`: domain price rules, domains, domain orders, commission entries, seller profiles, marketplace listings/orders, signal orders/deliveries, earnings ledger, and payouts.
+- Added server commerce service for domain quote/search/buy/connect/verify/renew/remove, order listing, 15% commission recording, and commission summaries.
+- Added DeepSeek AI adapter with deterministic mock mode, bounded live request, and XML output validation; added Paystack/M-Pesa payment adapter boundaries with mock checkout and webhook verification.
+- Added commerce and provider unit tests.
+- Local verification: 81 unit tests, 12/12 Playwright journeys, typecheck, build, format, audit, standalone package with no symlinks.
+
+## 2026-10-20 — Server-backed domain desk
+
+- Added `/api/studio/domains` with account-scoped search, quote, buy, connect, verify, renew, and remove actions.
+- Wired the signed-in Domains page to the server commerce service; anonymous/demo users retain the dev mock.
+- Added a `DomainProvider` boundary with a mock provider and an unconfigured Namecheap adapter that fails closed until sandbox access and IPv4 whitelisting are supplied.
+- Added account/session/rate-limit/origin checks to domain mutations.
+- Verified server-backed domain purchase and DNS/SSL advancement in the Playwright account journey.
+- Final local verification: 88 unit tests, 12/12 Playwright journeys, typecheck, build, format, audit, standalone package with no symlinks.
+
+## 2026-10-20 — Server billing, credit checkout, and commission import
+
+- Added `010-payments.sql`: credit purchases, payment events, and an idempotent credit-ledger reference index.
+- Added server credit checkout for the three configured packs; mock checkout grants credits immediately, while Paystack/M-Pesa live checkout remains gated.
+- Added Paystack and M-Pesa webhook routes with duplicate-event handling and credit settlement.
+- Wired the signed-in Billing page to the server credit ledger and purchase history.
+- Added a Super Admin commission import API guarded by `SUPER_ADMIN_EMAILS`; records 15% of the imported gross partner commission.
+- Added payment/credit/super-admin tests.
+- Final local verification: 85 unit tests, 12/12 Playwright journeys, typecheck, build, format, audit, standalone package with no symlinks.
+
+## 2026-10-20 — Live payment adapters and seller payout services
+
+- Expanded Paystack checkout with server-side transaction initialization and M-Pesa Daraja OAuth/STK-push adapters; live modes fail closed without credentials.
+- Added M-Pesa callback parsing for STK callbacks and idempotent settlement.
+- Added marketplace seller profiles, approval, listing creation, 15% order split, earnings release, payout requests, Finance status transitions, and account-scoped earnings summaries.
+- Added signal order creation, state transitions, delivery records, and cancellation guards.
+- Wired signed-in Earnings to the server payout ledger; added seller/payout and signal API routes.
+- Final local verification: 88 unit tests, 12/12 Playwright journeys, typecheck, build, format, audit.
+
+## 2026-10-20 — Server marketplace, signals, payouts, and verification resend
+
+- Added seller profiles, approval, listings, 15% marketplace split, earnings release, payout requests, and Finance status transitions.
+- Added signed-in Marketplace and AI Signals server UIs; anonymous users retain the dev mock.
+- Added signal order/delivery service and API with state-transition guards.
+- Added Paystack transaction init and M-Pesa Daraja OAuth/STK-push adapters; live modes fail closed without credentials.
+- Added an email outbox and verification resend endpoint; verification now records a development email fixture.
+- Added unit tests for marketplace payouts, signals, payments, and providers.
+- Final local verification: 88 unit tests, 12/12 Playwright journeys, typecheck, build, format, audit.
+
+## 2026-10-20 — Admin commerce, delivery files, and SMTP
+
+- Added Super Admin commerce review for seller approvals, payout status, and commission import.
+- Added marketplace delivery content/files and buyer purchase delivery downloads.
+- Wired signed-in Marketplace, AI Signals, Earnings, Billing, Domains, and Admin to server APIs.
+- Added SQL-backed verification outbox and verification resend.
+- Added an SMTP email adapter (nodemailer) with mock fallback; verification email delivery is attempted after token creation.
+- Added tests for delivery content, seller listing, payouts, and mock email.
+
+## 2026-10-20 — Telegram delivery and production M-Pesa endpoint
+
+- Added a Telegram provider adapter with mock and live modes, bounded requests, and failure recording.
+- Signal delivery now calls the Telegram adapter and records failed deliveries without claiming success.
+- Made the M-Pesa base URL configurable for sandbox or production.
+- Added provider tests for mock Telegram and mock email.
+- Final local verification: 89 unit tests, 12/12 Playwright journeys, typecheck, build, format, audit.
+
+## 2026-10-20 — Commerce RLS and Telegram/M-Pesa operations
+
+- Added `013-commerce-rls.sql` with FORCE RLS for domains, orders, commissions, sellers, marketplace, signals, earnings, payouts, credit purchases, and Deriv links.
+- Added transaction-local admin/service scopes for trusted admin and webhook paths.
+- Added account ownership checks to signal deliveries and public/owner marketplace listing policies.
+- Added Telegram provider mock/live modes and delivery failure recording.
+- Added configurable M-Pesa base URL for sandbox/production.
+- Final local verification: 89 unit tests, 12/12 Playwright journeys, typecheck, build, format, audit.
+
+## 2026-10-20 — Private delivery storage and Super Admin e2e
+
+- Added `014-marketplace-storage.sql` and a private local storage adapter for marketplace delivery files, with 256 KiB cap, 0700 directories, 0600 files, symlink/path checks, and private download routes.
+- Marketplace purchases now return delivery metadata and a buyer-only download route.
+- Added a Super Admin Playwright journey covering the allowlisted commerce review screen.
+- Added `STORAGE_ROOT` and `SUPER_ADMIN_EMAILS` to the Playwright configuration for repeatable admin tests.
+- Final local verification: 89 unit tests, 13/13 Playwright journeys, typecheck, build, format, audit.
+
+## 2026-10-20 — Per-provider Telegram and private uploads
+
+- Added encrypted per-provider Telegram connections with AES-256-GCM.
+- Added Telegram connect/test/remove APIs and a connection panel in AI Signals.
+- Signal delivery uses the provider connection when present, otherwise the platform bot token.
+- Added marketplace uploads with a 5 MiB cap, XML/text/PDF allowlist, private storage, and upload metadata.
+- Added buyer-only delivery downloads and storage tests.
+- Final local verification: 92 unit tests, 13/13 Playwright journeys, typecheck, build, format, audit.

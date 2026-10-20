@@ -2,12 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { studioMode, getStudioDb } from "@/lib/server/studio/database";
 import { StudioError } from "@/lib/server/studio/types";
-import { actionSchema, credentialsSchema } from "@/lib/server/studio/input";
+import {
+  actionSchema,
+  loginSchema,
+  registerSchema,
+} from "@/lib/server/studio/input";
 import {
   authenticate,
+  createEmailVerification,
+  creditBalance,
   sessionActor,
   logout,
   rateLimit,
+  verifyEmail,
   SESSION_COOKIE,
   SESSION_SECONDS,
 } from "@/lib/server/studio/auth";
@@ -71,6 +78,7 @@ export async function GET(
       enabled: true,
       user: actor,
       mode,
+      credits: await creditBalance(db, actor.id),
       ...(await loadState(db, actor.id)),
     });
   } catch (error) {
@@ -90,28 +98,85 @@ export async function POST(
         "The server workspace is not configured. You can still use the local demo.",
       );
     const endpoint = (await params).path.join("/");
-    if (!["register", "login", "logout", "action"].includes(endpoint))
+    if (
+      !["register", "login", "logout", "action", "verify-email"].includes(
+        endpoint,
+      )
+    )
       return json({ error: "Not found." }, 404);
     const body = await readJson(request);
     const db = await getStudioDb();
     const token = request.cookies.get(SESSION_COOKIE)?.value;
-    if (endpoint === "register" || endpoint === "login") {
-      const input = credentialsSchema.parse(body);
+    if (endpoint === "verify-email") {
+      const verificationToken =
+        body && typeof body === "object" && "token" in body
+          ? String(body.token)
+          : "";
+      const result = await verifyEmail(db, verificationToken);
+      const sessionToken = request.cookies.get(SESSION_COOKIE)?.value;
+      const actor = await sessionActor(db, sessionToken);
+      if (!actor || actor.id !== result.accountId)
+        return json({ verified: true });
+      return json({
+        enabled: true,
+        user: actor,
+        mode,
+        credits: await creditBalance(db, actor.id),
+        ...(await loadState(db, actor.id)),
+      });
+    }
+    if (endpoint === "register") {
+      const input = registerSchema.parse(body);
       const { actor, token: newToken } = await authenticate(
         db,
         input.email,
         input.password,
-        endpoint === "register",
+        true,
+        {
+          fullName: input.fullName,
+          ...(input.referralCode ? { referralCode: input.referralCode } : {}),
+        },
       );
+      const verificationToken = actor.emailVerified
+        ? null
+        : await createEmailVerification(db, actor.id);
       const response = json(
         {
           enabled: true,
           user: actor,
           mode,
+          credits: await creditBalance(db, actor.id),
+          ...(mode === "local" && verificationToken
+            ? { devVerificationToken: verificationToken }
+            : {}),
           ...(await loadState(db, actor.id)),
         },
-        endpoint === "register" ? 201 : 200,
+        201,
       );
+      response.cookies.set(SESSION_COOKIE, newToken, {
+        httpOnly: true,
+        sameSite: "lax",
+        secure,
+        path: "/",
+        maxAge: SESSION_SECONDS,
+      });
+      return response;
+    }
+    if (endpoint === "login") {
+      const input = loginSchema.parse(body);
+      const { actor, token: newToken } = await authenticate(
+        db,
+        input.email,
+        input.password,
+        false,
+      );
+      const response = json({
+        enabled: true,
+        user: actor,
+        mode,
+        credits: await creditBalance(db, actor.id),
+        ...(await loadState(db, actor.id)),
+      });
       response.cookies.set(SESSION_COOKIE, newToken, {
         httpOnly: true,
         sameSite: "lax",

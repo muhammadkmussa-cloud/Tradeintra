@@ -61,12 +61,12 @@ The application must not execute arbitrary customer code.
 
 ## 4. Data stores
 
-| Store | Purpose | Isolation |
-|---|---|---|
-| PostgreSQL (Stellar Plus) | Accounts, sites, configs, domains, orders, billing, jobs, audit | `account_id` + RLS + scoped queries |
-| Local storage | Logos, favicons, uploads, bot files, backups | `storage/{account_id}/...` outside web root |
-| In-process cache | Published tenant config, short-lived lookups | Keyed by tenant/domain; bounded |
-| Logs | App/cron/audit | cPanel logs + redacted file logs |
+| Store                     | Purpose                                                         | Isolation                                   |
+| ------------------------- | --------------------------------------------------------------- | ------------------------------------------- |
+| PostgreSQL (Stellar Plus) | Accounts, sites, configs, domains, orders, billing, jobs, audit | `account_id` + RLS + scoped queries         |
+| Local storage             | Logos, favicons, uploads, bot files, backups                    | `storage/{account_id}/...` outside web root |
+| In-process cache          | Published tenant config, short-lived lookups                    | Keyed by tenant/domain; bounded             |
+| Logs                      | App/cron/audit                                                  | cPanel logs + redacted file logs            |
 
 No Redis, object storage, or external database is required.
 
@@ -131,39 +131,41 @@ See `deriv-api-reference.md`.
 
 ## 10. Security boundaries
 
-| Boundary | Control |
-|---|---|
-| Browser ↔ app | Auth, CSRF where applicable, rate limits |
-| App ↔ PostgreSQL | Scoped queries, RLS, least-privilege DB user |
-| App ↔ local storage | Path validation, tenant directories, no execution |
-| Cron ↔ app | Secret/signature, IP restriction where possible |
-| Support/admin ↔ customer data | Least privilege, masking, audit |
-| External APIs | Scoped credentials in env vars, timeouts, retries |
-| Tenant runtime ↔ tenant data | Hostname + session + `account_id` checks |
+| Boundary                      | Control                                           |
+| ----------------------------- | ------------------------------------------------- |
+| Browser ↔ app                 | Auth, CSRF where applicable, rate limits          |
+| App ↔ PostgreSQL              | Scoped queries, RLS, least-privilege DB user      |
+| App ↔ local storage           | Path validation, tenant directories, no execution |
+| Cron ↔ app                    | Secret/signature, IP restriction where possible   |
+| Support/admin ↔ customer data | Least privilege, masking, audit                   |
+| External APIs                 | Scoped credentials in env vars, timeouts, retries |
+| Tenant runtime ↔ tenant data  | Hostname + session + `account_id` checks          |
 
 Subdomains are routing, not security.
 
 ## 11. Technology choices (proposed)
 
-| Layer | Choice |
-|---|---|
-| Framework | Next.js + React + TypeScript |
-| UI | Tailwind CSS + shadcn/ui |
-| Animation | Framer Motion |
-| Client state | Zustand |
-| Server state | TanStack Query |
-| Backend | Next.js Route Handlers + Node server |
-| Hosting | Namecheap Stellar Plus / cPanel Node.js |
-| Database | PostgreSQL on Stellar Plus |
-| Data layer | Kysely + `pg` (compatibility-tested) |
-| Files | Local storage outside web root |
-| Jobs | PostgreSQL jobs + cPanel cron |
-| Auth | Auth.js + DB sessions |
-| Email | cPanel/Namecheap SMTP |
-| Domains | Namecheap API adapter |
-| Payments | Paystack + M-Pesa |
-| Cache | In-process/DB; no Redis |
-| Monitoring | cPanel/file logs; optional external tool |
+| Layer        | Choice                                                                 |
+| ------------ | ---------------------------------------------------------------------- |
+| Framework    | Next.js + React + TypeScript                                           |
+| UI           | Self-hosted CSS token system (no Tailwind/shadcn)                      |
+| Animation    | CSS transitions; reduced-motion respected                              |
+| Client state | React state and focused client hooks                                   |
+| Server state | Route-handler fetch + account-scoped service layer                     |
+| Backend      | Next.js Route Handlers + Node server                                   |
+| Hosting      | Namecheap Stellar Plus / cPanel Node.js                                |
+| Database     | PostgreSQL on Stellar Plus                                             |
+| Data layer   | Kysely + `pg` (compatibility-tested)                                   |
+| Files        | Local storage outside web root                                         |
+| Jobs         | PostgreSQL jobs + cPanel cron                                          |
+| Auth         | Custom scrypt/DB sessions for the MVP; Auth.js remains a future option |
+| Email        | cPanel/Namecheap SMTP                                                  |
+| Domains      | Namecheap API adapter                                                  |
+| Payments     | Paystack + M-Pesa                                                      |
+| Cache        | In-process/DB; no Redis                                                |
+| Monitoring   | cPanel/file logs; optional external tool                               |
+
+The table reflects the implemented MVP. Auth.js, Tailwind/shadcn, Framer Motion, Zustand, and TanStack Query are not required dependencies and are not used by the current code.
 
 Final library choices require dependency and PostgreSQL compatibility review.
 

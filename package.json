@@ -17,13 +17,14 @@
     "poc:check": "tsx --env-file-if-exists=.env.poc scripts/poc-check.ts",
     "poc:cron": "tsx --env-file-if-exists=.env.poc scripts/poc-cron.ts",
     "poc:smoke": "node scripts/poc-runtime-smoke.mjs",
-    "studio:migrate": "tsx --env-file-if-exists=.env.studio scripts/studio-migrate.ts"
+    "studio:migrate": "tsx --env-file-if-exists=.env.studio scripts/studio-migrate.ts",
+    "package:cpanel": "npm run build && node scripts/package-release.mjs"
   },
   "dependencies": {
-    "@fontsource-variable/plus-jakarta-sans": "^5.3.0",
     "kysely": "^0.29.7",
     "lucide-react": "^0.468.0",
     "next": "^16.4.2",
+    "nodemailer": "^10.1.7",
     "pg": "^8.23.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -35,6 +36,7 @@
     "@electric-sql/pglite": "^0.5.10",
     "@playwright/test": "^1.56.0",
     "@types/node": "^22.0.0",
+    "@types/nodemailer": "^8.0.2",
     "@types/pg": "^8.23.1",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",

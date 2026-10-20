@@ -15,6 +15,10 @@ export default defineConfig({
   },
   webServer: {
     command: "npm run dev",
+    env: {
+      SUPER_ADMIN_EMAILS: "admin@example.test",
+      STORAGE_ROOT: "/tmp/tradeintra-e2e-storage",
+    },
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 60000,

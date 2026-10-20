@@ -1,5 +1,5 @@
 import type { Config } from "@/lib/studio";
-import { RISK, accentInk } from "@/lib/studio";
+import { RISK, accentInk, accentOnDark } from "@/lib/studio";
 export function PublishedSite({
   config,
   environment = "Local development",
@@ -13,6 +13,7 @@ export function PublishedSite({
       style={
         {
           "--tenant-accent": config.color,
+          "--tenant-accent-on-dark": accentOnDark(config.color),
           "--tenant-ink": accentInk(config.color),
         } as React.CSSProperties
       }
@@ -71,7 +72,7 @@ export function PublishedSite({
             >
               <path
                 d="M0 100L30 90L60 95L90 75L120 82L150 60L180 73L210 55L240 60L270 45L300 55L330 30L360 40L390 20L420 35L450 22L480 25L510 15L540 28L570 10L600 20"
-                stroke="var(--tenant-accent)"
+                stroke="var(--tenant-accent-on-dark)"
                 strokeWidth="3"
                 fill="none"
               />

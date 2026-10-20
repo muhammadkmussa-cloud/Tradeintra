@@ -1,23 +1,58 @@
-@import "@fontsource-variable/plus-jakarta-sans";
 :root {
-  --ink: #1e1722;
-  --muted: #706476;
-  --line: #eae7ec;
+  /* Obsidian Ledger: warm paper, ink structure, bullion signal. */
+  --ink: #141116;
+  --ink-deep: #0d000a;
+  --ink-raised: #1c181e;
+  --ink-soft: #2a242d;
+  --paper: #f3f2f2;
+  --paper-raised: #fbfaf7;
+  --bone: #ebe6dd;
+  --brass: #b08d57;
+  --brass-soft: #d9c5a2;
   --yellow: #fedd00;
-  --purple: #0d000a;
-  --bg: #faf9fb;
-  --accent: #a98bcf;
+  --yellow-deep: #e8c900;
+  --muted: #6e6871;
+  --muted-strong: #514b54;
+  --line: #d8d2c8;
+  --line-strong: #c4bcb0;
+  --line-ink: #ffffff14;
+  --success: #2f6b4f;
+  --warning: #98651d;
+  --danger: #8c2f2f;
+  --bg: var(--paper);
+  --accent: var(--brass);
+  --font-ui: "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --shadow-sm: 0 1px 2px #0d000a0a;
+  --shadow-md: 0 8px 24px #0d000a0f;
+  --shadow-lg: 0 24px 64px #0d000a1a;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 120ms;
+  --dur-base: 180ms;
+  --dur-slow: 240ms;
 }
 * {
   box-sizing: border-box;
+}
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font-family: "Plus Jakarta Sans Variable", Arial, Helvetica, sans-serif;
-  font-size: 13px;
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 button,
 input,

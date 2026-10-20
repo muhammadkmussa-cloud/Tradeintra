@@ -22,7 +22,7 @@ PostgreSQL-in-WASM tests run locally on a newer engine. They do **not** establis
 
 1. Upload source to a new staging release directory, excluding `.env*`, `.git`, `node_modules`, `.next`, browser data, test results, and unrelated artifacts. Keep the required `database/` and `scripts/` directories.
 2. In the selected Node virtual environment, run `npm ci` and `npm run build`. The build uses dev dependencies; the diagnostic CLI also requires the runtime `tsx` package. If host build limits are exceeded, stop and record the failure before choosing a workaround.
-3. Configure cPanel's Node application startup file to `server.cjs`. `npm run start:cpanel` exercises the same file locally. It binds to `0.0.0.0`, honors a numeric `PORT`, and uses a prebuilt production Next.js app. Passenger behavior must be tested on the host; local startup is not certification.
+3. Configure cPanel's Node application startup file to `cpanel-start.js` for a packaged standalone release, or `server.cjs` for a full source install. `npm run start:cpanel` exercises the source `server.cjs` only; the standalone release is started with `node dist/cpanel/cpanel-start.js`. It binds to `0.0.0.0`, honors a numeric `PORT`, and uses a prebuilt production Next.js app. Passenger behavior must be tested on the host; local startup is not certification.
 4. Keep the previous release intact so an owner-approved restart/rollback can be performed.
 
 ## 3. Configure staging variables

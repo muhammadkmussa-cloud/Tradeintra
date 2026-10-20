@@ -10,20 +10,20 @@ The browser-only demo remains usable without an account. Authenticated account w
 
 ## Implemented acceptance evidence
 
-| Capability | Evidence / boundary |
-|---|---|
-| Registration, sign-in/out | Salted Node scrypt hashes; random 256-bit session tokens stored only as hashes; HttpOnly/Lax cookies and Secure on HTTPS; seven-day expiry. Email remains explicitly unverified; no recovery/2FA or identity verification claim. |
-| Account isolation | Actor derived from stored session, never client account IDs; strict payload schemas; FORCE RLS and transaction-local scope; cross-account read/write and missing-scope tests. No team/admin roles. |
-| Site creation | Curated Deriv Studio wizard with name/accent/copy, three module toggles, reserved-name and cross-account conflict validation. Logo uploads, typography presets, and contact/social forms are not delivered. |
-| Draft privacy | Saving edits does not change the published snapshot; anonymous access to an unpublished name returns 404. Browser tests exercise both states. |
-| Mock publication | Transactional immutable snapshot, exposed via `/sites/slug`; pages use required risk text and mock labels. This is NOT a real `slug.tradeintra.com` hostname or DNS/SSL verification. |
-| Restore | A prior snapshot becomes a new immutable version; previous versions remain unchanged. DB trigger blocks update/delete. |
-| Concurrency/retry | Account row lock, revision conflict handling, idempotent operation IDs, duplicate-submit guard, draft preserved on errors; regression test ensures expired-session refresh cannot write private account state into demo localStorage. |
-| Account settings | Workspace name, mock Deriv link flag, configuration export, sign-out, site archive. No real Deriv access, credentials, or transactions. |
-| Abuse/input guards | Same-origin POST requirements, HTTPS outside loopback, 16 KiB streamed JSON cap, strict fields, parameterized SQL, persistent per-email/global login/registration and per-account mutation limits. |
-| Persistence | Private local PGlite database; built Node server register/save/render followed by process stop/restart/login/render was actually tested. Not a hosted PG/Passenger proof. |
-| Responsive/accessibility | Five target widths for studio, mobile account/wizard overflow check, keyboard modal flow, axe checks on existing screens, account form and published renderer. Not full manual WCAG certification. |
-| CI preparation | GitHub Actions file added for format/type/unit/browser/build/audit checks; no remote workflow or deployment was run in this session. |
+| Capability                | Evidence / boundary                                                                                                                                                                                                                   |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Registration, sign-in/out | Salted Node scrypt hashes; random 256-bit session tokens stored only as hashes; HttpOnly/Lax cookies and Secure on HTTPS; seven-day expiry. Email remains explicitly unverified; no recovery/2FA or identity verification claim.      |
+| Account isolation         | Actor derived from stored session, never client account IDs; strict payload schemas; FORCE RLS and transaction-local scope; cross-account read/write and missing-scope tests. No team/admin roles.                                    |
+| Site creation             | Curated Deriv Studio wizard with name/accent/copy, three module toggles, reserved-name and cross-account conflict validation. Logo uploads, typography presets, and contact/social forms are not delivered.                           |
+| Draft privacy             | Saving edits does not change the published snapshot; anonymous access to an unpublished name returns 404. Browser tests exercise both states.                                                                                         |
+| Mock publication          | Transactional immutable snapshot, exposed via `/sites/slug`; pages use required risk text and mock labels. This is NOT a real `slug.tradeintra.com` hostname or DNS/SSL verification.                                                 |
+| Restore                   | A prior snapshot becomes a new immutable version; previous versions remain unchanged. DB trigger blocks update/delete.                                                                                                                |
+| Concurrency/retry         | Account row lock, revision conflict handling, idempotent operation IDs, duplicate-submit guard, draft preserved on errors; regression test ensures expired-session refresh cannot write private account state into demo localStorage. |
+| Account settings          | Workspace name, mock Deriv link flag, configuration export, sign-out, site archive. No real Deriv access, credentials, or transactions.                                                                                               |
+| Abuse/input guards        | Same-origin POST requirements, HTTPS outside loopback, 16 KiB streamed JSON cap, strict fields, parameterized SQL, persistent per-email/global login/registration and per-account mutation limits.                                    |
+| Persistence               | Private local PGlite database; built Node server register/save/render followed by process stop/restart/login/render was actually tested. Not a hosted PG/Passenger proof.                                                             |
+| Responsive/accessibility  | Five target widths for studio, mobile account/wizard overflow check, keyboard modal flow, axe checks on existing screens, account form and published renderer. Not full manual WCAG certification.                                    |
+| CI preparation            | GitHub Actions file added for format/type/unit/browser/build/audit checks; no remote workflow or deployment was run in this session.                                                                                                  |
 
 ## Development versus staging
 
@@ -41,7 +41,7 @@ The browser-only demo remains usable without an account. Authenticated account w
 - Account scoping is derived from session-owned credentials and bound into an SQL transaction. Credentials, session lookup, internal routing reservations, and limiter tables are server-internal; they are not public list APIs. A compromised DB application role/server remains a distinct threat requiring production review.
 - Strict JSON rejects caller-supplied ownership/unknown executable fields. Config is rendered as React text and constrained color/module values, not arbitrary HTML/CSS/JS.
 - Names remain reserved for the site's historical snapshots until archive, preventing another site from taking an older name. Archiving removes public access/releases names but preserves private immutable history. Full personal-data deletion, retention jobs, and legal review are still required.
-- Development resource limits are five active/twenty lifetime sites per account and fifty versions per site, not approved commercial plan entitlements. Old retry-operation records expire after seven days. Limiter windows are cleaned after a day.
+- Development resource limits are one active site per account (replacement allowed after archive/delete) and fifty versions per site, not approved commercial plan entitlements. Old retry-operation records expire after seven days. Limiter windows are cleaned after a day.
 - No forwarded-IP trust is used for auth limits; global + per-email buckets protect the shared runtime. The development Arena preview origin can be derived only from the server's own sandbox ID/port. Staging pins APP_URL. Load/abuse ceilings and distributed proxy behavior still require real-host measurement.
 - No production clickjacking/CSP nonce policy, independent penetration test, mail delivery, recovery, 2FA, asset upload/virus scan, encryption/backup/erasure program, or customer-facing legal documents are certified. Development/staging is for synthetic data only.
 

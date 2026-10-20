@@ -7,9 +7,16 @@ import { getStudioDb, scope } from "../lib/server/studio/database";
 import type { StudioDb, Actor } from "../lib/server/studio/types";
 import {
   authenticate,
+  createEmailVerification,
+  createPasswordReset,
+  creditBalance,
+  googleMockSignIn,
+  resetPassword,
   sessionActor,
   hashPassword,
   verifyPassword,
+  validatePasswordPolicy,
+  verifyEmail,
   digest,
   logout,
   rateLimit,
@@ -18,11 +25,13 @@ import {
   loadState,
   applyAction,
   publishedConfig,
+  publishedConfigByHost,
 } from "../lib/server/studio/service";
 import {
   actionSchema,
   configSchema,
-  credentialsSchema,
+  loginSchema,
+  registerSchema,
 } from "../lib/server/studio/input";
 import { defaultConfig } from "../lib/studio";
 let db: StudioDb;
@@ -44,19 +53,38 @@ beforeAll(async () => {
   const auth = await authenticate(
     db,
     "account-a@example.test",
-    "a unique testing password",
+    "UniquePass1",
     true,
+    { fullName: "Account A" },
   );
   a = auth.actor;
   token = auth.token;
   b = (
-    await authenticate(
-      db,
-      "account-b@example.test",
-      "another unique test password",
-      true,
-    )
+    await authenticate(db, "account-b@example.test", "AnotherPass1", true, {
+      fullName: "Account B",
+    })
   ).actor;
+  for (const account of [a.id, b.id]) {
+    await db
+      .updateTable("credentials")
+      .set({ email_verified_at: new Date() })
+      .where("id", "=", account)
+      .execute();
+    await scope(db, account, (tx) =>
+      tx
+        .insertInto("deriv_links")
+        .values({
+          account_id: account,
+          mode: "mock",
+          status: "linked",
+          external_account_id: `mock-${account.slice(0, 8)}`,
+          encrypted_token: null,
+          revoked_at: null,
+        })
+        .onConflict((oc) => oc.column("account_id").doNothing())
+        .execute(),
+    );
+  }
 }, 30000);
 afterAll(async () => {
   await db?.destroy();
@@ -91,14 +119,95 @@ describe("authenticated local MVP database and service", () => {
     expect(sessions.some((s) => s.token_hash === token)).toBe(false);
     expect(await sessionActor(db, token)).toMatchObject({
       id: a.id,
-      emailVerified: false,
+      emailVerified: true,
     });
     expect(await sessionActor(db, "forged")).toBeNull();
   });
+  it("enforces the password policy and awards verified starter/referral credits", async () => {
+    expect(() => validatePasswordPolicy("weakpass")).toThrow();
+    expect(() => validatePasswordPolicy("NoNumberHere")).toThrow();
+    expect(() => validatePasswordPolicy("GoodPass1")).not.toThrow();
+    const referrerCode = (
+      await db
+        .selectFrom("credentials")
+        .select("referral_code")
+        .where("id", "=", a.id)
+        .executeTakeFirstOrThrow()
+    ).referral_code;
+    const referredEmail = "referred@example.test";
+    const referred = await authenticate(
+      db,
+      referredEmail,
+      "ReferredPass1",
+      true,
+      {
+        fullName: "Referred Operator",
+        referralCode: referrerCode ?? undefined,
+      },
+    );
+    expect(referred.actor.emailVerified).toBe(false);
+    expect(await creditBalance(db, referred.actor.id)).toBe(0);
+    const token = await createEmailVerification(db, referred.actor.id);
+    await verifyEmail(db, token);
+    expect(await creditBalance(db, referred.actor.id)).toBe(30);
+    expect(await creditBalance(db, a.id)).toBe(30);
+    await expect(verifyEmail(db, token)).rejects.toMatchObject({
+      status: 400,
+    });
+  });
+  it("requires email verification and a Deriv link before site creation", async () => {
+    const gated = (
+      await authenticate(db, "gated@example.test", "GatedPass1", true, {
+        fullName: "Gated Operator",
+      })
+    ).actor;
+    await expect(
+      action(gated, {
+        kind: "save",
+        config: config("gated-site"),
+        publish: false,
+      }),
+    ).rejects.toMatchObject({ status: 403, code: "EMAIL_UNVERIFIED" });
+    const token = await createEmailVerification(db, gated.id);
+    await verifyEmail(db, token);
+    await expect(
+      action(gated, {
+        kind: "save",
+        config: config("gated-site"),
+        publish: false,
+      }),
+    ).rejects.toMatchObject({ status: 422, code: "DERIV_REQUIRED" });
+    await action(gated, {
+      kind: "settings",
+      workspace: "Gated workspace",
+      derivLinked: true,
+    });
+    await expect(
+      action(gated, {
+        kind: "save",
+        config: config("gated-site"),
+        publish: false,
+      }),
+    ).resolves.toMatchObject({ revision: expect.any(Number) });
+  });
+  it("creates a verified mock Google account with starter credits", async () => {
+    const google = await googleMockSignIn(db);
+    expect(google.actor.emailVerified).toBe(true);
+    expect(await creditBalance(db, google.actor.id)).toBe(30);
+  });
+  it("supports password reset tokens without weakening the policy", async () => {
+    const token = await createPasswordReset(db, a.id);
+    await expect(resetPassword(db, token, "weak")).rejects.toMatchObject({
+      status: 422,
+    });
+    await resetPassword(db, token, "ResetPass1");
+    expect(
+      (await authenticate(db, a.email, "ResetPass1", false)).actor.id,
+    ).toBe(a.id);
+  });
   it("authenticates the correct password and rejects the wrong password or unknown identity", async () => {
     expect(
-      (await authenticate(db, a.email, "a unique testing password", false))
-        .actor.id,
+      (await authenticate(db, a.email, "ResetPass1", false)).actor.id,
     ).toBe(a.id);
     await expect(
       authenticate(db, a.email, "incorrect password", false),
@@ -117,7 +226,7 @@ describe("authenticated local MVP database and service", () => {
   });
   it("requires strict safe configuration and rejects account override or unknown executable fields", () => {
     expect(
-      credentialsSchema.safeParse({ email: "bad", password: "short" }).success,
+      loginSchema.safeParse({ email: "bad", password: "short" }).success,
     ).toBe(false);
     expect(
       configSchema.safeParse({ ...config("safe-test"), risk: "removed" })
@@ -218,6 +327,68 @@ describe("authenticated local MVP database and service", () => {
       ),
     ).rejects.toMatchObject({ code: "23514" });
   });
+  it("serves only active custom host mappings", async () => {
+    const state = await loadState(db, a.id);
+    const site = state.studio.sites[0];
+    await action(a, { kind: "publish", id: site.id });
+    await expect(
+      scope(db, a.id, (tx) =>
+        tx
+          .insertInto("host_mappings")
+          .values({
+            hostname: "Custom.Example",
+            account_id: a.id,
+            site_id: site.id,
+            status: "active",
+          })
+          .execute(),
+      ),
+    ).rejects.toMatchObject({ code: "23514" });
+    await scope(db, a.id, (tx) =>
+      tx
+        .insertInto("host_mappings")
+        .values({
+          hostname: "custom.example.test",
+          account_id: a.id,
+          site_id: site.id,
+          status: "pending",
+        })
+        .onConflict((oc) => oc.column("hostname").doNothing())
+        .execute(),
+    );
+    expect(await publishedConfigByHost(db, "custom.example.test")).toBeNull();
+    await expect(
+      scope(db, b.id, (tx) =>
+        tx
+          .insertInto("host_mappings")
+          .values({
+            hostname: "other.example.test",
+            account_id: a.id,
+            site_id: site.id,
+            status: "active",
+          })
+          .execute(),
+      ),
+    ).rejects.toMatchObject({ code: "42501" });
+    await scope(db, a.id, (tx) =>
+      tx
+        .updateTable("host_mappings")
+        .set({ status: "active" })
+        .where("hostname", "=", "custom.example.test")
+        .execute(),
+    );
+    expect((await publishedConfigByHost(db, "custom.example.test"))?.name).toBe(
+      site.draft.name,
+    );
+    await scope(db, a.id, (tx) =>
+      tx
+        .updateTable("host_mappings")
+        .set({ status: "suspended" })
+        .where("hostname", "=", "custom.example.test")
+        .execute(),
+    );
+    expect(await publishedConfigByHost(db, "custom.example.test")).toBeNull();
+  });
   it("rejects stale concurrent writes and accepts identical idempotent retries without duplicate versions", async () => {
     const before = await loadState(db, a.id);
     const id = before.studio.sites[0].id;
@@ -254,6 +425,27 @@ describe("authenticated local MVP database and service", () => {
     await expect(
       action(b, { kind: "save", config: config("admin"), publish: false }),
     ).rejects.toMatchObject({ status: 422, code: "VALIDATION" });
+    expect(() =>
+      actionSchema.parse({
+        kind: "save",
+        config: config("a--b"),
+        publish: false,
+        revision: 0,
+        operationId: randomUUID(),
+      }),
+    ).toThrow();
+  });
+  it("enforces the slug format at the database boundary", async () => {
+    const state = await loadState(db, a.id);
+    const site = state.studio.sites[0];
+    await expect(
+      scope(db, a.id, (tx) =>
+        tx
+          .insertInto("subdomains")
+          .values({ slug: "a--b", account_id: a.id, site_id: site.id })
+          .execute(),
+      ),
+    ).rejects.toMatchObject({ code: "23514" });
   });
   it("archives a site, removes public access, and preserves immutable history privately", async () => {
     const before = await loadState(db, a.id);
@@ -290,12 +482,11 @@ describe("authenticated local MVP database and service", () => {
     expect(await sessionActor(db, token)).toBeNull();
   });
   it("enforces active-site and version limits without partial writes", async () => {
-    for (let i = 0; i < 5; i++)
-      await action(b, {
-        kind: "save",
-        config: config(`limit-site-${i}`),
-        publish: true,
-      });
+    await action(b, {
+      kind: "save",
+      config: config("limit-site-0"),
+      publish: true,
+    });
     const before = await loadState(db, b.id);
     await expect(
       action(b, {
@@ -331,8 +522,10 @@ describe("authenticated local MVP database and service", () => {
   });
   it("keeps at most five sessions even when sign-ins arrive concurrently", async () => {
     const email = "session-cap@example.test",
-      password = "unique session cap test password";
-    const created = await authenticate(db, email, password, true);
+      password = "UniquePass1";
+    const created = await authenticate(db, email, password, true, {
+      fullName: "Session Cap",
+    });
     await Promise.all(
       Array.from({ length: 6 }, () => authenticate(db, email, password, false)),
     );

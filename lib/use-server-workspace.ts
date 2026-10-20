@@ -1,13 +1,21 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import type { Studio } from "./studio";
-export type Account = { id: string; email: string; emailVerified: false };
+export type Account = {
+  id: string;
+  email: string;
+  fullName: string | null;
+  emailVerified: boolean;
+  role: "user" | "support" | "finance" | "super_admin" | "service";
+};
 type Reply = {
   enabled?: boolean;
   user: Account | null;
   mode: "local" | "postgres" | "disabled";
   studio: Studio;
   revision: number;
+  devVerificationToken?: string | null;
+  credits?: number;
 };
 class RequestError extends Error {
   constructor(
@@ -55,6 +63,10 @@ export function useServerWorkspace(
   const [authError, setAuthError] = useState("");
   const [revision, setRevision] = useState(0);
   const [serviceError, setServiceError] = useState("");
+  const [verificationToken, setVerificationToken] = useState<string | null>(
+    null,
+  );
+  const [credits, setCredits] = useState(0);
   const callbacks = useRef({ onState, notify });
   callbacks.current = { onState, notify };
   const currentAccount = useRef<Account | null>(null);
@@ -72,6 +84,7 @@ export function useServerWorkspace(
     setEnabled(reply.enabled !== false);
     setMode(reply.mode);
     setUser(reply.user);
+    if (typeof reply.credits === "number") setCredits(reply.credits);
     if (reply.user && reply.studio) {
       setRevision(reply.revision);
       callbacks.current.onState(reply.studio);
@@ -97,20 +110,26 @@ export function useServerWorkspace(
       alive = false;
     };
   }, []);
-  async function authenticate(email: string, password: string) {
+  async function authenticate(input: {
+    email: string;
+    password: string;
+    fullName?: string;
+    referralCode?: string;
+  }) {
     if (lock.current) return;
     lock.current = true;
     setBusy(true);
     setAuthError("");
     try {
-      accept(
-        await call(authMode === "register" ? "register" : "login", {
-          email,
-          password,
-        }),
+      const reply = await call(
+        authMode === "register" ? "register" : "login",
+        input,
       );
+      accept(reply);
       setAuthMode(null);
       operation.current = null;
+      if (reply.devVerificationToken)
+        setVerificationToken(reply.devVerificationToken);
       callbacks.current.notify(
         "Signed in to your server-backed mock workspace.",
       );
@@ -173,6 +192,43 @@ export function useServerWorkspace(
       setBusy(false);
     }
   }
+  async function verifyEmail(token: string) {
+    if (lock.current) return;
+    lock.current = true;
+    setBusy(true);
+    try {
+      accept(await call("verify-email", { token }));
+      setVerificationToken(null);
+      callbacks.current.notify("Email verified. 30 starter credits added.");
+    } catch (error) {
+      callbacks.current.notify(
+        error instanceof Error ? error.message : "Unable to verify email.",
+      );
+    } finally {
+      lock.current = false;
+      setBusy(false);
+    }
+  }
+  async function resendVerification() {
+    if (lock.current) return;
+    lock.current = true;
+    setBusy(true);
+    try {
+      const reply = await call("verify-email/resend", {});
+      if (reply.devVerificationToken)
+        setVerificationToken(reply.devVerificationToken);
+      callbacks.current.notify("Verification token reissued.");
+    } catch (error) {
+      callbacks.current.notify(
+        error instanceof Error
+          ? error.message
+          : "Unable to resend verification.",
+      );
+    } finally {
+      lock.current = false;
+      setBusy(false);
+    }
+  }
   async function signOut() {
     if (lock.current) return;
     lock.current = true;
@@ -199,6 +255,10 @@ export function useServerWorkspace(
     authError,
     setAuthError,
     authenticate,
+    verifyEmail,
+    resendVerification,
+    verificationToken,
+    credits,
     mutate,
     signOut,
     serviceError,

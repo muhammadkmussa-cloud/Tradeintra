@@ -6,7 +6,7 @@ import {
   safeDiagnosticError,
 } from "@/lib/server/poc-config";
 import { getPocDb, loadPublishedTenant } from "@/lib/server/poc-db";
-import { RISK, type Config } from "@/lib/studio";
+import { RISK, accentInk, accentOnDark, type Config } from "@/lib/studio";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const metadata = {
@@ -36,7 +36,13 @@ export default async function StagingTenant({
   return (
     <div
       className="poc-site"
-      style={{ "--tenant-accent": config.color } as React.CSSProperties}
+      style={
+        {
+          "--tenant-accent": config.color,
+          "--tenant-accent-on-dark": accentOnDark(config.color),
+          "--tenant-ink": accentInk(config.color),
+        } as React.CSSProperties
+      }
     >
       <div className="poc-ribbon">
         STAGING PROOF-OF-CONCEPT · SIMULATED DATA · NO LIVE TRADING
@@ -90,7 +96,7 @@ export default async function StagingTenant({
             >
               <path
                 d="M0 100L30 90L60 95L90 75L120 82L150 60L180 73L210 55L240 60L270 45L300 55L330 30L360 40L390 20L420 35L450 22L480 25L510 15L540 28L570 10L600 20"
-                stroke="var(--tenant-accent)"
+                stroke="var(--tenant-accent-on-dark)"
                 strokeWidth="3"
                 fill="none"
               />

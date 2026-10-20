@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS tradeintra_poc.accounts (
 );
 CREATE TABLE IF NOT EXISTS tradeintra_poc.sites (
   account_id uuid NOT NULL REFERENCES tradeintra_poc.accounts(id),
-  slug text NOT NULL CHECK (slug ~ '^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$'),
+  slug text NOT NULL CONSTRAINT poc_sites_slug_format CHECK (slug ~ '^(?!.*--)[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$'),
   draft jsonb NOT NULL,
   published_version integer NOT NULL CHECK (published_version > 0),
   PRIMARY KEY (account_id, slug)

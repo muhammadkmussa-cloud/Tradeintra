@@ -12,3 +12,7 @@ test-results/
 .tradeintra-data/
 storage/
 *.log
+
+.playwright-mcp/
+
+dist/

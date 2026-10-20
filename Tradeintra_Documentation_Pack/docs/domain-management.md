@@ -18,18 +18,18 @@ Customers must never need to leave Tradeintra for normal domain management.
 
 ## 2. Domain types
 
-| Type | Example | Cost | Owner |
-|---|---|---|---|
-| Platform subdomain | `myshop.tradeintra.com` | Free plan, fair use | Tradeintra |
-| Purchased domain | `myshop.com` | Registrar cost + markup | Tradeintra account + customer contact |
-| Connected domain | `myshop.com` already owned | No registration fee | Customer |
-| Custom subdomain | `app.myshop.com` | Depends on parent | Customer |
+| Type               | Example                    | Cost                    | Owner                                 |
+| ------------------ | -------------------------- | ----------------------- | ------------------------------------- |
+| Platform subdomain | `myshop.tradeintra.com`    | Free plan, fair use     | Tradeintra                            |
+| Purchased domain   | `myshop.com`               | Registrar cost + markup | Tradeintra account + customer contact |
+| Connected domain   | `myshop.com` already owned | No registration fee     | Customer                              |
+| Custom subdomain   | `app.myshop.com`           | Depends on parent       | Customer                              |
 
 ## 3. Free subdomains
 
 - Format: `https://<slug>.tradeintra.com`.
 - Slug rules: 3–40 characters, lowercase letters, numbers, hyphens; start/end alphanumeric; no consecutive hyphens.
-- Reserved names: `www`, `app`, `api`, `admin`, `support`, `billing`, `status`, `docs`, `mail`, `smtp`, `ftp`, `cdn`, `assets`, `static`, `preview`, `staging`, `dev`, `test`, and Super Admin-defined names.
+- Reserved names: `www`, `app`, `api`, `admin`, `support`, `billing`, `status`, `docs`, `mail`, `smtp`, `ftp`, `cdn`, `assets`, `static`, `preview`, `staging`, `dev`, `test`, `tradeintra`, `by-host`, and Super Admin-defined names.
 - Unique at the database level.
 - Free plan: one published application, one subdomain, selected modules, basic branding, Tradeintra branding, fair-use limits.
 - Subdomain remains available while the account complies with the terms.

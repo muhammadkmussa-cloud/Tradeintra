@@ -15,26 +15,26 @@
 
 ## 2. Proposed stack
 
-| Layer | Choice |
-|---|---|
-| Framework | Next.js + React + TypeScript |
-| Styling | Tailwind CSS + shadcn/ui |
-| Animation | Framer Motion |
-| Client state | Zustand |
-| Server state | TanStack Query |
-| Backend | Next.js Route Handlers + Node server |
-| Hosting | cPanel Node.js app on Stellar Plus |
-| Database | PostgreSQL on Stellar Plus |
-| Data layer | Kysely + `pg` |
-| Files | Local `storage/{account_id}/...` |
-| Jobs | PostgreSQL `jobs` + cPanel cron |
-| Auth | Auth.js + DB sessions |
-| Email | cPanel/Namecheap SMTP |
-| Domains | Namecheap API |
-| Payments | Paystack + M-Pesa |
-| Cache | In-process/DB; no Redis |
-| Tests | Vitest/Jest + Playwright |
-| Lint/format | ESLint + Prettier or Biome |
+| Layer        | Choice                                             |
+| ------------ | -------------------------------------------------- |
+| Framework    | Next.js + React + TypeScript                       |
+| Styling      | Self-hosted CSS token system                       |
+| Animation    | CSS transitions and reduced-motion media queries   |
+| Client state | React state and focused hooks                      |
+| Server state | Route-handler fetch + account-scoped service layer |
+| Backend      | Next.js Route Handlers + Node server               |
+| Hosting      | cPanel Node.js app on Stellar Plus                 |
+| Database     | PostgreSQL on Stellar Plus                         |
+| Data layer   | Kysely + `pg`                                      |
+| Files        | Local `storage/{account_id}/...`                   |
+| Jobs         | PostgreSQL `jobs` + cPanel cron                    |
+| Auth         | Custom scrypt/DB sessions for the MVP              |
+| Email        | cPanel/Namecheap SMTP                              |
+| Domains      | Namecheap API                                      |
+| Payments     | Paystack + M-Pesa                                  |
+| Cache        | In-process/DB; no Redis                            |
+| Tests        | Vitest/Jest + Playwright                           |
+| Lint/format  | ESLint + Prettier or Biome                         |
 
 ## 3. cPanel application setup
 
@@ -56,25 +56,27 @@ Do not assume a local Next.js server behaves identically under cPanel/Passenger.
 
 Names are indicative.
 
-| Variable | Purpose |
-|---|---|
-| `APP_URL` | Public base URL |
-| `DATABASE_URL` | PostgreSQL connection |
-| `AUTH_SECRET` | Session signing |
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google sign-in |
-| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASSWORD` | cPanel email |
-| `NAMECHEAP_API_USER` / `NAMECHEAP_API_KEY` / `NAMECHEAP_USERNAME` / `NAMECHEAP_CLIENT_IP` | Domain API |
-| `NAMECHEAP_ENV` | `sandbox` or `production` |
-| `PAYSTACK_SECRET_KEY` / `PAYSTACK_PUBLIC_KEY` | Payments |
-| `MPESA_CONSUMER_KEY` / `MPESA_CONSUMER_SECRET` | M-Pesa |
-| `MPESA_PASSKEY` / `MPESA_SHORTCODE` | M-Pesa |
-| `AI_PROVIDER_API_KEY` | Optional AI |
-| `DERIV_MODE` | `mock` or `live` |
-| `DERIV_CLIENT_ID` / `DERIV_CLIENT_SECRET` / `DERIV_REDIRECT_URI` | Live only |
-| `FEATURE_LIVE_DERIV` | Server-side gate |
-| `FEATURE_PAYMENT_AGENT` | Must remain false |
-| `CRON_SECRET` | Protect cron endpoint |
-| `STORAGE_ROOT` | Local storage path outside web root |
+| Variable                                                                                  | Purpose                                                          |
+| ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `APP_URL`                                                                                 | Public base URL                                                  |
+| `TENANT_HOST_SUFFIX`                                                                      | Free-subdomain suffix, e.g. `tradeintra.com`                     |
+| `TENANT_CUSTOM_HOSTS`                                                                     | Set `true` to route unknown hosts through active `host_mappings` |
+| `DATABASE_URL`                                                                            | PostgreSQL connection                                            |
+| `AUTH_SECRET`                                                                             | Session signing                                                  |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`                                               | Google sign-in                                                   |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASSWORD`                                 | cPanel email                                                     |
+| `NAMECHEAP_API_USER` / `NAMECHEAP_API_KEY` / `NAMECHEAP_USERNAME` / `NAMECHEAP_CLIENT_IP` | Domain API                                                       |
+| `NAMECHEAP_ENV`                                                                           | `sandbox` or `production`                                        |
+| `PAYSTACK_SECRET_KEY` / `PAYSTACK_PUBLIC_KEY`                                             | Payments                                                         |
+| `MPESA_CONSUMER_KEY` / `MPESA_CONSUMER_SECRET`                                            | M-Pesa                                                           |
+| `MPESA_PASSKEY` / `MPESA_SHORTCODE`                                                       | M-Pesa                                                           |
+| `AI_PROVIDER_API_KEY`                                                                     | Optional AI                                                      |
+| `DERIV_MODE`                                                                              | `mock` or `live`                                                 |
+| `DERIV_CLIENT_ID` / `DERIV_CLIENT_SECRET` / `DERIV_REDIRECT_URI`                          | Live only                                                        |
+| `FEATURE_LIVE_DERIV`                                                                      | Server-side gate                                                 |
+| `FEATURE_PAYMENT_AGENT`                                                                   | Must remain false                                                |
+| `CRON_SECRET`                                                                             | Protect cron endpoint                                            |
+| `STORAGE_ROOT`                                                                            | Local storage path outside web root                              |
 
 Store secrets in cPanel environment variables or a protected file, never in Git.
 

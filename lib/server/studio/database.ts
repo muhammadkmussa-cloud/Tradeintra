@@ -3,7 +3,7 @@ import { Pool } from "pg";
 import { readFile, mkdir, chmod, lstat, realpath } from "node:fs/promises";
 import path from "node:path";
 import { homedir } from "node:os";
-import type { StudioDatabase, StudioDb, StudioTrx } from "./types";
+import type { StudioDatabaseWithCommerce, StudioDb, StudioTrx } from "./types";
 import { assertMockOnly } from "../poc-config";
 
 export function studioMode(): "local" | "postgres" | "disabled" {
@@ -70,6 +70,26 @@ export async function scope<T>(
     return work(tx);
   });
 }
+export async function adminScope<T>(
+  db: StudioDb,
+  work: (tx: StudioTrx) => Promise<T>,
+) {
+  return db.transaction().execute(async (tx) => {
+    await sql`SELECT set_config('tradeintra.admin','true',true)`.execute(tx);
+    return work(tx);
+  });
+}
+
+export async function serviceScope<T>(
+  db: StudioDb,
+  work: (tx: StudioTrx) => Promise<T>,
+) {
+  return db.transaction().execute(async (tx) => {
+    await sql`SELECT set_config('tradeintra.service','true',true)`.execute(tx);
+    return work(tx);
+  });
+}
+
 export async function getStudioDb(): Promise<StudioDb> {
   if (studioMode() === "disabled") throw new Error("Server studio disabled.");
   return (globals.tradeintraStudioDb ??= createDatabase().catch((error) => {
@@ -118,12 +138,25 @@ async function createDatabase(): Promise<StudioDb> {
     await engine.exec(
       `DO $$ BEGIN IF NOT EXISTS(SELECT 1 FROM pg_roles WHERE rolname='studio_app') THEN CREATE ROLE studio_app NOSUPERUSER NOBYPASSRLS; END IF; END $$; GRANT CREATE ON DATABASE postgres TO studio_app; SET ROLE studio_app;`,
     );
-    await engine.exec(
-      await readFile(
-        path.join(process.cwd(), "database", "002-studio.sql"),
-        "utf8",
-      ),
-    );
+    for (const file of [
+      "002-studio.sql",
+      "003-slug-hardening.sql",
+      "005-host-mappings.sql",
+      "006-host-mapping-canonical.sql",
+      "007-host-mapping-rls.sql",
+      "008-identity-growth-site.sql",
+      "009-commerce.sql",
+      "010-payments.sql",
+      "011-email-outbox.sql",
+      "012-marketplace-delivery.sql",
+      "013-commerce-rls.sql",
+      "014-marketplace-storage.sql",
+      "015-telegram-and-uploads.sql",
+    ]) {
+      await engine.exec(
+        await readFile(path.join(process.cwd(), "database", file), "utf8"),
+      );
+    }
     // PGlite has a single session. Hold a FIFO connection lease across each transaction.
     let queue: Promise<void> = Promise.resolve();
     const pool = {
@@ -151,7 +184,7 @@ async function createDatabase(): Promise<StudioDb> {
         await engine.close();
       },
     } as unknown as Pool;
-    const db = new Kysely<StudioDatabase>({
+    const db = new Kysely<StudioDatabaseWithCommerce>({
       dialect: new PostgresDialect({ pool }),
     }).withSchema("tradeintra_studio");
     await assertRole(db);
@@ -168,7 +201,7 @@ async function createDatabase(): Promise<StudioDb> {
   pool.on("error", () =>
     console.error("Studio database connection unavailable; details omitted."),
   );
-  const db = new Kysely<StudioDatabase>({
+  const db = new Kysely<StudioDatabaseWithCommerce>({
     dialect: new PostgresDialect({ pool }),
   }).withSchema("tradeintra_studio");
   try {

@@ -7,19 +7,26 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      NEXT_TELEMETRY_DISABLED: '1'
+      NEXT_TELEMETRY_DISABLED: "1"
       STUDIO_DATA_DIR: ${{ runner.temp }}/tradeintra-local-studio
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
           cache: npm
       - run: npm ci
       - run: npm run format:check
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - run: node scripts/package-release.mjs
+      - run: test -z "$(find dist/cpanel -type l)"
+      - run: |
+          if STUDIO_DB_MODE=local STUDIO_ENV=local node dist/cpanel/cpanel-start.js; then
+            echo "standalone release accepted local mode" >&2
+            exit 1
+          fi
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - run: npm audit --audit-level=high

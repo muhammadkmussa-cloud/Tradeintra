@@ -5,6 +5,11 @@ export interface StudioDatabase {
     id: string;
     email: string;
     password_hash: string;
+    full_name: string | null;
+    email_verified_at: Date | null;
+    referral_code: string | null;
+    referred_by: string | null;
+    role: "user" | "support" | "finance" | "super_admin" | "service";
     created_at: Generated<Date>;
   };
   accounts: {
@@ -38,6 +43,61 @@ export interface StudioDatabase {
     restored_from: number | null;
   };
   subdomains: { slug: string; account_id: string; site_id: string };
+  host_mappings: {
+    hostname: string;
+    account_id: string;
+    site_id: string;
+    status: "pending" | "active" | "suspended";
+    created_at: Generated<Date>;
+  };
+  email_verifications: {
+    token_hash: string;
+    account_id: string;
+    expires_at: Date;
+    used_at: Date | null;
+    created_at: Generated<Date>;
+  };
+  password_resets: {
+    token_hash: string;
+    account_id: string;
+    expires_at: Date;
+    used_at: Date | null;
+    created_at: Generated<Date>;
+  };
+  auth_identities: {
+    provider: "google";
+    provider_account_id: string;
+    account_id: string;
+    email: string;
+    created_at: Generated<Date>;
+  };
+  referrals: {
+    id: string;
+    referrer_id: string;
+    referee_id: string;
+    code: string;
+    reward_credits: Generated<number>;
+    status: "pending" | "rewarded" | "rejected";
+    created_at: Generated<Date>;
+    rewarded_at: Date | null;
+  };
+  credit_ledger: {
+    id: string;
+    account_id: string;
+    delta: number;
+    reason: string;
+    reference: string | null;
+    created_at: Generated<Date>;
+  };
+  deriv_links: {
+    account_id: string;
+    mode: "mock" | "sandbox" | "live";
+    status: "linked" | "expired" | "revoked";
+    external_account_id: string | null;
+    encrypted_token: string | null;
+    linked_at: Generated<Date>;
+    revoked_at: Date | null;
+  };
   operations: {
     account_id: string;
     id: string;
@@ -51,9 +111,18 @@ export interface StudioDatabase {
     attempts: number;
   };
 }
-export type StudioDb = Kysely<StudioDatabase>;
-export type StudioTrx = Transaction<StudioDatabase>;
-export type Actor = { id: string; email: string; emailVerified: false };
+export type StudioDatabaseWithCommerce = StudioDatabase &
+  CommerceDatabase &
+  PaymentDatabase;
+export type StudioDb = Kysely<StudioDatabaseWithCommerce>;
+export type StudioTrx = Transaction<StudioDatabaseWithCommerce>;
+export type Actor = {
+  id: string;
+  email: string;
+  fullName: string | null;
+  emailVerified: boolean;
+  role: "user" | "support" | "finance" | "super_admin" | "service";
+};
 export class StudioError extends Error {
   constructor(
     public status: number,
@@ -63,4 +132,201 @@ export class StudioError extends Error {
   ) {
     super(message);
   }
+}
+
+export interface CommerceDatabase {
+  domain_price_rules: {
+    tld: string;
+    registration_price: string;
+    renewal_price: string;
+    currency: "USD" | "KES";
+    markup_percent: string;
+    last_verified_at: Date | null;
+    updated_at: Generated<Date>;
+  };
+  domains: {
+    id: string;
+    account_id: string;
+    site_id: string | null;
+    name: string;
+    mode: "purchased" | "connected";
+    status:
+      | "quoted"
+      | "registered"
+      | "dns_pending"
+      | "ssl_pending"
+      | "active"
+      | "expired"
+      | "suspended";
+    registration_price: string;
+    renewal_price: string;
+    currency: "USD" | "KES";
+    premium: boolean;
+    auto_renew: boolean;
+    expires_at: Date;
+    dns_verified: boolean;
+    ssl_status: "pending" | "issued" | "active" | "failed";
+    created_at: Generated<Date>;
+  };
+  domain_orders: {
+    id: string;
+    account_id: string;
+    domain: string;
+    years: number;
+    quoted_price: string;
+    final_price: string;
+    status:
+      "quoted" | "paid" | "submitted" | "succeeded" | "failed" | "refunded";
+    provider: "mock" | "namecheap" | "manual";
+    idempotency_key: string;
+    note: string | null;
+    created_at: Generated<Date>;
+  };
+  commission_entries: {
+    id: string;
+    account_id: string;
+    site_id: string | null;
+    period: string;
+    gross_commission: string;
+    platform_share: string;
+    status: "estimated" | "imported" | "settled" | "reversed";
+    provider_reference: string | null;
+    created_at: Generated<Date>;
+  };
+  seller_profiles: {
+    account_id: string;
+    display_name: string;
+    kind: "seller" | "signal_provider" | "both";
+    status: "pending" | "approved" | "suspended";
+    payout_method: "mpesa" | "bank" | "crypto" | null;
+    created_at: Generated<Date>;
+  };
+  marketplace_listings: {
+    id: string;
+    seller_id: string;
+    title: string;
+    kind: "bot" | "pdf" | "course" | "signal";
+    price: string;
+    status: "draft" | "live" | "sold" | "suspended";
+    delivery_content: string | null;
+    delivery_filename: string | null;
+    delivery_asset_key: string | null;
+    delivery_size: number | null;
+    delivery_mime: string | null;
+    delivery_upload_id: string | null;
+    created_at: Generated<Date>;
+  };
+  telegram_connections: {
+    account_id: string;
+    bot_token_encrypted: string;
+    chat_id: string;
+    status: "linked" | "revoked";
+    created_at: Generated<Date>;
+  };
+  marketplace_uploads: {
+    id: string;
+    account_id: string;
+    asset_key: string;
+    filename: string;
+    mime: string;
+    size: number;
+    created_at: Generated<Date>;
+  };
+  marketplace_orders: {
+    id: string;
+    listing_id: string;
+    buyer_id: string;
+    seller_id: string;
+    amount: string;
+    platform_fee: string;
+    seller_share: string;
+    status: "paid" | "refunded" | "disputed";
+    created_at: Generated<Date>;
+  };
+  signal_orders: {
+    id: string;
+    account_id: string;
+    provider_id: string | null;
+    name: string;
+    interval: string;
+    telegram: string;
+    status:
+      | "draft"
+      | "building"
+      | "trial"
+      | "active"
+      | "paused"
+      | "cancelled"
+      | "expired";
+    trial_ends_at: Date;
+    price: string;
+    created_at: Generated<Date>;
+  };
+  signal_deliveries: {
+    id: string;
+    signal_order_id: string;
+    account_id: string | null;
+    status: "pending" | "sent" | "failed" | "skipped";
+    message: string;
+    created_at: Generated<Date>;
+  };
+  earnings_ledger: {
+    id: string;
+    account_id: string;
+    source:
+      | "partner"
+      | "markup"
+      | "domain"
+      | "credits"
+      | "marketplace"
+      | "signals"
+      | "referral";
+    amount: string;
+    status: "pending" | "available" | "paid" | "reversed";
+    reference: string | null;
+    created_at: Generated<Date>;
+  };
+  payouts: {
+    id: string;
+    account_id: string;
+    amount: string;
+    method: "mpesa" | "bank" | "crypto";
+    status: "requested" | "review" | "approved" | "paid" | "rejected";
+    created_at: Generated<Date>;
+    paid_at: Date | null;
+  };
+}
+
+export interface PaymentDatabase {
+  credit_purchases: {
+    id: string;
+    account_id: string;
+    pack_credits: number;
+    amount: string;
+    currency: "USD" | "KES";
+    provider: "mock" | "paystack" | "mpesa";
+    provider_reference: string;
+    status: "pending" | "paid" | "failed" | "refunded";
+    created_at: Generated<Date>;
+    paid_at: Date | null;
+  };
+  email_outbox: {
+    id: string;
+    account_id: string;
+    kind: "verification" | "reset" | "receipt" | "renewal" | "notice";
+    to_email: string;
+    subject: string;
+    body: string;
+    token: string | null;
+    created_at: Generated<Date>;
+  };
+  payment_events: {
+    id: string;
+    provider: "paystack" | "mpesa" | "mock";
+    provider_event_id: string;
+    purchase_id: string | null;
+    payload_hash: string;
+    status: "processed" | "ignored" | "failed";
+    created_at: Generated<Date>;
+  };
 }

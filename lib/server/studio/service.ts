@@ -1,7 +1,11 @@
 import { createHash, randomUUID } from "node:crypto";
 import type { Studio, Site, Config } from "../../studio";
-import { validateConfig } from "../../studio";
-import { configSchema, type StudioAction } from "./input";
+import { validateConfig, RESERVED_SLUGS } from "../../studio";
+import {
+  configSchema,
+  publishedConfigSchema,
+  type StudioAction,
+} from "./input";
 import { StudioError, type StudioDb, type StudioTrx } from "./types";
 import { scope } from "./database";
 
@@ -188,30 +192,70 @@ export async function applyAction(
         .set({ workspace: input.workspace, deriv_linked: input.derivLinked })
         .where("id", "=", account)
         .execute();
+      if (input.derivLinked)
+        await tx
+          .insertInto("deriv_links")
+          .values({
+            account_id: account,
+            mode: "mock",
+            status: "linked",
+            external_account_id: `mock-${account.slice(0, 8)}`,
+            encrypted_token: null,
+            revoked_at: null,
+          })
+          .onConflict((oc) =>
+            oc.column("account_id").doUpdateSet({
+              mode: "mock",
+              status: "linked",
+              external_account_id: `mock-${account.slice(0, 8)}`,
+              revoked_at: null,
+            }),
+          )
+          .execute();
+      else
+        await tx
+          .updateTable("deriv_links")
+          .set({ status: "revoked", revoked_at: new Date() })
+          .where("account_id", "=", account)
+          .execute();
     } else if (input.kind === "save") {
       const config = configSchema.parse(input.config);
       let id = input.id;
       if (id) await siteForUpdate(tx, account, id);
       else {
-        const count = await tx
+        const credential = await tx
+          .selectFrom("credentials")
+          .select("email_verified_at")
+          .where("id", "=", account)
+          .executeTakeFirst();
+        if (!credential?.email_verified_at)
+          throw new StudioError(
+            403,
+            "Verify your email before creating a site.",
+            "EMAIL_UNVERIFIED",
+          );
+        const deriv = await tx
+          .selectFrom("deriv_links")
+          .select("account_id")
+          .where("account_id", "=", account)
+          .where("status", "=", "linked")
+          .executeTakeFirst();
+        if (!deriv)
+          throw new StudioError(
+            422,
+            "Create or connect a Deriv account before creating a site.",
+            "DERIV_REQUIRED",
+          );
+        const active = await tx
           .selectFrom("sites")
           .select("id")
           .where("account_id", "=", account)
+          .where("archived", "=", false)
           .execute();
-        if (
-          count.length >= 20 ||
-          (
-            await tx
-              .selectFrom("sites")
-              .select("id")
-              .where("account_id", "=", account)
-              .where("archived", "=", false)
-              .execute()
-          ).length >= 5
-        )
+        if (active.length >= 1)
           throw new StudioError(
             422,
-            "Development limit reached: five active sites and twenty total sites per account.",
+            "One active site per account. Archive the current site before creating another.",
             "LIMIT_REACHED",
           );
         id = randomUUID();
@@ -244,6 +288,12 @@ export async function applyAction(
           .execute();
         await tx
           .deleteFrom("subdomains")
+          .where("account_id", "=", account)
+          .where("site_id", "=", input.id)
+          .execute();
+        await tx
+          .updateTable("host_mappings")
+          .set({ status: "suspended" })
           .where("account_id", "=", account)
           .where("site_id", "=", input.id)
           .execute();
@@ -290,17 +340,12 @@ export async function applyAction(
     return state(tx, account);
   });
 }
-export async function publishedConfig(
+async function publishedForSite(
   db: StudioDb,
-  slug: string,
+  account: string,
+  siteId: string,
 ): Promise<Config | null> {
-  const route = await db
-    .selectFrom("subdomains")
-    .select(["account_id", "site_id"])
-    .where("slug", "=", slug)
-    .executeTakeFirst();
-  if (!route) return null;
-  return scope(db, route.account_id, async (tx) => {
+  return scope(db, account, async (tx) => {
     const row = await tx
       .selectFrom("sites")
       .innerJoin("versions", (join) =>
@@ -310,12 +355,43 @@ export async function publishedConfig(
           .onRef("versions.number", "=", "sites.published_version"),
       )
       .select("versions.config")
-      .where("sites.account_id", "=", route.account_id)
-      .where("sites.id", "=", route.site_id)
+      .where("sites.account_id", "=", account)
+      .where("sites.id", "=", siteId)
       .where("sites.archived", "=", false)
       .executeTakeFirst();
-    if (!row || row.config.slug !== slug) return null;
-    const config = configSchema.safeParse(row.config);
-    return config.success ? config.data : null;
+    if (!row) return null;
+    const config = publishedConfigSchema.safeParse(row.config);
+    return config.success && !RESERVED_SLUGS.has(config.data.slug)
+      ? config.data
+      : null;
   });
+}
+
+export async function publishedConfig(
+  db: StudioDb,
+  slug: string,
+): Promise<Config | null> {
+  if (RESERVED_SLUGS.has(slug)) return null;
+  const route = await db
+    .selectFrom("subdomains")
+    .select(["account_id", "site_id"])
+    .where("slug", "=", slug)
+    .executeTakeFirst();
+  if (!route) return null;
+  const config = await publishedForSite(db, route.account_id, route.site_id);
+  return config?.slug === slug ? config : null;
+}
+
+export async function publishedConfigByHost(
+  db: StudioDb,
+  hostname: string,
+): Promise<Config | null> {
+  const route = await db
+    .selectFrom("host_mappings")
+    .select(["account_id", "site_id"])
+    .where("hostname", "=", hostname)
+    .where("status", "=", "active")
+    .executeTakeFirst();
+  if (!route) return null;
+  return publishedForSite(db, route.account_id, route.site_id);
 }

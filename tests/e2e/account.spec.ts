@@ -6,7 +6,7 @@ async function createAccount(
   page: import("@playwright/test").Page,
   address: string,
 ) {
-  await page.goto("/");
+  await page.goto("/studio");
   await page
     .getByRole("button", { name: "Create account", exact: true })
     .waitFor();
@@ -14,12 +14,44 @@ async function createAccount(
     .getByRole("button", { name: "Create account", exact: true })
     .click();
   const dialog = page.getByRole("dialog");
+  await dialog.getByLabel("Full name").fill("Test Operator");
   await dialog.getByLabel("Email", { exact: true }).fill(address);
   await dialog.getByLabel("Password", { exact: true }).fill(password);
   await dialog
     .getByRole("button", { name: "Create account", exact: true })
     .click();
-  await expect(dialog).toHaveCount(0, { timeout: 30000 });
+  await expect(
+    page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Verify email", exact: true }),
+  ).toBeVisible({ timeout: 30000 });
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Verify email", exact: true })
+    .click();
+  await expect(page.getByRole("dialog")).toHaveCount(0, { timeout: 30000 });
+  await page.getByRole("button", { name: "Marketplace", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Seller profile" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Apply as seller" }).click();
+  await expect(
+    page.getByText("Seller application submitted for review."),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "AI Signals", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Create signal order" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Start trial" }).click();
+  await expect(page.getByText("Signal trial created.")).toBeVisible();
+  await page.getByRole("button", { name: "Deliver now" }).click();
+  await expect(page.getByText("Mock signal delivered.")).toBeVisible();
+  await page.getByRole("button", { name: "Settings", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Link mock account", exact: true })
+    .click();
+  await expect(page.getByText("Mock linked", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Overview", exact: true }).click();
 }
 test("account → template → brand → modules → public mock snapshot → private edit → restore → sign out and back in", async ({
   page,
@@ -120,6 +152,25 @@ test("account → template → brand → modules → public mock snapshot → pr
   ).toBeVisible();
   await page.getByRole("button", { name: "Settings", exact: true }).click();
   await expect(page.getByText(address, { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Domains", exact: true }).click();
+  const domainName = `${slug}.com`;
+  await page.getByLabel("Search a domain").fill(domainName);
+  await page.getByRole("button", { name: "Search", exact: true }).click();
+  await expect(page.getByRole("cell", { name: domainName })).toBeVisible();
+  await page.getByRole("button", { name: "Buy domain" }).first().click();
+  await expect(page.getByText("dns pending", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Verify" }).first().click();
+  await expect(page.getByText("ssl pending", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Verify" }).first().click();
+  await expect(page.getByText("active", { exact: true }).first()).toBeVisible();
+  await page.getByRole("button", { name: "Settings", exact: true }).click();
+  await page.getByRole("button", { name: "Billing", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "AI credit packs" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Buy credits" }).first().click();
+  await expect(page.getByText("60 credits", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Settings", exact: true }).click();
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Create account", exact: true }),
@@ -259,7 +310,7 @@ test("development account form is keyboard-operable and accessible on mobile", a
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
+  await page.goto("/studio");
   await page
     .getByRole("button", { name: "Create account", exact: true })
     .click();
