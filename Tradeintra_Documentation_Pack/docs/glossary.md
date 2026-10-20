@@ -1,0 +1,42 @@
+# Glossary
+
+- **Control plane:** Tradeintra services that manage accounts, sites, configuration, domains, permissions, and publishes.
+- **Multi-tenant renderer:** One application serving many branded customer sites, routed by domain/subdomain.
+- **Tenant:** A customer account and its isolated resources.
+- **Template:** A complete starting application design.
+- **Module:** A reusable feature with configuration, permissions, data rules, and rendering.
+- **Brand kit:** Logo, colours, typography, copy, links, and disclosures applied to a template.
+- **Configuration version:** An immutable set of site settings and module configuration.
+- **Preview:** A non-production rendering of a draft configuration.
+- **Publish:** Making a configuration version live.
+- **Release:** A build of the Tradeintra control plane uploaded to Stellar Plus and activated in cPanel.
+- **Job:** A durable background task tracking publish, domain, email, or cleanup work.
+- **Subdomain:** `slug.tradeintra.com`, provided by Tradeintra.
+- **Custom domain:** A customer-owned domain connected to a site.
+- **Registrar:** The entity that registers a domain. Tradeintra uses Namecheap.
+- **Registrant:** The legal contact for a domain registration.
+- **DNS:** Domain Name System; maps domains to services.
+- **SSL/TLS:** Encryption for HTTPS.
+- **Wildcard domain:** `*.tradeintra.com`, routing all subdomains.
+- **Deriv:** The broker/exchange whose API Tradeintra integrates with. Tradeintra is independent.
+- **DBot:** Deriv's visual bot platform; strategies are Blockly XML.
+- **DBot XML:** A Google Blockly XML strategy file.
+- **SmartTrader:** A Deriv trading platform; also a DForge template name.
+- **AirRun:** A DForge template name; exact behavior not verified.
+- **Markup:** An app-level percentage (up to 3%) that reduces a client's potential payout.
+- **Partner commission:** Commission paid by Deriv to a partner on referred client activity.
+- **OAuth 2.0 + PKCE:** Delegated authorization flow used by Deriv.
+- **OTP:** One-time password used to authenticate a Deriv WebSocket connection.
+- **WebSocket:** Persistent connection for Deriv market data/trading.
+- **AI Bot Generator:** Plain-English/video-to-XML bot generation.
+- **AI Builder:** Prompt-to-generated-app product; deferred until a safe runtime exists.
+- **AI Signals:** AI-generated signals delivered to Telegram.
+- **Marketplace/Bot Store:** Selling bots and digital products.
+- **Entitlement:** A permission or limit granted by a plan.
+- **Credit ledger:** Append-only record of AI credit purchases/spend.
+- **Idempotency:** Prevents duplicate effects from repeated requests/events.
+- **RLS:** Postgres row-level security.
+- **ADR:** Architecture Decision Record.
+- **POC:** Proof of concept.
+- **Mock mode:** Simulated Deriv integration with no real tokens/orders.
+- **Live mode:** Real Deriv integration, gated by approval.
