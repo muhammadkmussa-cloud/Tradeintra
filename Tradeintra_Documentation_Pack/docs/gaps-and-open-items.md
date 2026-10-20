@@ -276,3 +276,15 @@
 | 2026-10-20 | Brand logo/favicon assets added to `brand/`; A-18 and I-01 marked Provided; color-token mismatch added as A-21. |
 | 2026-10-20 | SVG colors normalized to `#FEDD00` / `#0D000A`; A-21 marked Provided. |
 | 2026-10-20 | Hosting migrated in docs to Namecheap Stellar Plus/cPanel; Vercel/Neon/Redis removed as required dependencies; hosting gaps updated. |
+
+## Implementation evidence — 2026-10-20
+
+A local template/brand/module/slug/publish-history slice is implemented; see `local-poc-report.md`. This does not close host, database, auth, upload, tenancy, billing, provider, or legal gaps. Domain availability is only checked against reserved names and configurations in this browser. No Namecheap/global availability claim is made. The production POC gate remains open.
+
+## 2026-10-20 — POC preparation update
+
+Runnable staging probes now exist for Node startup/liveness, exact-host tenant routing, pg/Kysely RLS/snapshot SQL, private files, and bounded DB cron. See `cpanel-poc-runbook.md`. Local tests are preparation evidence only. No actual host, PG-10/network, DNS/SSL, real auth, customer upload, provider, legal, or production release gap is closed.
+
+## 2026-10-20 — Local MVP scope update
+
+Local account/session, server draft editing, mock publication URLs, published-only reads, revision/restore behavior, local SQL isolation, and end-to-end browser journeys now have implementation/test evidence. See `mvp-delivery.md`. This closes local-development implementation gaps only, not host/production acceptance. Actual email/recovery/2FA, customer uploads, complete brand controls, real subdomains/TLS, providers, commercial entitlements, erasure/legal/ops, and the actual hosting gate remain open.

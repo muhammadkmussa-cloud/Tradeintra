@@ -131,3 +131,15 @@ Record material decisions chronologically. Add a new entry rather than silently 
 - **Decision:** One shared Next.js runtime on cPanel; publish = immutable tenant configuration. PostgreSQL-backed jobs processed by cPanel cron. No Redis or persistent worker. Local file storage. Kysely + pg, subject to PostgreSQL 10.23 compatibility.
 - **Date:** 2026-10-20
 - **ADRs:** `ADR 0009`, `ADR 0010`, `ADR 0011`, `ADR 0013`
+
+## 2026-10-20 — Bounded local implementation (engineering scope, not a hosting decision)
+
+Implemented a browser-local Next.js studio to exercise configuration and immutable-version workflows while cPanel/DB access is absent. This is a temporary mock persistence adapter, not a replacement for owner-confirmed PostgreSQL or an approved production architecture. No new hosting provider or paid resource was introduced. Real accounts, tenant data, DNS, SSL, domains, payments, and live Deriv remain gated. Existing ADRs retain precedence.
+
+## 2026-10-20 — Prepare the hosting POC without claiming gate completion
+
+Added a disabled-by-default staging harness rather than beginning unrestricted production features. It targets the existing single-Node/pg/Kysely/local-file/cron architecture and isolates its objects under `tradeintra_poc`. PGlite is a development test engine only, not an alternative production DB/provider. The browser studio stays local; seeded staging tenant snapshots are a separate, mock-only diagnostic surface. No new hosting decision or production deployment is implied.
+
+## 2026-10-20 — Finish the runnable local vertical slice, keep hosting gate intact
+
+User requested continued implementation through a finished runnable experience. Delivered an explicitly development/staging-only account/site/publish slice, without asserting a host gate pass. PGlite is used only as a private local development engine (also in SQL tests), never as an approved production DB/provider. The final production target remains Namecheap PostgreSQL/pg/Kysely after the real gate. Credentials/sessions use a bounded custom local/staging implementation; this is not a final Auth.js/production-auth decision or approval. Diagnostic POC schema and account schema remain separate. No regulated/live/deferred provider function was activated.

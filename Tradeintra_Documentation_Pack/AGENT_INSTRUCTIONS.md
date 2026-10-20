@@ -8,7 +8,7 @@ Act as product analyst, software architect, UX designer, full-stack engineer, De
 
 - Discovery is complete. See `docs/reference-analysis.md`.
 - The product direction and key decisions are owner-confirmed in `docs/decision-log.md`.
-- The repository contains documentation only; implementation has not started.
+- The repository now contains an anonymous browser demo, a server-backed local-development mock MVP, and a disabled-by-default staging POC harness. See `docs/progress.md`, `docs/local-poc-report.md`, `docs/mvp-delivery.md`, and `docs/cpanel-poc-runbook.md`. Production implementation/acceptance remains gated on the real hosting POC.
 - A proof of concept must pass before full implementation (see `docs/hosting-and-deployment-strategy.md`).
 
 ## Non-negotiable workflow

@@ -1,6 +1,6 @@
 # Architecture
 
-**Status:** Proposed and owner-confirmed at the platform level. Namecheap Stellar Plus is mandatory. Implementation has not started. The POC in `hosting-and-deployment-strategy.md` must pass before this is final.
+**Status:** Proposed and owner-confirmed at the platform level. Namecheap Stellar Plus is mandatory. Local studio and opt-in staging harness are implemented; production architecture is not yet proven. The POC in `hosting-and-deployment-strategy.md` must pass before this is final.
 
 ## 1. Architectural model
 

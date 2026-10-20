@@ -1,0 +1,14 @@
+node_modules/
+.next/
+out/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+.env*
+!.env.example
+# Never commit local databases, uploaded assets, or private operational logs.
+.studio-data/
+.tradeintra-data/
+storage/
+*.log

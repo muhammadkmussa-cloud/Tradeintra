@@ -127,3 +127,7 @@ Do not claim GDPR/CCPA/other compliance without review and evidence.
 - [ ] No arbitrary generated-code execution.
 - [ ] Backup restore exercise.
 - [ ] Privileged action audit review.
+
+## Implemented local-development controls — 2026-10-20
+
+See `mvp-delivery.md` for the implemented scrypt/session-cookie, origin/body/rate guards, strict input, transaction-local RLS, idempotency/conflict and published-only rendering controls and their local tests. None is a production security certification. Email verification, recovery, 2FA, team/admin authorization, real-host pooling, customer uploads/scanning, encryption/backups/erasure, frame/CSP hardening and an independent review remain required. Use synthetic data only. Account DB state/tokens are not written to anonymous demo localStorage, including the tested expiry/conflict refresh regression. Archived immutable history is retained privately and must not be described as personal-data erasure.
