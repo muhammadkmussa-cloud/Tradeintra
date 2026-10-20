@@ -1,6 +1,6 @@
 # Environment and Setup
 
-**Status:** Proposed for Namecheap Stellar Plus / cPanel. The repository does not yet contain an application. These are expected setup requirements.
+**Status:** Local studio and opt-in staging POC harness implemented. Actual Namecheap Stellar Plus / cPanel deployment is unverified. See `cpanel-poc-runbook.md` for current executable commands; tables below remain proposed production requirements.
 
 ## 1. Prerequisites
 
@@ -142,3 +142,7 @@ Avoid PostgreSQL features newer than version 10.
 ## 11. Setup acceptance
 
 A developer should be able to deploy the app to staging on Stellar Plus, run migrations, start the Node app, reach the health endpoint, process one cron job, and publish a demo tenant on a subdomain over HTTPS.
+
+## Implemented local MVP modes — 2026-10-20
+
+`npm run dev` now offers server-backed local development accounts in addition to the separate browser demo. See root README and `mvp-delivery.md`. Default private data is `~/.local/share/tradeintra-studio`; PGlite is development-only and not a production database decision. A built runtime disables accounts unless explicit local/staging variables are supplied. `STUDIO_DB_MODE=postgres`, `STUDIO_ENV=staging`, `STUDIO_ENABLED=true`, `APP_URL`, and `DATABASE_URL` enable only the approved staging adapter, after explicit `npm run studio:migrate -- --apply`. Actual host/PG/SSL compatibility and production acceptance are still unverified.

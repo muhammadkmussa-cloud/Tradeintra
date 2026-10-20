@@ -4,7 +4,7 @@
 **Domain:** `https://Tradeintra.com`  
 **Reference product:** `https://dforge.site/sites`  
 **Tagline:** Build. Deploy. Trade.  
-**Status:** Discovery complete; direction approved; implementation not started.
+**Status:** Runnable local mock MVP with server accounts/site snapshots implemented; production hosting POC remains unverified.
 
 ## Purpose
 
@@ -31,6 +31,10 @@ This pack is the working documentation set for Tradeintra, a **Deriv-only no-cod
 - Payment-agent functionality and the 22% share are not approved.
 - Domain resale/markup requires legal/terms review.
 - No VPS, Vercel, Neon, Supabase, Redis, or external hosting/database provider is a required dependency.
+
+## Implementation update — 2026-10-20
+
+A runnable local mock studio, server-backed development accounts, and published-only mock site URLs now exist at the repository root. See `docs/mvp-delivery.md` for current scope and evidence. See the root `README.md` and `docs/local-poc-report.md`. Anonymous demo publishing is not real subdomain deployment, and the mandatory cPanel POC is still open. A disabled-by-default staging harness and execution steps are now available in `docs/cpanel-poc-runbook.md`.
 
 ## Start here
 

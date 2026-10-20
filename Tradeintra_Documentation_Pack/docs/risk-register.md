@@ -32,3 +32,36 @@ Assess likelihood and impact after the POC; levels below are initial qualitative
 | R-022 | Support/admin insider misuse | High | Least privilege, audit, break-glass | Open |
 
 Review before production and after major changes.
+
+## 2026-10-20 — Local prototype risks
+
+| Risk | State | Mitigation / gate |
+|---|---|---|
+| Local demo mistaken for live platform | Open | Mock badges, unverified DNS/SSL, local-publish labels, README and POC report |
+| Sensitive data entered into unauthenticated browser storage | Open | Explicit Settings/README warning; no credentials collected; production requires sessions and scoped DB access |
+| Browser clearing or concurrent tabs lose changes | Open | Export/reset controls; one-tab guidance; production persistence remains gated |
+| Next.js/Node or PostgreSQL incompatible with shared host | Unverified | Mandatory cPanel hosting POC before production architecture approval |
+| Automated accessibility mistaken for complete compliance | Open | Scope recorded; manual assistive-tech and keyboard/touch review still required |
+
+## 2026-10-20 — POC harness risk review
+
+| Risk | Status | Mitigation |
+|---|---|---|
+| Development SQL engine mistaken for PostgreSQL 10/cPanel evidence | Open | Explicit test/runbook qualification; actual host gate remains open |
+| Probe run against a production/customer database | Open | Dedicated schema/database guidance, disabled-by-default POC flag, explicit --apply/--probe switches; no automatic migration |
+| Privileged DB role bypasses RLS | Locally tested, host unverified | Runtime/CLI refuse superuser/BYPASSRLS; FORCE RLS; account scope set transaction-locally |
+| Tenant selected from spoofed forwarded host or draft | Locally tested, host unverified | Exact Host mapping checked in env and DB; published-only query; no fallback; actual upstream Host preservation must be verified |
+| Error logs expose connection details | Mitigated in harness | Redacted configuration/SQL error handling and generic public failure; no raw connection URLs/SQL payload logs |
+| File probe mistaken for secure customer uploads | Open | Private UUID text probes only, explicit size/path/symlink checks; production upload/scan/quota gate retained |
+
+## 2026-10-20 — Local account MVP risk review
+
+| Risk | State / evidence | Remaining gate |
+|---|---|---|
+| Cross-account read/write or private draft exposed publicly | Local SQL and browser tests pass; session-derived scope + FORCE RLS + published-only joins | Real PostgreSQL pooling/network, authorization and security review |
+| Session expiry causes private state to enter demo localStorage | Guard implemented and browser regression test passed | Manual/repeated-session browser review before production |
+| Concurrent/retried publish creates duplicates or lost drafts | Revision locks and idempotent operation replay locally tested | Actual host concurrency/load |
+| Password/session compromise | Salted scrypt, hashed random tokens, HttpOnly/Lax/Secure-on-HTTPS and expiry; local tests | Mail verification/recovery/2FA, password/abuse policy, independent review |
+| Development DB or synthetic auth treated as production | Modes and warnings explicit; built default disables accounts | Actual host gate and owner production approval |
+| Published mock copy contains sensitive data | Risk/no-sensitive-data warnings and publication review | Content/legal/retention policy and production moderation |
+| Archive mistaken for personal-data erasure | Confirmation/settings/docs explicitly distinguish archive | Approved erasure, backups, and retention jobs |

@@ -46,3 +46,30 @@
 | OQ-040 | How many tenants can the shared runtime support? | Capacity | Measure in POC; do not promise a number |
 
 Do not block the POC on questions answerable by building a small test. Do not make high-impact assumptions silently.
+
+## 2026-10-20 — Questions before production POC
+
+- Which owner-approved cPanel test application/domain and supported Node version can be used?
+- What PostgreSQL version, least-privilege DB role, memory/process limit, wildcard SSL setup, and cron quotas are actually available?
+- Which sample domains and test tenants may be provisioned after explicit approval?
+- How will auth/email and tenant isolation be verified before replacing browser-local storage?
+
+The local UI needs no credentials. Any hosting credentials must be provided through a secure environment, never committed or pasted into chat.
+
+## 2026-10-20 — Staging execution inputs still required
+
+- Is there an owner-approved staging cPanel app using Node 22.15+ and a private application directory?
+- Can the dedicated staging PostgreSQL role create/own the POC schema while remaining non-superuser and without BYPASSRLS? What actual server version and TLS configuration apply?
+- Which three exact test subdomains and custom-domain alias are approved, and does Passenger preserve Host?
+- Which private storage/log paths and cron runtime are approved?
+
+Supply configuration through cPanel or a protected environment file, not chat or committed files. No credentials are needed to continue using the local studio.
+
+## 2026-10-20 — After local MVP completion
+
+- Which approved staging environment will execute both the original POC and the new account schema checks? Configure access securely; no credentials should be shared in chat.
+- What production auth/email/recovery/2FA and abuse policy is approved after the actual host and security review? The local/staging auth is deliberately limited.
+- What legal retention/erasure schedule and backup/restore process applies to account credentials, archived sites, and immutable histories?
+- Which production brand controls (uploads/typography/contact) and commercial plan limits are approved for the next acceptance slice?
+
+No answer is required to run and test the delivered local mock MVP; none of these is silently treated as approved.
