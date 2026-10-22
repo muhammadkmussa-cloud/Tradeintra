@@ -49,6 +49,7 @@ beforeAll(async () => {
   process.env.STUDIO_DB_MODE = "local";
   process.env.STUDIO_ENV = "local";
   process.env.STUDIO_DATA_DIR = directory;
+  process.env.SMTP_MODE = "mock";
   db = await getStudioDb();
   const auth = await authenticate(
     db,
@@ -148,6 +149,18 @@ describe("authenticated local MVP database and service", () => {
     expect(referred.actor.emailVerified).toBe(false);
     expect(await creditBalance(db, referred.actor.id)).toBe(0);
     const token = await createEmailVerification(db, referred.actor.id);
+    const outbox = await db
+      .selectFrom("email_outbox")
+      .select(["kind", "to_email", "token", "body"])
+      .where("account_id", "=", referred.actor.id)
+      .where("kind", "=", "verification")
+      .executeTakeFirst();
+    expect(outbox).toMatchObject({
+      kind: "verification",
+      to_email: referredEmail,
+      token,
+    });
+    expect(outbox?.body).toContain("/verify-email?token=");
     await verifyEmail(db, token);
     expect(await creditBalance(db, referred.actor.id)).toBe(30);
     expect(await creditBalance(db, a.id)).toBe(30);

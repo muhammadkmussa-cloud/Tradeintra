@@ -13,7 +13,9 @@ import {
   connectDomain,
   listDomainOrders,
   listDomains,
+  listTransferRequests,
   quoteDomain,
+  requestTransfer,
   removeDomain,
   renewDomain,
   searchDomains,
@@ -56,6 +58,8 @@ export async function GET(request: NextRequest) {
     return json({
       domains: await listDomains(db, session.id),
       orders: await listDomainOrders(db, session.id),
+      transfers: await listTransferRequests(db, session.id),
+      kesRate: Number(process.env.MPESA_USD_KES_RATE) || 130,
     });
   } catch (error) {
     return failure(error);
@@ -88,6 +92,29 @@ export async function POST(request: NextRequest) {
       });
     }
     if (action === "buy") {
+      const contactInput =
+        input.contact && typeof input.contact === "object"
+          ? (input.contact as Record<string, unknown>)
+          : null;
+      const contact = contactInput
+        ? {
+            firstName: String(contactInput.firstName ?? ""),
+            lastName: String(contactInput.lastName ?? ""),
+            address1: String(contactInput.address1 ?? ""),
+            city: String(contactInput.city ?? ""),
+            state: String(contactInput.state ?? ""),
+            postalCode: String(contactInput.postalCode ?? ""),
+            country: String(contactInput.country ?? "").toUpperCase(),
+            phone: String(contactInput.phone ?? ""),
+            email: String(contactInput.email ?? ""),
+          }
+        : undefined;
+      if (contact && Object.values(contact).some((value) => !value.trim()))
+        throw new StudioError(
+          422,
+          "Complete all registrant contact fields.",
+          "VALIDATION",
+        );
       const domains = await buyDomain(
         db,
         session.id,
@@ -95,6 +122,10 @@ export async function POST(request: NextRequest) {
         String(input.name ?? ""),
         Number(input.years ?? 1),
         String(input.idempotencyKey ?? crypto.randomUUID()),
+        contact,
+        input.expectedPrice === undefined
+          ? undefined
+          : Number(input.expectedPrice),
       );
       return json({ domains, orders: await listDomainOrders(db, session.id) });
     }
@@ -106,6 +137,22 @@ export async function POST(request: NextRequest) {
         String(input.name ?? ""),
       );
       return json({ domains });
+    }
+    if (action === "transfer") {
+      const direction = String(input.direction ?? "out");
+      if (!["in", "out"].includes(direction))
+        throw new StudioError(422, "Invalid transfer direction.", "VALIDATION");
+      return json({
+        transfer: await requestTransfer(
+          db,
+          session.id,
+          direction as "in" | "out",
+          String(input.name ?? ""),
+          String(input.note ?? ""),
+          String(input.authCode ?? ""),
+        ),
+        transfers: await listTransferRequests(db, session.id),
+      });
     }
     if (action === "verify") {
       return json({

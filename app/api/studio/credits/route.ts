@@ -8,6 +8,7 @@ import {
   SESSION_COOKIE,
 } from "@/lib/server/studio/auth";
 import { checkOrigin, readJson } from "@/lib/server/studio/http";
+import { listInvoices } from "@/lib/server/invoices";
 import {
   CREDIT_PACKS,
   listCreditPurchases,
@@ -48,6 +49,7 @@ export async function GET(request: NextRequest) {
       packs: CREDIT_PACKS,
       credits: await creditBalance(db, session.id),
       purchases: await listCreditPurchases(db, session.id),
+      invoices: await listInvoices(db, session.id),
     });
   } catch (error) {
     return failure(error);
@@ -79,6 +81,7 @@ export async function POST(request: NextRequest) {
     return json({
       ...result,
       purchases: await listCreditPurchases(db, session.id),
+      invoices: await listInvoices(db, session.id),
     });
   } catch (error) {
     return failure(error);

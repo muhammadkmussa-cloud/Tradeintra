@@ -24,6 +24,27 @@ type Commission = {
   platform_share: string;
   status: string;
 };
+type Transfer = {
+  id: string;
+  direction: string;
+  domain_name: string;
+  status: string;
+  note: string | null;
+  created_at: string;
+};
+type Audit = {
+  id: string;
+  action: string;
+  detail: string;
+  account_id: string;
+  created_at: string;
+};
+type DomainPrice = {
+  tld: string;
+  registration_price: string;
+  renewal_price: string;
+  markup_percent: string;
+};
 
 const money = (value: number | string) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
@@ -40,6 +61,13 @@ export function ServerAdmin({
   const [sellers, setSellers] = useState<Seller[]>([]);
   const [payouts, setPayouts] = useState<Payout[]>([]);
   const [commissions, setCommissions] = useState<Commission[]>([]);
+  const [domainPrices, setDomainPrices] = useState<DomainPrice[]>([]);
+  const [transfers, setTransfers] = useState<Transfer[]>([]);
+  const [audit, setAudit] = useState<Audit[]>([]);
+  const [tld, setTld] = useState(".com");
+  const [registrationPrice, setRegistrationPrice] = useState("12.5");
+  const [renewalPrice, setRenewalPrice] = useState("14");
+  const [markupPercent, setMarkupPercent] = useState("15");
   const [accountId, setAccountId] = useState("");
   const [siteId, setSiteId] = useState("");
   const [period, setPeriod] = useState(new Date().toISOString().slice(0, 7));
@@ -59,11 +87,14 @@ export function ServerAdmin({
     setSellers(body.sellers ?? []);
     setPayouts(body.payouts ?? []);
     setCommissions(body.commissions ?? []);
+    setDomainPrices(body.domainPrices ?? []);
+    setTransfers(body.transfers ?? []);
+    setAudit(body.audit ?? []);
   }
+  const adminRole = ["super_admin", "finance", "support"].includes(role);
   useEffect(() => {
-    if (role === "super_admin")
-      load().catch((reason: Error) => setError(reason.message));
-  }, [role]);
+    if (adminRole) load().catch((reason: Error) => setError(reason.message));
+  }, [adminRole]);
 
   async function act(input: Record<string, unknown>, message: string) {
     setBusy(true);
@@ -89,11 +120,11 @@ export function ServerAdmin({
     }
   }
 
-  if (role !== "super_admin")
+  if (!adminRole)
     return (
       <div className="empty-state">
         <ShieldCheck size={34} />
-        <h2>Super Admin access required.</h2>
+        <h2>Admin access required.</h2>
         <p>This area is restricted to the server-side allowlist.</p>
       </div>
     );
@@ -102,14 +133,21 @@ export function ServerAdmin({
     <div className="mock-stack">
       <div className="mock-banner">
         <div>
-          <span className="eyebrow">SUPER ADMIN / COMMERCE REVIEW</span>
+          <span className="eyebrow">
+            {role === "support"
+              ? "SUPPORT / SELLER REVIEW"
+              : role === "finance"
+                ? "FINANCE / PAYOUT REVIEW"
+                : "SUPER ADMIN / COMMERCE REVIEW"}
+          </span>
           <strong>Seller, payout, and commission controls are audited.</strong>
           <p>
-            This UI is restricted by `SUPER_ADMIN_EMAILS`. Payouts are status
-            transitions only; no provider transfer is executed here.
+            Restricted by `SUPER_ADMIN_EMAILS`, `FINANCE_EMAILS`, and
+            `SUPPORT_EMAILS`. Payouts are status transitions only; no provider
+            transfer is executed here.
           </p>
         </div>
-        <span className="badge neutral">super admin</span>
+        <span className="badge neutral">{role.replace("_", " ")}</span>
       </div>
       {error ? (
         <p className="auth-error" role="alert">
@@ -117,7 +155,10 @@ export function ServerAdmin({
         </p>
       ) : null}
       <div className="mock-two-col">
-        <section className="panel mock-panel">
+        <section
+          className="panel mock-panel"
+          style={{ display: role === "finance" ? "none" : undefined }}
+        >
           <div className="section-heading">
             <div>
               <h2>Seller approvals</h2>
@@ -174,7 +215,10 @@ export function ServerAdmin({
             )}
           </div>
         </section>
-        <section className="panel mock-panel">
+        <section
+          className="panel mock-panel"
+          style={{ display: role === "support" ? "none" : undefined }}
+        >
           <div className="section-heading">
             <div>
               <h2>Payout review</h2>
@@ -255,6 +299,85 @@ export function ServerAdmin({
       <section className="panel mock-panel">
         <div className="section-heading">
           <div>
+            <h2>Domain transfer queue</h2>
+            <p>Manual registrar transfer requests.</p>
+          </div>
+        </div>
+        <div className="mock-list">
+          {transfers.length ? (
+            transfers.map((transfer) => (
+              <div className="mock-list-row" key={transfer.id}>
+                <span>
+                  {transfer.domain_name}
+                  <small>
+                    {transfer.direction}
+                    {transfer.note ? ` · ${transfer.note}` : ""}
+                  </small>
+                </span>
+                <span className="badge neutral">{transfer.status}</span>
+                <div className="mock-actions">
+                  <button
+                    className="text-link"
+                    disabled={busy}
+                    onClick={() =>
+                      void act(
+                        {
+                          action: "transfer-status",
+                          id: transfer.id,
+                          status: "approved",
+                        },
+                        "Transfer approved.",
+                      )
+                    }
+                  >
+                    Approve
+                  </button>
+                  <button
+                    className="text-link"
+                    disabled={busy}
+                    onClick={() =>
+                      void act(
+                        {
+                          action: "transfer-status",
+                          id: transfer.id,
+                          status: "completed",
+                        },
+                        "Transfer marked complete.",
+                      )
+                    }
+                  >
+                    Complete
+                  </button>
+                  <button
+                    className="text-link danger"
+                    disabled={busy}
+                    onClick={() =>
+                      void act(
+                        {
+                          action: "transfer-status",
+                          id: transfer.id,
+                          status: "rejected",
+                        },
+                        "Transfer rejected.",
+                      )
+                    }
+                  >
+                    Reject
+                  </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="muted">No transfer requests yet.</p>
+          )}
+        </div>
+      </section>
+      <section
+        className="panel mock-panel"
+        style={{ display: role === "support" ? "none" : undefined }}
+      >
+        <div className="section-heading">
+          <div>
             <h2>Import commission</h2>
             <p>Records 15% of the imported gross partner commission.</p>
           </div>
@@ -329,6 +452,110 @@ export function ServerAdmin({
           )}
         </div>
       </section>
+      {role === "super_admin" ? (
+        <section className="panel mock-panel">
+          <div className="section-heading">
+            <div>
+              <h2>Audit log</h2>
+              <p>Recent account and admin events.</p>
+            </div>
+          </div>
+          <div className="mock-list">
+            {audit.length ? (
+              audit.map((entry) => (
+                <div className="mock-list-row" key={entry.id}>
+                  <span>
+                    {entry.action}
+                    <small>
+                      {entry.account_id} ·{" "}
+                      {new Date(entry.created_at).toLocaleString()}
+                    </small>
+                  </span>
+                  <span>{entry.detail}</span>
+                </div>
+              ))
+            ) : (
+              <p className="muted">No audit events yet.</p>
+            )}
+          </div>
+        </section>
+      ) : null}
+      {role === "super_admin" ? (
+        <section className="panel mock-panel">
+          <div className="section-heading">
+            <div>
+              <h2>Domain price rules</h2>
+              <p>Registrar cost plus the platform markup.</p>
+            </div>
+          </div>
+          <div className="mock-list">
+            {domainPrices.map((rule) => (
+              <div className="mock-list-row" key={rule.tld}>
+                <span>
+                  {rule.tld}
+                  <small>{rule.markup_percent}% markup</small>
+                </span>
+                <span>{money(rule.registration_price)}</span>
+                <span>{money(rule.renewal_price)}</span>
+              </div>
+            ))}
+          </div>
+          <div className="mock-inline-form">
+            <label className="field">
+              TLD
+              <input value={tld} onChange={(e) => setTld(e.target.value)} />
+            </label>
+            <label className="field">
+              Registration
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={registrationPrice}
+                onChange={(e) => setRegistrationPrice(e.target.value)}
+              />
+            </label>
+            <label className="field">
+              Renewal
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={renewalPrice}
+                onChange={(e) => setRenewalPrice(e.target.value)}
+              />
+            </label>
+            <label className="field">
+              Markup %
+              <input
+                type="number"
+                min="0"
+                max="100"
+                value={markupPercent}
+                onChange={(e) => setMarkupPercent(e.target.value)}
+              />
+            </label>
+            <button
+              className="btn primary"
+              disabled={busy || !tld}
+              onClick={() =>
+                void act(
+                  {
+                    action: "domain-price",
+                    tld,
+                    registrationPrice: Number(registrationPrice),
+                    renewalPrice: Number(renewalPrice),
+                    markupPercent: Number(markupPercent),
+                  },
+                  "Domain price rule updated.",
+                )
+              }
+            >
+              Save rule
+            </button>
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }

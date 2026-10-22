@@ -3,6 +3,9 @@ import "./fonts.css";
 import "./globals.css";
 import "./premium.css";
 import "./marketing.css";
+import "./brand.css";
+import "./theme.css";
+import { ThemeScript } from "@/components/theme-script";
 export const metadata: Metadata = {
   title: "Tradeintra — Your operator studio",
   description:
@@ -13,9 +16,11 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <head>
-        <link rel="icon" href="/favicon.svg" />
+        <meta name="theme-color" content="#F3F2F2" />
+        <link id="theme-favicon" rel="icon" href="/favicon.svg" />
+        <ThemeScript />
         <link
           rel="preload"
           href="/fonts/hanken-grotesk-latin-wght-normal.woff2"
@@ -31,7 +36,12 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <noscript>
+          <style>{`[data-reveal]{opacity:1!important;transform:none!important}`}</style>
+        </noscript>
+        {children}
+      </body>
     </html>
   );
 }

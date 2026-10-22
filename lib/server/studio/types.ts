@@ -121,6 +121,7 @@ export type Actor = {
   email: string;
   fullName: string | null;
   emailVerified: boolean;
+  referralCode: string | null;
   role: "user" | "support" | "finance" | "super_admin" | "service";
 };
 export class StudioError extends Error {
@@ -166,6 +167,16 @@ export interface CommerceDatabase {
     expires_at: Date;
     dns_verified: boolean;
     ssl_status: "pending" | "issued" | "active" | "failed";
+    verification_token: string | null;
+    last_checked_at: Date | null;
+    verification_error: string | null;
+    created_at: Generated<Date>;
+  };
+  domain_contacts: {
+    id: string;
+    account_id: string;
+    domain_name: string;
+    encrypted_contact: string;
     created_at: Generated<Date>;
   };
   domain_orders: {
@@ -230,6 +241,69 @@ export interface CommerceDatabase {
     filename: string;
     mime: string;
     size: number;
+    scan_status: "basic-clean" | "clamav-clean" | "unscanned";
+    scan_engine: string;
+    created_at: Generated<Date>;
+  };
+  support_tickets: {
+    id: string;
+    account_id: string;
+    subject: string;
+    category: "account" | "domain" | "site" | "billing" | "abuse";
+    status: "open" | "waiting" | "closed";
+    created_at: Generated<Date>;
+  };
+  support_messages: {
+    id: string;
+    ticket_id: string;
+    account_id: string;
+    author: "customer" | "support";
+    body: string;
+    created_at: Generated<Date>;
+  };
+  announcements: {
+    id: string;
+    account_id: string;
+    title: string;
+    body: string;
+    target: string;
+    status: "draft" | "published";
+    created_at: Generated<Date>;
+  };
+  deletion_requests: {
+    account_id: string;
+    requested_at: Date;
+    execute_after: Date;
+    status: "pending" | "cancelled" | "completed";
+  };
+  audit_events: {
+    id: string;
+    account_id: string;
+    actor_id: string | null;
+    action: string;
+    detail: string;
+    created_at: Generated<Date>;
+  };
+  bots: {
+    id: string;
+    account_id: string;
+    name: string;
+    xml: string;
+    compatibility: "standard-dbot" | "tradeintra-only";
+    status: "draft" | "validated" | "assigned" | "failed";
+    site_id: string | null;
+    created_at: Generated<Date>;
+  };
+  bot_generation_jobs: {
+    id: string;
+    account_id: string;
+    prompt: string;
+    status: "queued" | "generating" | "verifying" | "succeeded" | "failed";
+    credits: number;
+    provider: string | null;
+    model: string | null;
+    bot_id: string | null;
+    error: string | null;
     created_at: Generated<Date>;
   };
   marketplace_orders: {
@@ -241,6 +315,7 @@ export interface CommerceDatabase {
     platform_fee: string;
     seller_share: string;
     status: "paid" | "refunded" | "disputed";
+    downloaded_at: Date | null;
     created_at: Generated<Date>;
   };
   signal_orders: {
@@ -260,6 +335,10 @@ export interface CommerceDatabase {
       | "expired";
     trial_ends_at: Date;
     price: string;
+    paid_until: Date | null;
+    platform_fee: string;
+    seller_share: string;
+    provider_reference: string | null;
     created_at: Generated<Date>;
   };
   signal_deliveries: {
@@ -319,6 +398,67 @@ export interface PaymentDatabase {
     body: string;
     token: string | null;
     created_at: Generated<Date>;
+  };
+  signal_checkout_attempts: {
+    reference: string;
+    provider_reference: string | null;
+    signal_order_id: string;
+    account_id: string;
+    provider: "mock" | "paystack" | "mpesa";
+    amount: string;
+    currency: string;
+    status: "pending" | "paid" | "failed" | "abandoned";
+    checkout_url: string | null;
+    created_at: Generated<Date>;
+  };
+  deletion_archives: {
+    id: string;
+    account_id: string;
+    payload: unknown;
+    created_at: Generated<Date>;
+  };
+  provider_revocation_tasks: {
+    id: string;
+    account_id: string;
+    provider: "deriv" | "telegram";
+    status: "pending" | "done" | "failed";
+    detail: string | null;
+    created_at: Generated<Date>;
+  };
+  invoices: {
+    id: string;
+    account_id: string;
+    kind: "credits" | "domain" | "marketplace" | "signal";
+    reference: string;
+    description: string;
+    subtotal: string;
+    tax: string;
+    total: string;
+    currency: string;
+    status: "issued" | "refunded" | "void";
+    created_at: Generated<Date>;
+  };
+  mfa_credentials: {
+    account_id: string;
+    secret_encrypted: string;
+    enabled_at: Date | null;
+    created_at: Generated<Date>;
+  };
+  domain_transfer_requests: {
+    id: string;
+    account_id: string;
+    direction: "in" | "out";
+    domain_name: string;
+    note: string | null;
+    encrypted_auth_code: string | null;
+    status: "requested" | "approved" | "rejected" | "completed";
+    created_at: Generated<Date>;
+    updated_at: Generated<Date>;
+  };
+  deletion_tombstones: {
+    id: string;
+    account_id: string;
+    purged_at: Generated<Date>;
   };
   payment_events: {
     id: string;

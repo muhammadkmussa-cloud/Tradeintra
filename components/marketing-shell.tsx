@@ -1,50 +1,50 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { BrandWordmark } from "./brand-mark";
+import { MarketingNav } from "./marketing-nav";
+export { MarketingNav } from "./marketing-nav";
 
-export function MarketingNav() {
+export function MarketingShell({
+  children,
+  announcement,
+  className = "",
+}: {
+  children: ReactNode;
+  announcement?: ReactNode;
+  className?: string;
+}) {
   return (
-    <header className="marketing-nav">
-      <Link className="marketing-wordmark" href="/">
-        <span className="marketing-mark">t</span>
-        tradeintra<span>.</span>
-      </Link>
-      <nav aria-label="Public navigation">
-        <Link href="/#product">Product</Link>
-        <Link href="/#pricing">Pricing</Link>
-        <Link href="/contact">Contact</Link>
-        <Link href="/developers">Developers</Link>
-        <Link href="/mcp">MCP</Link>
-        <Link href="/terms">Terms</Link>
-        <Link href="/privacy">Privacy</Link>
-      </nav>
-      <div className="marketing-actions">
-        <Link className="btn" href="/login">
-          Log in
-        </Link>
-        <Link className="btn primary" href="/signup">
-          Sign up
-        </Link>
-      </div>
-    </header>
-  );
-}
-
-export function MarketingShell({ children }: { children: ReactNode }) {
-  return (
-    <div className="marketing-page">
+    <div className={`marketing-page ${className}`.trim()}>
+      {announcement}
       <MarketingNav />
       <main className="marketing-main">{children}</main>
       <footer className="marketing-footer">
         <div>
-          <strong>tradeintra.</strong>
+          <BrandWordmark href={null} className="marketing-footer-wordmark" />
           <p>Build. Deploy. Trade.</p>
         </div>
-        <div className="marketing-footer-links">
-          <Link href="/contact">Contact</Link>
-          <Link href="/developers">Developers</Link>
-          <Link href="/mcp">MCP</Link>
-          <Link href="/terms">Terms</Link>
-          <Link href="/privacy">Privacy</Link>
+        <div className="marketing-footer-grid">
+          <div>
+            <span>Platform</span>
+            <a href="/#system">Product</a>
+            <a href="/#pricing">Pricing</a>
+            <Link href="/status">Status</Link>
+          </div>
+          <div>
+            <span>Company</span>
+            <Link href="/about">About</Link>
+            <Link href="/contact">Contact</Link>
+          </div>
+          <div>
+            <span>Build</span>
+            <Link href="/developers">Developers</Link>
+            <Link href="/mcp">MCP</Link>
+          </div>
+          <div>
+            <span>Legal</span>
+            <Link href="/terms">Terms</Link>
+            <Link href="/privacy">Privacy</Link>
+          </div>
         </div>
         <p className="marketing-legal">
           Tradeintra is independent of Deriv. Trading happens on Deriv, in the

@@ -13,6 +13,7 @@ import {
   createListing,
   listBuyerOrders,
   listListings,
+  refundOrder,
   releaseEarnings,
 } from "@/lib/server/marketplace";
 
@@ -78,19 +79,33 @@ export async function POST(request: NextRequest) {
           String(input.payoutMethod ?? "mpesa") as "mpesa" | "bank" | "crypto",
         ),
       });
-    if (action === "create")
+    if (action === "create") {
+      const listingKind = String(input.kind ?? "bot");
+      if (!["bot", "pdf", "course", "signal"].includes(listingKind))
+        throw new StudioError(422, "Invalid listing kind.", "VALIDATION");
+      const price = Number(input.price ?? 0);
+      if (!Number.isFinite(price) || price < 0)
+        throw new StudioError(422, "Enter a valid price.", "VALIDATION");
       return json({
         listing: await createListing(
           db,
           session.id,
           String(input.title ?? ""),
-          String(input.kind ?? "bot") as "bot" | "pdf" | "course" | "signal",
-          Number(input.price ?? 0),
+          listingKind as "bot" | "pdf" | "course" | "signal",
+          price,
+          input.deliveryContent ? String(input.deliveryContent) : undefined,
+          input.deliveryFilename ? String(input.deliveryFilename) : undefined,
+          input.uploadId ? String(input.uploadId) : undefined,
         ),
       });
+    }
     if (action === "buy")
       return json({
         order: await buyListing(db, session.id, String(input.listingId ?? "")),
+      });
+    if (action === "refund")
+      return json({
+        refund: await refundOrder(db, session.id, String(input.orderId ?? "")),
       });
     if (action === "release")
       return json(await releaseEarnings(db, session.id));

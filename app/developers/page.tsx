@@ -1,48 +1,190 @@
 import Link from "next/link";
-import { LegalPage } from "@/components/marketing-shell";
+import { MarketingShell } from "@/components/marketing-shell";
+import { Reveal } from "@/components/reveal";
 
 export const metadata = { title: "Developers — Tradeintra" };
 
+const capabilities = [
+  {
+    n: "01",
+    title: "Account-aware contracts",
+    text: "Session-scoped routes for the studio, domains, credits, signals, marketplace, support, and account export. Tenant boundaries are enforced on the server, not in the browser.",
+  },
+  {
+    n: "02",
+    title: "Provider boundaries",
+    text: "The public contract never returns registrar contacts, provider secrets, payment credentials, or encrypted tokens. Payouts remain a Finance-reviewed status transition.",
+  },
+  {
+    n: "03",
+    title: "Safe failure envelopes",
+    text: "Validation errors are returned as structured field errors. Provider failures are redacted. Publishing uses operation IDs for safe retries; domain purchases use idempotency keys.",
+  },
+  {
+    n: "04",
+    title: "Readable by agents",
+    text: "The public MCP endpoint exposes pricing, provider modes, and safety boundaries. OpenAPI and llms.txt describe the surface in a form both people and agents can inspect.",
+  },
+];
+
 export default function DevelopersPage() {
   return (
-    <LegalPage
-      eyebrow="DEVELOPERS / PUBLIC CONTRACT"
-      title="Build against a bounded operator platform."
-      intro="Tradeintra exposes a versioned public API and a read-only MCP surface. The API is designed for account, site, domain, publishing, credit, and marketplace workflows. It never exposes provider secrets or executes payouts."
-    >
-      <h2>API principles</h2>
-      <ul>
-        <li>
-          Versioned routes under <code>/api/v1</code>.
-        </li>
-        <li>Server-side validation and account-scoped authorization.</li>
-        <li>
-          Idempotency keys for purchases, publishing, domains, jobs, and
-          releases.
-        </li>
-        <li>Safe error envelopes with correlation IDs.</li>
-        <li>
-          No tokens, registrar contacts, payment data, or provider secrets in
-          responses.
-        </li>
-      </ul>
-      <h2>Core resources</h2>
-      <p>
-        Auth, accounts, Deriv links, templates, modules, sites, configurations,
-        subdomains, domains, publishing, jobs, bots, signals, plans, credits,
-        commissions, earnings, announcements, support, and admin.
-      </p>
-      <h2>MCP</h2>
-      <p>
-        The MCP server is read-only in this release. See the{" "}
-        <Link href="/mcp">MCP boundary</Link> for scopes and prohibited actions.
-      </p>
-      <h2>Status</h2>
-      <p>
-        OpenAPI generation, public sandbox credentials, and the full developer
-        portal are tracked as release work. This page describes the intended
-        contract; it does not claim that every provider is live.
-      </p>
-    </LegalPage>
+    <MarketingShell>
+      <section className="info-hero">
+        <Reveal immediate>
+          <span className="marketing-eyebrow">
+            DEVELOPERS / PUBLIC CONTRACT
+          </span>
+          <h1>
+            Build on the rails.
+            <br />
+            <em>Keep the risk visible.</em>
+          </h1>
+          <p>
+            Tradeintra exposes a deliberately bounded surface for operators,
+            support tools, and agents. The contract is designed around clear
+            ownership, safe failure, and an honest line between building a brand
+            surface and executing a trade.
+          </p>
+          <div className="marketing-cta">
+            <a className="btn primary" href="/openapi.json">
+              Read the OpenAPI contract
+            </a>
+            <Link className="btn" href="/mcp">
+              Explore the MCP boundary
+            </Link>
+          </div>
+        </Reveal>
+        <Reveal immediate className="info-code-card" delay={100}>
+          <div className="info-code-head">
+            <b>GET</b>
+            <code>/api/studio/session</code>
+            <small>200</small>
+          </div>
+          <pre>
+            <code>{`{
+  "enabled": true,
+  "mode": "local",
+  "user": {
+    "fullName": "Operator",
+    "emailVerified": true
+  },
+  "credits": 30,
+  "studio": {
+    "workspace": "My workspace",
+    "derivLinked": false,
+    "sites": []
+  },
+  "revision": 0
+}`}</code>
+          </pre>
+          <p>
+            Account state is scoped to the session. No provider tokens are
+            returned.
+          </p>
+        </Reveal>
+      </section>
+
+      <section className="marketing-section info-section">
+        <Reveal className="marketing-section-heading">
+          <span className="marketing-eyebrow">THE DEVELOPER SURFACE</span>
+          <h2>Enough control to build. Enough boundary to trust.</h2>
+          <p>
+            Start with the account and site model. Add domains, publishing,
+            credits, bots, signals, or marketplace workflows only where the
+            product has a real contract behind them.
+          </p>
+        </Reveal>
+        <div className="info-grid">
+          {capabilities.map((item, index) => (
+            <Reveal key={item.n} delay={index * 60}>
+              <article className="info-card">
+                <span>{item.n}</span>
+                <h3>{item.title}</h3>
+                <p>{item.text}</p>
+              </article>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      <section className="marketing-section info-split">
+        <Reveal>
+          <span className="marketing-eyebrow">CORE RESOURCES</span>
+          <h2>A small surface with a long memory.</h2>
+          <p>
+            The studio is the source of truth for the account, site, domain,
+            publishing, and earnings relationship. Public health and contract
+            routes make the operating state inspectable without exposing the
+            private graph behind it.
+          </p>
+          <Link className="text-link" href="/status">
+            Check current system status →
+          </Link>
+        </Reveal>
+        <Reveal delay={100}>
+          <div className="info-resource-list">
+            {[
+              ["/api/studio/session", "Current account and studio state"],
+              ["/api/studio/domains", "Search, purchase, connect, verify"],
+              ["/api/studio/credits", "Balance, packs, invoices"],
+              ["/api/studio/signals", "Trials, subscriptions, delivery"],
+              ["/api/studio/marketplace", "Listings, orders, refunds"],
+              ["/api/mcp", "Public read-only MCP tools"],
+            ].map(([path, label]) => (
+              <div key={path}>
+                <code>{path}</code>
+                <span>{label}</span>
+              </div>
+            ))}
+          </div>
+        </Reveal>
+      </section>
+
+      <section className="marketing-section info-split info-boundary">
+        <Reveal>
+          <span className="marketing-eyebrow">WHAT THE API WILL NOT DO</span>
+          <h2>The boundary is part of the product.</h2>
+          <p>
+            No endpoint executes a trade, holds funds, exposes a Deriv token, or
+            bypasses Finance review for a payout. The public developer surface
+            is intentionally read-only, and account routes stay behind a session
+            and tenant scope.
+          </p>
+        </Reveal>
+        <Reveal delay={100}>
+          <div className="info-rule-list">
+            {[
+              "No arbitrary trade execution",
+              "No provider secrets or registrar contacts",
+              "No cross-tenant reads",
+              "No payout transfer without review",
+            ].map((rule, index) => (
+              <div key={rule}>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <strong>{rule}</strong>
+              </div>
+            ))}
+          </div>
+        </Reveal>
+      </section>
+
+      <Reveal className="marketing-final home-final info-final">
+        <span className="marketing-eyebrow">READY TO INTEGRATE</span>
+        <h2>Start with the contract. Ask before you assume.</h2>
+        <p>
+          Read the public surface, inspect the MCP tools, or contact the
+          operator team with the workflow you want to build.
+        </p>
+        <div className="marketing-cta">
+          <a className="btn primary" href="/openapi.json">
+            Open the contract
+          </a>
+          <Link className="btn" href="/contact">
+            Contact the team
+          </Link>
+        </div>
+      </Reveal>
+    </MarketingShell>
   );
 }

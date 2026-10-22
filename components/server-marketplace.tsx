@@ -224,6 +224,9 @@ export function ServerMarketplace({
                   title,
                   kind: listingKind,
                   price: Number(price),
+                  deliveryContent,
+                  deliveryFilename,
+                  uploadId: uploadId ?? undefined,
                 },
                 "Listing published in the mock marketplace.",
               )
@@ -288,13 +291,27 @@ export function ServerMarketplace({
                   </small>
                 </span>
                 <span className="badge neutral">{purchase.status}</span>
-                {purchase.delivery_asset_key ? (
+                {purchase.delivery_asset_key && purchase.status === "paid" ? (
                   <a
                     className="text-link"
                     href={`/api/studio/marketplace/delivery?orderId=${purchase.id}`}
                   >
                     Download delivery
                   </a>
+                ) : null}
+                {purchase.status === "paid" ? (
+                  <button
+                    className="text-link danger"
+                    disabled={busy}
+                    onClick={() =>
+                      void act(
+                        { action: "refund", orderId: purchase.id },
+                        "Purchase refunded and seller earnings reversed.",
+                      )
+                    }
+                  >
+                    Refund
+                  </button>
                 ) : null}
               </div>
             ))

@@ -6,6 +6,7 @@ export type Account = {
   email: string;
   fullName: string | null;
   emailVerified: boolean;
+  referralCode: string | null;
   role: "user" | "support" | "finance" | "super_admin" | "service";
 };
 type Reply = {
@@ -115,6 +116,7 @@ export function useServerWorkspace(
     password: string;
     fullName?: string;
     referralCode?: string;
+    mfaCode?: string;
   }) {
     if (lock.current) return;
     lock.current = true;

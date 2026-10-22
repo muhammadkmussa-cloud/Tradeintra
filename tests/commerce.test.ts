@@ -18,7 +18,10 @@ import {
   recordCommission,
   removeDomain,
   renewDomain,
+  listTransferRequests,
+  requestTransfer,
   searchDomains,
+  updateDomainPriceRule,
 } from "../lib/server/commerce";
 
 let db: StudioDb;
@@ -77,6 +80,7 @@ describe("domain and commission lifecycle", () => {
     );
     expect(bought).toHaveLength(1);
     expect(bought[0].status).toBe("dns_pending");
+    expect(bought[0].verification_token).toMatch(/^tradeintra-/);
     const orders = await listDomainOrders(db, actor.id);
     expect(orders[0]).toMatchObject({
       domain: "acme.com",
@@ -101,6 +105,74 @@ describe("domain and commission lifecycle", () => {
     ).toBe(true);
     const remaining = await removeDomain(db, actor.id, bought[0].id);
     expect(remaining.some((domain) => domain.name === "acme.com")).toBe(false);
+  });
+
+  it("updates admin domain price rules without bypassing markup", async () => {
+    const rule = await updateDomainPriceRule(db, ".com", 10, 12, 20);
+    expect(rule).toMatchObject({
+      tld: ".com",
+      registration_price: "10.00",
+      renewal_price: "12.00",
+      markup_percent: "20.00",
+    });
+    const quote = await quoteDomain(db, "updated.com", 1);
+    expect(quote.registrationPrice).toBe(12);
+    expect(quote.renewalPrice).toBe(14.4);
+    await expect(
+      buyDomain(
+        db,
+        actor.id,
+        siteId,
+        "price-change.com",
+        1,
+        "price-change",
+        undefined,
+        1,
+      ),
+    ).rejects.toMatchObject({ status: 409, code: "PRICE_CHANGED" });
+  });
+
+  it("queues manual transfer-in and transfer-out requests", async () => {
+    await connectDomain(db, actor.id, siteId, "transfer-out.example");
+    const out = await requestTransfer(
+      db,
+      actor.id,
+      "out",
+      "transfer-out.example",
+      "Unlock and release",
+      "EPP-123",
+    );
+    expect(out).toMatchObject({
+      direction: "out",
+      status: "requested",
+      domain_name: "transfer-out.example",
+    });
+    const inbound = await requestTransfer(
+      db,
+      actor.id,
+      "in",
+      "transfer-in.example",
+      "Move from current registrar",
+      "EPP-456",
+    );
+    expect(inbound.direction).toBe("in");
+    const requests = await listTransferRequests(db, actor.id);
+    expect(requests).toHaveLength(2);
+  });
+
+  it("requires a registrant contact for live registration", async () => {
+    process.env.NAMECHEAP_MODE = "sandbox";
+    await expect(
+      buyDomain(
+        db,
+        actor.id,
+        siteId,
+        "live-contact-required.com",
+        1,
+        "live-contact-key",
+      ),
+    ).rejects.toMatchObject({ status: 422, code: "CONTACT_REQUIRED" });
+    delete process.env.NAMECHEAP_MODE;
   });
 
   it("is idempotent and computes the 15% commission share", async () => {

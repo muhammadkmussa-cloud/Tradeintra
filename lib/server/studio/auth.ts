@@ -9,7 +9,9 @@ import { sql } from "kysely";
 import type { StudioDb, StudioTrx, Actor } from "./types";
 import { StudioError } from "./types";
 import { scope } from "./database";
-import { sendEmail } from "../providers/email";
+import { emailMode, sendEmail } from "../providers/email";
+import { auditTx } from "../audit";
+import { requireMfa } from "../mfa";
 
 export const SESSION_COOKIE = "tradeintra_session";
 export const SESSION_SECONDS = 7 * 24 * 60 * 60;
@@ -166,11 +168,16 @@ export async function authenticate(
   password: string,
   register: boolean,
   profile?: RegisterProfile,
+  mfaCode?: string,
 ): Promise<{ actor: Actor; token: string }> {
   await rateLimit(
     db,
     register ? "register-global" : "login-global",
-    register ? 30 : 200,
+    Number(
+      register
+        ? (process.env.AUTH_REGISTER_LIMIT ?? 30)
+        : (process.env.AUTH_LOGIN_LIMIT ?? 200),
+    ),
     3600,
   );
   await rateLimit(db, `auth:${email}`, 8, 900);
@@ -262,6 +269,7 @@ export async function authenticate(
         "INVALID_CREDENTIALS",
       );
     id = credential.id;
+    await requireMfa(db, id, mfaCode);
   }
   const token = await createSession(db, id as string);
   const actor = await sessionActor(db, token);
@@ -285,6 +293,33 @@ export async function createEmailVerification(db: StudioDb, accountId: string) {
       used_at: null,
     })
     .execute();
+  const account = await db
+    .selectFrom("credentials")
+    .select("email")
+    .where("id", "=", accountId)
+    .executeTakeFirst();
+  if (account) {
+    const verifyUrl = `${(process.env.APP_URL ?? "http://localhost:3000").replace(/\/$/, "")}/verify-email?token=${encodeURIComponent(token)}`;
+    await db
+      .insertInto("email_outbox")
+      .values({
+        id: randomUUID(),
+        account_id: accountId,
+        kind: "verification",
+        to_email: account.email,
+        subject: "Verify your Tradeintra email",
+        body: `Verify your email: ${verifyUrl}`,
+        token: emailMode() === "smtp" ? null : token,
+      })
+      .execute();
+    void sendEmail({
+      to: account.email,
+      subject: "Verify your Tradeintra email",
+      text: `Verify your email: ${verifyUrl}\n\nIf you did not create this account, ignore this message.`,
+    }).catch(() => {
+      console.error("Verification email could not be sent; details omitted.");
+    });
+  }
   return token;
 }
 
@@ -374,6 +409,11 @@ export async function verifyEmail(db: StudioDb, token: string) {
 export async function createPasswordReset(db: StudioDb, accountId: string) {
   const token = randomBytes(24).toString("base64url");
   await db
+    .deleteFrom("password_resets")
+    .where("account_id", "=", accountId)
+    .where("used_at", "is", null)
+    .execute();
+  await db
     .insertInto("password_resets")
     .values({
       token_hash: digest(token),
@@ -382,6 +422,32 @@ export async function createPasswordReset(db: StudioDb, accountId: string) {
       used_at: null,
     })
     .execute();
+  const account = await db
+    .selectFrom("credentials")
+    .select("email")
+    .where("id", "=", accountId)
+    .executeTakeFirst();
+  if (account) {
+    await db
+      .insertInto("email_outbox")
+      .values({
+        id: randomUUID(),
+        account_id: accountId,
+        kind: "reset",
+        to_email: account.email,
+        subject: "Reset your Tradeintra password",
+        body: "Use this token to reset your password.",
+        token: emailMode() === "smtp" ? null : token,
+      })
+      .execute();
+    void sendEmail({
+      to: account.email,
+      subject: "Reset your Tradeintra password",
+      text: `Reset your password with this token: ${token}\n\nIf you did not request this, ignore this message.`,
+    }).catch(() => {
+      console.error("Password reset email could not be sent; details omitted.");
+    });
+  }
   return token;
 }
 
@@ -407,7 +473,8 @@ export async function resetPassword(
     await tx
       .updateTable("password_resets")
       .set({ used_at: now })
-      .where("token_hash", "=", digest(token))
+      .where("account_id", "=", row.account_id)
+      .where("used_at", "is", null)
       .execute();
     await tx
       .updateTable("credentials")
@@ -418,6 +485,16 @@ export async function resetPassword(
       .deleteFrom("sessions")
       .where("account_id", "=", row.account_id)
       .execute();
+    await sql`SELECT set_config('tradeintra.account_id',${row.account_id},true)`.execute(
+      tx,
+    );
+    await auditTx(
+      tx,
+      row.account_id,
+      row.account_id,
+      "auth.password.reset",
+      "Password reset completed",
+    );
     return { accountId: row.account_id };
   });
 }
@@ -435,24 +512,33 @@ export async function sessionActor(
       "credentials.email",
       "credentials.full_name",
       "credentials.email_verified_at",
+      "credentials.referral_code",
       "credentials.role",
     ])
     .where("sessions.token_hash", "=", digest(token))
     .where("sessions.expires_at", ">", new Date())
     .executeTakeFirst();
   if (!actor) return null;
-  const adminEmails = (process.env.SUPER_ADMIN_EMAILS ?? "")
-    .split(",")
-    .map((email) => email.trim().toLowerCase())
-    .filter(Boolean);
+  const list = (value: string | undefined) =>
+    (value ?? "")
+      .split(",")
+      .map((email) => email.trim().toLowerCase())
+      .filter(Boolean);
+  const email = actor.email.toLowerCase();
+  const role = list(process.env.SUPER_ADMIN_EMAILS).includes(email)
+    ? ("super_admin" as const)
+    : list(process.env.FINANCE_EMAILS).includes(email)
+      ? ("finance" as const)
+      : list(process.env.SUPPORT_EMAILS).includes(email)
+        ? ("support" as const)
+        : actor.role;
   return {
     id: actor.id,
     email: actor.email,
     fullName: actor.full_name,
     emailVerified: Boolean(actor.email_verified_at),
-    role: adminEmails.includes(actor.email.toLowerCase())
-      ? "super_admin"
-      : actor.role,
+    referralCode: actor.referral_code,
+    role,
   };
 }
 

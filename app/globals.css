@@ -160,14 +160,6 @@ input[type="checkbox"] {
   align-items: center;
   justify-content: center;
 }
-.brand-mark img {
-  width: 100%;
-  height: 100%;
-  border-radius: 8px;
-}
-.wordmark-period {
-  color: #6c5b79;
-}
 .workspace-switch {
   display: flex;
   align-items: center;
@@ -1182,7 +1174,7 @@ main {
   gap: 7px;
 }
 .site-bottom > span:nth-child(2) {
-  color: #645c6a;
+  color: var(--muted);
   font-size: 7px;
 }
 .site-bottom .text-link {
@@ -1354,7 +1346,7 @@ main {
   color: #695c73;
 }
 .checklist-row:hover strong {
-  color: #705387;
+  color: var(--ink-deep);
 }
 .step-circle {
   height: 25px;
@@ -1440,14 +1432,9 @@ main {
   align-items: center;
   gap: 6px;
 }
-.footer-mark {
-  font-size: 13px;
-  font-weight: 900;
-  color: #645d69;
-  font-style: italic;
-}
 .footer-dot {
   margin: 0 5px;
+  color: var(--muted);
 }
 .main-footer button {
   display: flex;
@@ -1455,7 +1442,7 @@ main {
   gap: 3px;
   font-size: 8px;
   padding: 0;
-  color: #695c70;
+  color: var(--muted);
 }
 .list-toolbar {
   display: flex;
@@ -2064,9 +2051,6 @@ td > svg {
 .modal-logo .brand-mark {
   height: 24px;
   width: 24px;
-}
-.modal-logo .brand-mark img {
-  border-radius: 5px;
 }
 .wizard-steps {
   display: flex;
@@ -2762,7 +2746,7 @@ td > svg {
 .confirm-text {
   padding: 25px;
   font-size: 12px;
-  color: #6a5876;
+  color: var(--muted);
   line-height: 1.9;
 }
 .confirm-actions {
@@ -3085,7 +3069,7 @@ td > svg {
   }
   .wordmark .brand-mark {
     width: 28px;
-    height: 29px;
+    height: 28px;
   }
   .workspace-switch {
     margin-top: 25px;
@@ -3377,7 +3361,7 @@ td > svg {
   }
   .wordmark .brand-mark {
     width: 32px;
-    height: 33px;
+    height: 32px;
   }
   .nav-item {
     padding: 10px 12px;
@@ -4935,7 +4919,7 @@ main.poc-main {
   margin-bottom: 15px;
 }
 .poc-unavailable p {
-  color: #6a5876;
+  color: var(--muted);
   margin-top: 14px;
 }
 @media (max-width: 600px) {
@@ -5060,10 +5044,10 @@ main.poc-main {
   padding: 10px;
   border-radius: 4px;
   font-size: 11px;
-  color: #624072;
+  color: var(--brass-ink);
 }
 .published-site-link:hover {
-  background: #f3eef7;
+  background: var(--bone);
 }
 @media (max-width: 520px) {
   .account-access-button {
@@ -5137,7 +5121,7 @@ main.poc-main {
 .not-found p {
   font-size: 12px;
   line-height: 1.9;
-  color: #756180;
+  color: var(--muted);
   margin-bottom: 25px;
 }
 .not-found > a {

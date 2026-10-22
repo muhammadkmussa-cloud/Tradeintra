@@ -6,9 +6,12 @@ import { sessionActor, SESSION_COOKIE } from "@/lib/server/studio/auth";
 import { checkOrigin } from "@/lib/server/studio/http";
 import { scope } from "@/lib/server/studio/database";
 import {
+  deleteMarketplaceDelivery,
   MAX_MARKETPLACE_BYTES,
+  marketplaceDeliveryPath,
   writeMarketplaceDelivery,
 } from "@/lib/server/storage";
+import { scanMarketplaceFile } from "@/lib/server/providers/malware";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -73,6 +76,22 @@ export async function POST(request: NextRequest) {
       bytes,
       mime,
     );
+    let scan;
+    try {
+      scan = await scanMarketplaceFile(
+        marketplaceDeliveryPath(stored.key),
+        bytes,
+        file.name,
+        mime,
+      );
+    } catch (error) {
+      await deleteMarketplaceDelivery(stored.key);
+      throw new StudioError(
+        422,
+        error instanceof Error ? error.message : "Upload rejected.",
+        "UNSAFE_UPLOAD",
+      );
+    }
     const id = randomUUID();
     await scope(db, actor.id, (tx) =>
       tx
@@ -84,6 +103,8 @@ export async function POST(request: NextRequest) {
           filename: file.name.slice(0, 120),
           mime,
           size: stored.size,
+          scan_status: scan.status,
+          scan_engine: scan.engine,
         })
         .execute(),
     );

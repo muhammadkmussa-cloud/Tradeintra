@@ -169,6 +169,8 @@ export async function POST(
         input.email,
         input.password,
         false,
+        undefined,
+        input.mfaCode,
       );
       const response = json({
         enabled: true,

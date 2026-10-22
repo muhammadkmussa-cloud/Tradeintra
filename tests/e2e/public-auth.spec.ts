@@ -17,7 +17,7 @@ test("public marketing, signup, email verification, and Google mock sign-in", as
 
   await page.getByRole("link", { name: "Sign up" }).first().click();
   await expect(
-    page.getByRole("heading", { name: "Start your operator studio." }),
+    page.getByRole("heading", { name: "Start your studio." }),
   ).toBeVisible();
   await page.getByLabel("Full name").fill("Public Operator");
   await page.getByLabel("Email").fill(address);
@@ -55,11 +55,13 @@ test("public marketing, login, and signup pages have no automated WCAG A/AA viol
   const { default: AxeBuilder } = await import("@axe-core/playwright");
   for (const path of [
     "/",
+    "/about",
     "/login",
     "/signup",
     "/contact",
     "/developers",
     "/mcp",
+    "/status",
     "/terms",
     "/privacy",
   ]) {

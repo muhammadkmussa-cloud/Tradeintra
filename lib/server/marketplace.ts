@@ -3,6 +3,8 @@ import type { StudioDb } from "./studio/types";
 import { StudioError } from "./studio/types";
 import { adminScope, scope } from "./studio/database";
 import { readMarketplaceDelivery, writeMarketplaceDelivery } from "./storage";
+import { sendPayout } from "./providers/payouts";
+import { issueInvoiceTx } from "./invoices";
 
 export const PLATFORM_FEE = 0.15;
 
@@ -181,6 +183,7 @@ export async function buyListing(
       platform_fee: String(platformFee),
       seller_share: String(sellerShare),
       status: "paid" as const,
+      downloaded_at: null,
     };
     await tx.insertInto("marketplace_orders").values(order).execute();
     await tx
@@ -199,7 +202,89 @@ export async function buyListing(
         reference: order.id,
       })
       .execute();
+    await issueInvoiceTx(
+      tx,
+      buyer,
+      "marketplace",
+      order.id,
+      listing.title,
+      amount,
+    );
     return order;
+  });
+}
+
+export async function refundOrder(
+  db: StudioDb,
+  buyer: string,
+  orderId: string,
+) {
+  return adminScope(db, async (tx) => {
+    const order = await tx
+      .selectFrom("marketplace_orders")
+      .selectAll()
+      .where("id", "=", orderId)
+      .where("buyer_id", "=", buyer)
+      .forUpdate()
+      .executeTakeFirst();
+    if (!order) throw new StudioError(404, "Order not found.", "NOT_FOUND");
+    if (order.status === "refunded") return { status: "refunded" as const };
+    if (order.status !== "paid")
+      throw new StudioError(
+        409,
+        "Only paid orders can be refunded.",
+        "INVALID_STATE",
+      );
+    if (order.downloaded_at)
+      throw new StudioError(
+        409,
+        "Downloaded digital goods require support review before a refund.",
+        "DOWNLOADED",
+      );
+    const openPayout = await tx
+      .selectFrom("payouts")
+      .select("id")
+      .where("account_id", "=", order.seller_id)
+      .where("status", "in", ["requested", "review", "approved"])
+      .executeTakeFirst();
+    if (openPayout)
+      throw new StudioError(
+        409,
+        "A seller payout is in progress; Finance must resolve this refund.",
+        "OPEN_PAYOUT",
+      );
+    const earnings = await tx
+      .selectFrom("earnings_ledger")
+      .select(["id", "status"])
+      .where("reference", "=", order.id)
+      .where("source", "=", "marketplace")
+      .forUpdate()
+      .execute();
+    if (earnings.some((entry) => entry.status === "paid"))
+      throw new StudioError(
+        409,
+        "Seller earnings are already paid; Finance must reverse this refund.",
+        "PAID_EARNINGS",
+      );
+    await tx
+      .updateTable("marketplace_orders")
+      .set({ status: "refunded" })
+      .where("id", "=", order.id)
+      .execute();
+    await tx
+      .updateTable("marketplace_listings")
+      .set({ status: "live" })
+      .where("id", "=", order.listing_id)
+      .where("status", "=", "sold")
+      .execute();
+    if (earnings.length)
+      await tx
+        .updateTable("earnings_ledger")
+        .set({ status: "reversed" })
+        .where("reference", "=", order.id)
+        .where("source", "=", "marketplace")
+        .execute();
+    return { status: "refunded" as const };
   });
 }
 
@@ -257,10 +342,14 @@ export async function getBuyerDelivery(
       .executeTakeFirst();
     if (!order || !order.delivery_asset_key)
       throw new StudioError(404, "Delivery not found.", "NOT_FOUND");
-    return {
-      ...order,
-      content: await readMarketplaceDelivery(order.delivery_asset_key),
-    };
+    const content = await readMarketplaceDelivery(order.delivery_asset_key);
+    await tx
+      .updateTable("marketplace_orders")
+      .set({ downloaded_at: new Date() })
+      .where("id", "=", order.id)
+      .where("buyer_id", "=", buyer)
+      .execute();
+    return { ...order, content };
   });
 }
 
@@ -354,6 +443,30 @@ export async function requestPayout(
     await tx.insertInto("payouts").values(payout).execute();
     return payout;
   });
+}
+
+export async function executePayout(
+  db: StudioDb,
+  account: string,
+  payoutId: string,
+) {
+  const payout = await scope(db, account, (tx) =>
+    tx
+      .selectFrom("payouts")
+      .selectAll()
+      .where("account_id", "=", account)
+      .where("id", "=", payoutId)
+      .executeTakeFirst(),
+  );
+  if (!payout) throw new StudioError(404, "Payout not found.", "NOT_FOUND");
+  if (payout.status === "paid")
+    throw new StudioError(409, "Payout is already paid.", "ALREADY_PAID");
+  const result = await sendPayout({
+    method: payout.method,
+    amount: Number(payout.amount),
+    reference: payout.id,
+  });
+  return setPayoutStatus(db, account, payoutId, "paid");
 }
 
 export async function setPayoutStatus(

@@ -11,6 +11,7 @@ type Signal = {
   status: string;
   trial_ends_at: string;
   price: string;
+  paid_until?: string | null;
 };
 
 export function ServerSignals({
@@ -26,6 +27,9 @@ export function ServerSignals({
   const [botToken, setBotToken] = useState("");
   const [chatId, setChatId] = useState("@mock_operator");
   const [connected, setConnected] = useState(false);
+  const [payProvider, setPayProvider] = useState<"mock" | "paystack" | "mpesa">(
+    "mock",
+  );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -73,6 +77,38 @@ export function ServerSignals({
     }
   }
 
+  async function subscribe(orderId: string) {
+    setBusy(true);
+    setError("");
+    try {
+      const response = await fetch("/api/studio/signals", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "subscribe",
+          orderId,
+          provider: payProvider,
+        }),
+      });
+      const body = await response.json();
+      if (!response.ok) {
+        setError(body.error ?? "The signal subscription failed.");
+        return;
+      }
+      if (body.subscription?.checkoutUrl) {
+        window.location.href = body.subscription.checkoutUrl;
+        return;
+      }
+      await load();
+      notify("Signal subscription activated for 30 days.");
+    } catch {
+      setError("The signal service is unavailable. Try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function showDeliveries(orderId: string) {
     const response = await fetch(`/api/studio/signals?orderId=${orderId}`, {
       credentials: "same-origin",
@@ -99,7 +135,22 @@ export function ServerSignals({
             After the trial, the subscription price is $8.99/30 days.
           </p>
         </div>
-        <span className="badge neutral">{orders.length} orders</span>
+        <div className="mock-actions">
+          <label className="field">
+            Payment
+            <select
+              value={payProvider}
+              onChange={(e) =>
+                setPayProvider(e.target.value as "mock" | "paystack" | "mpesa")
+              }
+            >
+              <option value="mock">Development mock</option>
+              <option value="paystack">Paystack</option>
+              <option value="mpesa">M-Pesa</option>
+            </select>
+          </label>
+          <span className="badge neutral">{orders.length} orders</span>
+        </div>
       </div>
       {error ? (
         <p className="auth-error" role="alert">
@@ -237,8 +288,20 @@ export function ServerSignals({
                   <p>
                     {order.interval} · {order.telegram} · trial ends{" "}
                     {new Date(order.trial_ends_at).toLocaleDateString()}
+                    {order.paid_until
+                      ? ` · paid until ${new Date(order.paid_until).toLocaleDateString()}`
+                      : ""}
                   </p>
                   <div className="mock-actions">
+                    {!["cancelled"].includes(order.status) ? (
+                      <button
+                        className="text-link"
+                        disabled={busy}
+                        onClick={() => void subscribe(order.id)}
+                      >
+                        Subscribe $8.99 / 30d
+                      </button>
+                    ) : null}
                     {["trial", "active", "paused"].includes(order.status) ? (
                       <button
                         className="text-link"
@@ -260,12 +323,16 @@ export function ServerSignals({
                         onClick={() =>
                           void act(
                             {
-                              action: "status",
+                              action:
+                                order.status === "paused" ? "resume" : "status",
                               orderId: order.id,
-                              status:
-                                order.status === "paused" ? "active" : "paused",
+                              ...(order.status === "paused"
+                                ? {}
+                                : { status: "paused" }),
                             },
-                            "Signal status updated.",
+                            order.status === "paused"
+                              ? "Signal resumed."
+                              : "Signal paused.",
                           )
                         }
                       >

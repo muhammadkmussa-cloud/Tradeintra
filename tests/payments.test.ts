@@ -10,10 +10,11 @@ import {
   creditBalance,
   sessionActor,
 } from "../lib/server/studio/auth";
+import { listInvoices } from "../lib/server/invoices";
 import {
   listCreditPurchases,
   purchaseCredits,
-  settleCreditPurchase,
+  settlePayment,
 } from "../lib/server/payments";
 
 let db: StudioDb;
@@ -79,7 +80,7 @@ describe("credit checkout and webhooks", () => {
         })
         .execute(),
     );
-    const first = await settleCreditPurchase(
+    const first = await settlePayment(
       db,
       "paystack",
       reference,
@@ -88,7 +89,7 @@ describe("credit checkout and webhooks", () => {
     );
     expect(first.status).toBe("paid");
     expect(await creditBalance(db, actor.id)).toBe(95);
-    const duplicate = await settleCreditPurchase(
+    const duplicate = await settlePayment(
       db,
       "paystack",
       reference,
@@ -97,6 +98,21 @@ describe("credit checkout and webhooks", () => {
     );
     expect(duplicate.status).toBe("duplicate");
     expect(await creditBalance(db, actor.id)).toBe(95);
+  });
+
+  it("records an invoice with separately calculated tax", async () => {
+    process.env.TAX_RATE_PERCENT = "10";
+    await purchaseCredits(db, actor.id, "operator", "mock");
+    const invoices = await listInvoices(db, actor.id);
+    const invoice = invoices.find((item) => item.kind === "credits");
+    expect(invoice).toMatchObject({
+      subtotal: "9.99",
+      tax: "1.00",
+      total: "10.99",
+      currency: "USD",
+      status: "issued",
+    });
+    delete process.env.TAX_RATE_PERCENT;
   });
 
   it("promotes the allowlisted Super Admin email at session time", async () => {

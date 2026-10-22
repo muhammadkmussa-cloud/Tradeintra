@@ -24,12 +24,20 @@ export function studioMode(): "local" | "postgres" | "disabled" {
   if (mode === "postgres") {
     if (
       process.env.STUDIO_ENABLED !== "true" ||
-      process.env.STUDIO_ENV !== "staging" ||
+      (process.env.STUDIO_ENV !== "staging" &&
+        process.env.STUDIO_ENV !== "production") ||
       !process.env.APP_URL ||
       !process.env.DATABASE_URL
     )
       throw new Error(
-        "Server studio requires explicitly configured staging variables.",
+        "Server studio requires explicitly configured staging or production variables.",
+      );
+    if (
+      process.env.STUDIO_ENV === "production" &&
+      process.env.PRODUCTION_APPROVED !== "true"
+    )
+      throw new Error(
+        "Production studio requires PRODUCTION_APPROVED=true after host acceptance.",
       );
     const origin = new URL(process.env.APP_URL);
     if (
@@ -138,6 +146,13 @@ async function createDatabase(): Promise<StudioDb> {
     await engine.exec(
       `DO $$ BEGIN IF NOT EXISTS(SELECT 1 FROM pg_roles WHERE rolname='studio_app') THEN CREATE ROLE studio_app NOSUPERUSER NOBYPASSRLS; END IF; END $$; GRANT CREATE ON DATABASE postgres TO studio_app; SET ROLE studio_app;`,
     );
+    await engine.exec(
+      `CREATE SCHEMA IF NOT EXISTS tradeintra_studio; CREATE TABLE IF NOT EXISTS tradeintra_studio.schema_migrations (filename text PRIMARY KEY, applied_at timestamptz NOT NULL DEFAULT now());`,
+    );
+    const appliedResult = await engine.query<{ filename: string }>(
+      "SELECT filename FROM tradeintra_studio.schema_migrations",
+    );
+    const applied = new Set(appliedResult.rows.map((row) => row.filename));
     for (const file of [
       "002-studio.sql",
       "003-slug-hardening.sql",
@@ -152,9 +167,32 @@ async function createDatabase(): Promise<StudioDb> {
       "013-commerce-rls.sql",
       "014-marketplace-storage.sql",
       "015-telegram-and-uploads.sql",
+      "016-upload-scan.sql",
+      "017-domain-contacts.sql",
+      "018-bots.sql",
+      "019-support-announcements-account.sql",
+      "020-support-indexes.sql",
+      "021-signal-subscriptions.sql",
+      "022-signal-service-policy.sql",
+      "023-account-deletion-service.sql",
+      "024-signal-checkout-attempts.sql",
+      "025-purge-service-policies.sql",
+      "026-marketplace-downloads.sql",
+      "027-purge-storage-policies.sql",
+      "028-domain-verification.sql",
+      "029-domain-transfers.sql",
+      "030-mfa.sql",
+      "031-audit-admin.sql",
+      "032-signal-cron-policy.sql",
+      "033-invoices.sql",
+      "034-retention-revocation.sql",
     ]) {
+      if (applied.has(file)) continue;
       await engine.exec(
         await readFile(path.join(process.cwd(), "database", file), "utf8"),
+      );
+      await engine.exec(
+        `INSERT INTO tradeintra_studio.schema_migrations(filename) VALUES ('${file.replaceAll("'", "''")}') ON CONFLICT DO NOTHING`,
       );
     }
     // PGlite has a single session. Hold a FIFO connection lease across each transaction.

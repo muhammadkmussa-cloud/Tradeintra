@@ -92,7 +92,8 @@ export function proxy(request: NextRequest) {
     if (
       pathname.startsWith("/_next/") ||
       pathname.startsWith("/fonts/") ||
-      pathname === "/favicon.svg"
+      pathname === "/favicon.svg" ||
+      pathname === "/favicon-dark.svg"
     )
       return NextResponse.next();
 
@@ -113,5 +114,5 @@ export function proxy(request: NextRequest) {
   }
 }
 export const config = {
-  matcher: ["/((?!_next/|fonts/|favicon.svg|api/health).*)"],
+  matcher: ["/((?!_next/|fonts/|favicon.svg|favicon-dark.svg|api/health).*)"],
 };

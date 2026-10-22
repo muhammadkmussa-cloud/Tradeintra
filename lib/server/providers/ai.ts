@@ -6,7 +6,7 @@ export type BotGeneration = {
   credits: number;
 };
 
-function mode(): AiMode {
+export function aiMode(): AiMode {
   const configured = (process.env.DEEPSEEK_MODE ?? "").toLowerCase();
   if (
     configured === "sandbox" ||
@@ -21,7 +21,7 @@ export async function generateBotXml(
   prompt: string,
   cost = 10,
 ): Promise<BotGeneration> {
-  const selected = mode();
+  const selected = aiMode();
   if (selected === "mock")
     return {
       provider: "mock",

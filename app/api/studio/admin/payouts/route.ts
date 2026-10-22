@@ -20,8 +20,8 @@ async function admin(request: NextRequest) {
     request.cookies.get(SESSION_COOKIE)?.value,
   );
   if (!actor) throw new StudioError(401, "Sign in first.", "UNAUTHENTICATED");
-  if (actor.role !== "super_admin")
-    throw new StudioError(403, "Super Admin access is required.", "FORBIDDEN");
+  if (!["super_admin", "finance"].includes(actor.role))
+    throw new StudioError(403, "Finance access is required.", "FORBIDDEN");
   return db;
 }
 function failure(error: unknown) {

@@ -1,164 +1,348 @@
 import Link from "next/link";
 import { MarketingShell } from "@/components/marketing-shell";
+import { Reveal } from "@/components/reveal";
+import { HomeAnnouncement } from "@/components/home-announcement";
 
-const features = [
+const proof = [
+  ["30", "starter credits", "when your email is verified"],
+  ["15%", "platform share", "of attributed Deriv commission"],
+  ["85%", "provider share", "after marketplace fees"],
+  ["01", "active site", "focused by design"],
+];
+
+const steps = [
   {
     n: "01",
-    title: "One operator, one site",
-    text: "Every account builds one branded market presence. Start on a free subdomain, then attach or buy a custom domain.",
+    title: "Shape the first impression",
+    text: "Choose a considered template, then add your logo, palette, tone, and risk disclosure. Your site starts to feel like your business before you have written a line of code.",
+    tag: "Brand",
   },
   {
     n: "02",
-    title: "Deriv account first",
-    text: "Create or connect a Deriv account before publishing. Tradeintra never executes trades or holds customer funds.",
+    title: "Give it a real address",
+    text: "Launch on a free Tradeintra subdomain or attach a domain you own. Registration, DNS, and TLS are verified before the site is shown as live.",
+    tag: "Domain",
   },
   {
     n: "03",
-    title: "AI trading bots",
-    text: "Generate, validate, and store DeepSeek-assisted DBot XML. Credits are transparent; every bot is compatibility-labelled.",
+    title: "Publish and build momentum",
+    text: "Preview every version, publish when it feels right, and keep the next idea moving. One active site keeps the story coherent and the operation calm.",
+    tag: "Publish",
+  },
+];
+
+const system = [
+  {
+    key: "studio",
+    eyebrow: "THE STUDIO",
+    title: "A brand surface without the agency timeline.",
+    text: "Start with structure that already looks considered. Shape the story, the visual language, and the disclosure without wrestling a general-purpose page builder.",
+    points: [
+      "Template-led brand kit",
+      "Versioned previews",
+      "One coherent active site",
+    ],
   },
   {
-    n: "04",
-    title: "Signals and marketplace",
-    text: "Subscribe to Telegram signals or sell approved bots, guides, and courses. Providers keep 85%; Tradeintra keeps 15%.",
+    key: "domains",
+    eyebrow: "DOMAINS",
+    title: "A real address, ready for the real world.",
+    text: "Search, buy, connect, renew, and verify in the same place. The desk shows the exact next step, so a custom domain feels like progress rather than paperwork.",
+    points: [
+      "Registrar cost + 15%",
+      "TXT and TLS verification",
+      "Renewal dates in one desk",
+    ],
   },
   {
-    n: "05",
-    title: "Domains, handled",
-    text: "Search, buy, connect, renew, and verify domains through Namecheap. Pricing is registrar cost plus a 15% platform markup.",
+    key: "bots",
+    eyebrow: "AI BOTS",
+    title: "Turn an idea into something you can inspect.",
+    text: "Generate DBot XML with credits you can see, refine the logic, verify compatibility, and keep a library of versions. AI assists; you stay responsible for the strategy.",
+    points: ["10 credits to generate", "3 to refine", "3 to verify"],
   },
   {
-    n: "06",
-    title: "A 15% partner share",
-    text: "Tradeintra earns 15% of the Deriv partner commission attributed to your site. You are not charged 15% of your trade volume.",
+    key: "signals",
+    eyebrow: "SIGNALS",
+    title: "A direct line to the people who want your read.",
+    text: "Offer a 24-hour trial, connect Telegram, and deliver a clear subscription experience. Providers keep 85%; the platform keeps the plumbing out of the way.",
+    points: ["24-hour trial", "$8.99 / 30 days", "Delivery logs and controls"],
   },
+  {
+    key: "marketplace",
+    eyebrow: "MARKETPLACE",
+    title: "Sell the work you have already made.",
+    text: "List approved bots, guides, courses, or signals. Buyers get private delivery; sellers get a clear 85% share after review. The marketplace stays curated.",
+    points: ["Private delivery", "85% seller share", "Manual review"],
+  },
+];
+
+const faqs = [
+  [
+    "Do I need a Deriv account?",
+    "Yes. Tradeintra is built around your own Deriv account. You create or connect it before publishing. Trading stays on Deriv, in your account.",
+  ],
+  [
+    "Is Tradeintra a broker?",
+    "No. We do not hold funds, execute trades, or provide investment advice. We build and publish the brand surface around your account.",
+  ],
+  [
+    "Can I use my own domain?",
+    "Yes. Launch on a free subdomain, buy a domain through the desk, or connect one you already own. DNS and TLS are verified before activation.",
+  ],
+  [
+    "What do credits cost?",
+    "Verified accounts start with 30 credits. Additional packs are 30 for $4.99, 65 for $9.99, and 150 for $19.99. There is no monthly subscription.",
+  ],
+  [
+    "What happens when I change my mind?",
+    "You can archive or replace your active site, and export your account data. Account deletion runs through a 30-day grace period.",
+  ],
 ];
 
 export default function MarketingHome() {
   return (
-    <MarketingShell>
-      <section className="marketing-hero">
-        <div>
-          <span className="marketing-eyebrow">
-            OPERATOR INFRASTRUCTURE / DERIV-ONLY
-          </span>
-          <h1>
-            Build the brand.
-            <br />
-            Publish the platform.
-            <br />
-            <em>Keep the control.</em>
-          </h1>
-          <p>
-            A measured studio for independent market operators. One site, one
-            Deriv account, one clear publishing path — with domains, AI bots,
-            signals, and marketplace tools in the same place.
-          </p>
-          <div className="marketing-cta">
-            <Link className="btn primary" href="/signup">
-              Create an account
-            </Link>
-            <Link className="btn" href="/studio">
-              Open the studio
-            </Link>
+    <MarketingShell announcement={<HomeAnnouncement />} className="home-page">
+      <section className="home-deriv-hero">
+        <div className="home-deriv-atmosphere" aria-hidden="true">
+          <div className="home-deriv-grid" />
+          <div className="home-deriv-orb home-orb-one" />
+          <div className="home-deriv-orb home-orb-two" />
+          <svg
+            className="home-deriv-line"
+            viewBox="0 0 900 380"
+            preserveAspectRatio="none"
+          >
+            <path
+              d="M0 300 C90 286 130 305 190 250 C250 196 300 235 360 190 C420 145 470 180 520 120 C580 50 640 110 700 80 C760 50 820 95 900 30"
+              fill="none"
+              stroke="rgba(254,221,0,.42)"
+              strokeWidth="1.5"
+            />
+          </svg>
+          <div className="home-deriv-candles">
+            {[38, 62, 48, 78, 56, 88, 71, 96, 64, 82, 54, 74].map(
+              (height, index) => (
+                <i key={index} style={{ height: `${height}%` }} />
+              ),
+            )}
           </div>
-          <small className="marketing-disclaimer">
-            Development preview. Mock market data. No live trading, payments, or
-            provider calls without configured credentials.
-          </small>
+          <div className="home-deriv-chip home-deriv-chip-a">
+            <span>DOMAIN</span>
+            <strong>operator.com</strong>
+            <small>Verified · TLS ready</small>
+          </div>
+          <div className="home-deriv-chip home-deriv-chip-b">
+            <span>PUBLISHED</span>
+            <strong>Version 12</strong>
+            <small>Rollback ready</small>
+          </div>
         </div>
-        <div className="marketing-hero-card" aria-hidden="true">
-          <div className="marketing-browser-bar">
-            <span />
-            <span />
-            <span />
-            <code>your-brand.tradeintra.com</code>
-          </div>
-          <div className="marketing-preview">
-            <span>YOUR MARKETS. YOUR PERSPECTIVE.</span>
-            <h2>Your markets. Your next move.</h2>
+        <div className="home-deriv-inner">
+          <div className="home-deriv-copy">
+            <span className="marketing-eyebrow">THE OPERATOR STUDIO</span>
+            <h1>
+              Build the brand.
+              <br />
+              Publish the platform.
+              <br />
+              <em>Keep the control.</em>
+            </h1>
             <p>
-              A clear, focused space to explore the markets. Built around you.
+              A considered studio for independent market operators who want a
+              presence that earns trust before the first conversation. One
+              focused site, one clear address, one system for the work around
+              it.
             </p>
-            <span className="marketing-preview-cta">Explore markets →</span>
-            <div className="marketing-chart">
-              <i />
-              <i />
-              <i />
-              <i />
-              <i />
-              <i />
-              <i />
-              <i />
-              <i />
-              <i />
-              <i />
-              <i />
+            <div className="home-deriv-cta">
+              <Link className="btn primary" href="/signup">
+                Create your studio
+              </Link>
+              <a className="home-deriv-link" href="#system">
+                See how it works <span aria-hidden="true">→</span>
+              </a>
+            </div>
+            <div className="home-deriv-trust">
+              <span>Independent of Deriv</span>
+              <span>No fund custody</span>
+              <span>No trade execution</span>
             </div>
           </div>
-          <div className="marketing-status">
-            <span>Mock published snapshot</span>
-            <span>HTTPS</span>
-            <span>No live trading</span>
+        </div>
+      </section>
+
+      <section className="marketing-proof home-proof">
+        {proof.map(([value, label, detail]) => (
+          <div key={label}>
+            <span>{value}</span>
+            <strong>{label}</strong>
+            <small>{detail}</small>
           </div>
-        </div>
+        ))}
       </section>
 
-      <section className="marketing-proof" id="product">
-        <div>
-          <span>One</span>
-          <strong>active site</strong>
-          <small>per account</small>
-        </div>
-        <div>
-          <span>15%</span>
-          <strong>partner share</strong>
-          <small>of Deriv commission</small>
-        </div>
-        <div>
-          <span>30</span>
-          <strong>starter credits</strong>
-          <small>on verification</small>
-        </div>
-        <div>
-          <span>85%</span>
-          <strong>seller share</strong>
-          <small>after marketplace fees</small>
-        </div>
-      </section>
-
-      <section className="marketing-section">
+      <Reveal className="marketing-section home-intro">
         <div className="marketing-section-heading">
-          <span className="marketing-eyebrow">THE OPERATOR SYSTEM</span>
-          <h2>Everything the site needs. Nothing it does not.</h2>
+          <span className="marketing-eyebrow">BUILT FOR OPERATORS</span>
+          <h2>Credibility is a design decision.</h2>
           <p>
-            Template-led, constrained, and auditable. No free-form code builder,
-            no invented market data, and no hidden provider claims.
+            Your audience decides whether to stay before they read the details.
+            A coherent brand, a real domain, and a clear next step do more than
+            a long feature list. Tradeintra gives you those three things in one
+            place — and keeps the technical noise out of the room.
           </p>
         </div>
-        <div className="marketing-feature-grid">
-          {features.map((feature) => (
-            <article key={feature.n}>
-              <span>{feature.n}</span>
-              <h3>{feature.title}</h3>
-              <p>{feature.text}</p>
+        <div className="home-intro-grid">
+          <div>
+            <strong>Look established from day one.</strong>
+            <p>
+              A template-led visual system means the first version already has
+              hierarchy, rhythm, and restraint. You are not shipping a
+              placeholder; you are starting with a point of view.
+            </p>
+          </div>
+          <div>
+            <strong>Own the address and the narrative.</strong>
+            <p>
+              The site, the domain, the publishing history, and the tools around
+              them belong to one account. The relationship stays yours, with a
+              clear export path if you ever want to leave.
+            </p>
+          </div>
+          <div>
+            <strong>Grow without losing the plot.</strong>
+            <p>
+              Bots, signals, and marketplace tools are available when the
+              foundation is ready. One focused site keeps the story coherent
+              while the operation expands.
+            </p>
+          </div>
+        </div>
+      </Reveal>
+
+      <section className="marketing-section home-steps">
+        <Reveal className="marketing-section-heading">
+          <span className="marketing-eyebrow">THE PATH</span>
+          <h2>From first idea to a presence that feels inevitable.</h2>
+          <p>
+            Three deliberate steps. No maze of settings. No guessing what comes
+            next. The studio keeps the work moving while you keep the judgment.
+          </p>
+        </Reveal>
+        <div className="home-step-grid">
+          {steps.map((step, index) => (
+            <Reveal key={step.n} delay={index * 90}>
+              <article className="home-step">
+                <span className="home-step-n">{step.n}</span>
+                <span className="home-step-tag">{step.tag}</span>
+                <h3>{step.title}</h3>
+                <p>{step.text}</p>
+                <span className="home-step-line" aria-hidden="true" />
+              </article>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      <section className="marketing-section home-system" id="system">
+        <Reveal className="marketing-section-heading">
+          <span className="marketing-eyebrow">THE OPERATOR SYSTEM</span>
+          <h2>Everything the presence needs. Nothing it does not.</h2>
+          <p>
+            A focused set of tools that share one standard of craft. Use what
+            the moment asks for; leave the rest quiet.
+          </p>
+        </Reveal>
+        <div className="home-stack" id="product">
+          {system.map((item, index) => (
+            <article
+              className={`home-stack-card home-stack-${item.key}`}
+              key={item.key}
+              style={{ "--stack-index": index } as React.CSSProperties}
+            >
+              <div className="home-stack-copy">
+                <span className="marketing-eyebrow">{item.eyebrow}</span>
+                <h3>{item.title}</h3>
+                <p>{item.text}</p>
+                <ul>
+                  {item.points.map((point) => (
+                    <li key={point}>{point}</li>
+                  ))}
+                </ul>
+              </div>
+              <div className="home-stack-visual" aria-hidden="true">
+                <div className="home-stack-window">
+                  <span />
+                  <span />
+                  <span />
+                  <div className={`home-stack-mock home-mock-${item.key}`}>
+                    <strong>{item.eyebrow}</strong>
+                    <i />
+                    <i />
+                    <i />
+                    <i />
+                  </div>
+                </div>
+              </div>
             </article>
           ))}
         </div>
       </section>
 
-      <section className="marketing-section marketing-pricing" id="pricing">
+      <Reveal className="marketing-section home-boundary">
         <div>
+          <span className="marketing-eyebrow">THE BOUNDARY</span>
+          <h2>Built for the operator, not the committee.</h2>
+          <p>
+            Tradeintra is deliberately narrower than a general website builder.
+            One active site, a constrained brand kit, and a clear trading
+            boundary keep the product honest and the outcome sharper.
+          </p>
+          <Link className="text-link" href="/about">
+            Read our principles →
+          </Link>
+        </div>
+        <div className="home-boundary-list">
+          <div>
+            <strong>Your account. Your trades.</strong>
+            <p>
+              Trading happens on Deriv. We do not execute orders or hold funds.
+            </p>
+          </div>
+          <div>
+            <strong>Your brand. Your domain.</strong>
+            <p>The address and the relationship stay in your name.</p>
+          </div>
+          <div>
+            <strong>Your data. Your exit.</strong>
+            <p>
+              Export your account data. Deletion runs through a 30-day grace
+              period.
+            </p>
+          </div>
+        </div>
+      </Reveal>
+
+      <section
+        className="marketing-section marketing-pricing home-pricing"
+        id="pricing"
+      >
+        <Reveal>
           <span className="marketing-eyebrow">PRICING / SIMPLE BY DESIGN</span>
           <h2>Start free. Pay for what you use.</h2>
           <p>
-            No monthly subscription. New verified accounts receive 30 AI
-            credits. Buy more when you need them; domain and marketplace
-            purchases are priced separately.
+            No monthly subscription. Verified accounts receive 30 AI credits.
+            Buy more when the work asks for it; domain and marketplace purchases
+            are priced separately.
           </p>
-        </div>
-        <div className="marketing-price-card">
-          <span>AI credit packs</span>
+          <div className="home-price-note">
+            <span>30 starter credits</span>
+            <span>No subscription</span>
+            <span>Buy only when needed</span>
+          </div>
+        </Reveal>
+        <Reveal className="marketing-price-card home-price-card" delay={120}>
+          <span>AI CREDIT PACKS</span>
           <ul>
             <li>
               <strong>30</strong>
@@ -177,48 +361,42 @@ export default function MarketingHome() {
           <Link className="btn primary" href="/signup">
             Start with 30 free
           </Link>
+        </Reveal>
+      </section>
+
+      <section className="marketing-section home-faq">
+        <Reveal className="marketing-section-heading">
+          <span className="marketing-eyebrow">QUESTIONS, ANSWERED</span>
+          <h2>Clear before you commit.</h2>
+        </Reveal>
+        <div className="home-faq-list">
+          {faqs.map(([question, answer], index) => (
+            <Reveal key={question} delay={index * 50}>
+              <details>
+                <summary>{question}</summary>
+                <p>{answer}</p>
+              </details>
+            </Reveal>
+          ))}
         </div>
       </section>
 
-      <section className="marketing-section marketing-split">
-        <div>
-          <span className="marketing-eyebrow">DOMAINS</span>
-          <h2>A real address, verified before it goes live.</h2>
-          <p>
-            Start on <code>your-brand.tradeintra.com</code>. Upgrade to a custom
-            domain when you are ready. Namecheap registration, DNS, and SSL are
-            verified before the site is shown as live.
-          </p>
-          <Link className="text-link" href="/studio">
-            Explore domain workflow →
-          </Link>
-        </div>
-        <div>
-          <span className="marketing-eyebrow">DERIV BOUNDARY</span>
-          <h2>Your account. Your trades. Our studio.</h2>
-          <p>
-            Tradeintra is independent of Deriv. You create or connect your own
-            Deriv account. The platform builds and publishes the brand surface;
-            it does not become a broker, hold funds, or execute orders.
-          </p>
-          <Link className="text-link" href="/terms">
-            Read the product boundary →
-          </Link>
-        </div>
-      </section>
-
-      <section className="marketing-final">
+      <Reveal className="marketing-final home-final">
         <span className="marketing-eyebrow">READY WHEN YOU ARE</span>
         <h2>Build one site. Keep the whole picture.</h2>
+        <p>
+          The next version of your presence can start with a name, a domain, and
+          a decision to look serious about the work.
+        </p>
         <div className="marketing-cta">
           <Link className="btn primary" href="/signup">
-            Create an account
+            Create your studio
           </Link>
           <Link className="btn" href="/contact">
             Talk to the operator team
           </Link>
         </div>
-      </section>
+      </Reveal>
     </MarketingShell>
   );
 }

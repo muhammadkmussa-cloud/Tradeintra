@@ -30,22 +30,6 @@ async function createAccount(
     .getByRole("button", { name: "Verify email", exact: true })
     .click();
   await expect(page.getByRole("dialog")).toHaveCount(0, { timeout: 30000 });
-  await page.getByRole("button", { name: "Marketplace", exact: true }).click();
-  await expect(
-    page.getByRole("heading", { name: "Seller profile" }),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "Apply as seller" }).click();
-  await expect(
-    page.getByText("Seller application submitted for review."),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "AI Signals", exact: true }).click();
-  await expect(
-    page.getByRole("heading", { name: "Create signal order" }),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "Start trial" }).click();
-  await expect(page.getByText("Signal trial created.")).toBeVisible();
-  await page.getByRole("button", { name: "Deliver now" }).click();
-  await expect(page.getByText("Mock signal delivered.")).toBeVisible();
   await page.getByRole("button", { name: "Settings", exact: true }).click();
   await page
     .getByRole("button", { name: "Link mock account", exact: true })
@@ -171,6 +155,59 @@ test("account → template → brand → modules → public mock snapshot → pr
   await page.getByRole("button", { name: "Buy credits" }).first().click();
   await expect(page.getByText("60 credits", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Settings", exact: true }).click();
+  await page
+    .getByRole("button", { name: "AI Bot Generator", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Generate a bot" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: /Generate · 10 credits/ }).click();
+  await expect(
+    page.getByText("Mock bot generated and 10 credits debited."),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "XML Bots", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Bot library" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Marketplace", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Seller profile" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Apply as seller" }).click();
+  await expect(
+    page.getByText("Seller application submitted for review."),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "AI Signals", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Create signal order" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Start trial" }).click();
+  await expect(page.getByText("Signal trial created.")).toBeVisible();
+  await page.getByRole("button", { name: "Deliver now" }).click();
+  await expect(page.getByText("Mock signal delivered.")).toBeVisible();
+  await page
+    .getByRole("complementary")
+    .getByRole("button", { name: "Help & resources", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Open a ticket" }),
+  ).toBeVisible();
+  await page.getByLabel("Subject").fill("Mock support request");
+  await page.getByLabel("Message").fill("Please review this fixture.");
+  await page.getByRole("button", { name: "Create ticket" }).click();
+  await expect(page.getByText("Support ticket created.")).toBeVisible();
+  await page
+    .getByRole("complementary")
+    .getByRole("button", { name: "What’s new", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Create announcement" }),
+  ).toBeVisible();
+  await page.getByLabel("Title").fill("Mock announcement");
+  await page.getByRole("button", { name: "Create draft" }).click();
+  await expect(page.getByText("Announcement drafted.")).toBeVisible();
+  await page.getByRole("button", { name: "Settings", exact: true }).click();
+  await expect(page.getByText(/^TRD-[A-F0-9]{8}$/)).toBeVisible();
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Create account", exact: true }),

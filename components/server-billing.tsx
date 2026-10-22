@@ -4,6 +4,17 @@ import { useEffect, useState } from "react";
 import { Check, CreditCard } from "lucide-react";
 
 type Pack = { id: string; credits: number; amount: number; currency: string };
+type Invoice = {
+  id: string;
+  kind: string;
+  description: string;
+  subtotal: string;
+  tax: string;
+  total: string;
+  currency: string;
+  status: string;
+  created_at: string;
+};
 type Purchase = {
   id: string;
   pack_credits: number;
@@ -28,6 +39,7 @@ export function ServerBilling({
   const [packs, setPacks] = useState<Pack[]>([]);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [credits, setCredits] = useState(0);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [provider, setProvider] = useState<"mock" | "paystack" | "mpesa">(
     "mock",
   );
@@ -44,6 +56,7 @@ export function ServerBilling({
     setPacks(body.packs ?? []);
     setCredits(body.credits ?? 0);
     setPurchases(body.purchases ?? []);
+    setInvoices(body.invoices ?? []);
   }
 
   useEffect(() => {
@@ -67,6 +80,7 @@ export function ServerBilling({
       }
       setCredits(body.credits ?? credits);
       setPurchases(body.purchases ?? purchases);
+      setInvoices(body.invoices ?? invoices);
       notify(
         body.status === "paid"
           ? "Credits added in the mock payment provider."
@@ -163,6 +177,36 @@ export function ServerBilling({
         </div>
         <p className="mock-note">
           <Check size={12} /> Only paid purchases create a credit-ledger entry.
+        </p>
+      </section>
+      <section className="panel mock-panel">
+        <div className="section-heading">
+          <div>
+            <h2>Invoices</h2>
+            <p>Credits, domains, marketplace purchases, and signal periods.</p>
+          </div>
+        </div>
+        <div className="mock-list">
+          {invoices.length ? (
+            invoices.map((invoice) => (
+              <div className="mock-list-row" key={invoice.id}>
+                <span>
+                  {invoice.description}
+                  <small>
+                    {invoice.kind} ·{" "}
+                    {new Date(invoice.created_at).toLocaleDateString()}
+                  </small>
+                </span>
+                <strong>{money(invoice.total, invoice.currency)}</strong>
+                <span className="badge neutral">{invoice.status}</span>
+              </div>
+            ))
+          ) : (
+            <p className="muted">No invoices yet.</p>
+          )}
+        </div>
+        <p className="mock-note">
+          Tax is recorded separately from the subtotal using `TAX_RATE_PERCENT`.
         </p>
       </section>
     </div>

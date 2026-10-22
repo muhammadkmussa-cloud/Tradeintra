@@ -19,6 +19,17 @@ type Domain = {
   expires_at: string;
   auto_renew: boolean;
   site_id: string | null;
+  dns_verified: boolean;
+  verification_token: string | null;
+  verification_error: string | null;
+};
+type Transfer = {
+  id: string;
+  direction: "in" | "out";
+  domain_name: string;
+  status: string;
+  note: string | null;
+  created_at: string;
 };
 type Order = {
   id: string;
@@ -53,9 +64,28 @@ export function ServerDomains({
 }) {
   const [domains, setDomains] = useState<Domain[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [transfers, setTransfers] = useState<Transfer[]>([]);
+  const [transferDirection, setTransferDirection] = useState<"in" | "out">(
+    "in",
+  );
+  const [transferName, setTransferName] = useState("");
+  const [transferAuthCode, setTransferAuthCode] = useState("");
+  const [transferNote, setTransferNote] = useState("");
   const [results, setResults] = useState<Result[]>([]);
+  const [kesRate, setKesRate] = useState(130);
   const [query, setQuery] = useState("operator");
   const [siteId, setSiteId] = useState(sites[0]?.id ?? "");
+  const [contact, setContact] = useState({
+    firstName: "",
+    lastName: "",
+    address1: "",
+    city: "",
+    state: "",
+    postalCode: "",
+    country: "KE",
+    phone: "",
+    email: "",
+  });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -92,6 +122,8 @@ export function ServerDomains({
       if (body.domains) setDomains(body.domains);
       if (body.orders) setOrders(body.orders);
       if (body.results) setResults(body.results);
+      if (body.transfers) setTransfers(body.transfers);
+      if (body.kesRate) setKesRate(Number(body.kesRate));
       notify(message);
       return true;
     } catch {
@@ -112,8 +144,9 @@ export function ServerDomains({
           </strong>
           <p>
             Search, purchase, connect, verify, renew, and remove domains. Live
-            Namecheap calls remain gated; this environment records mock orders
-            and requires DNS/SSL verification before a domain becomes active.
+            Namecheap purchases remain gated; purchases are mocked in this
+            environment. Custom domains require a DNS TXT check and a trusted
+            TLS certificate before activation.
           </p>
         </div>
         <span className="badge neutral">mock provider</span>
@@ -172,8 +205,22 @@ export function ServerDomains({
                       {result.available ? "available" : "taken"}
                     </span>
                   </td>
-                  <td>{money(result.registrationPrice, result.currency)}</td>
-                  <td>{money(result.renewalPrice, result.currency)}</td>
+                  <td>
+                    {money(result.registrationPrice, result.currency)}
+                    {result.currency === "USD" ? (
+                      <small>
+                        ≈ {money(result.registrationPrice * kesRate, "KES")}
+                      </small>
+                    ) : null}
+                  </td>
+                  <td>
+                    {money(result.renewalPrice, result.currency)}
+                    {result.currency === "USD" ? (
+                      <small>
+                        ≈ {money(result.renewalPrice * kesRate, "KES")}
+                      </small>
+                    ) : null}
+                  </td>
                   <td>
                     <select
                       value={siteId}
@@ -197,7 +244,13 @@ export function ServerDomains({
                             name: result.name,
                             siteId,
                             years: 1,
+                            expectedPrice: result.registrationPrice,
                             idempotencyKey: crypto.randomUUID(),
+                            ...(Object.values(contact).every((value) =>
+                              value.trim(),
+                            )
+                              ? { contact }
+                              : {}),
                           },
                           `${result.name} purchased in the mock provider.`,
                         )
@@ -237,7 +290,19 @@ export function ServerDomains({
               {domains.length ? (
                 domains.map((domain) => (
                   <tr key={domain.id}>
-                    <td>{domain.name}</td>
+                    <td>
+                      {domain.name}
+                      {domain.status === "dns_pending" &&
+                      domain.verification_token ? (
+                        <small>
+                          TXT _tradeintra.{domain.name} ={" "}
+                          {domain.verification_token}
+                        </small>
+                      ) : null}
+                      {domain.verification_error ? (
+                        <small>{domain.verification_error}</small>
+                      ) : null}
+                    </td>
                     <td>{domain.mode}</td>
                     <td>
                       <span className="badge neutral">
@@ -257,11 +322,11 @@ export function ServerDomains({
                             onClick={() =>
                               void act(
                                 { action: "verify", domainId: domain.id },
-                                "Mock DNS/SSL advanced.",
+                                "Domain verification passed.",
                               )
                             }
                           >
-                            <RefreshCw size={13} /> Verify
+                            <RefreshCw size={13} /> Verify DNS/SSL
                           </button>
                         ) : null}
                         <button
@@ -306,6 +371,94 @@ export function ServerDomains({
         </div>
       </section>
 
+      <section className="panel mock-panel">
+        <div className="section-heading">
+          <div>
+            <h2>Transfer requests</h2>
+            <p>Manual registrar queue for transfer-in and transfer-out.</p>
+          </div>
+        </div>
+        <div className="mock-inline-form">
+          <label className="field">
+            Direction
+            <select
+              value={transferDirection}
+              onChange={(e) =>
+                setTransferDirection(e.target.value as "in" | "out")
+              }
+            >
+              <option value="in">Transfer in</option>
+              <option value="out">Transfer out</option>
+            </select>
+          </label>
+          <label className="field mock-grow">
+            Domain
+            <input
+              value={transferName}
+              onChange={(e) => setTransferName(e.target.value)}
+              placeholder="operator.example"
+            />
+          </label>
+          <label className="field mock-grow">
+            Auth / EPP code
+            <input
+              type="password"
+              value={transferAuthCode}
+              onChange={(e) => setTransferAuthCode(e.target.value)}
+              placeholder="Stored encrypted"
+            />
+          </label>
+          <label className="field mock-grow">
+            Note
+            <input
+              value={transferNote}
+              onChange={(e) => setTransferNote(e.target.value)}
+            />
+          </label>
+          <button
+            className="btn primary"
+            disabled={busy || !transferName}
+            onClick={async () => {
+              if (
+                await act(
+                  {
+                    action: "transfer",
+                    direction: transferDirection,
+                    name: transferName,
+                    authCode: transferAuthCode,
+                    note: transferNote,
+                  },
+                  "Transfer request queued for manual review.",
+                )
+              ) {
+                setTransferName("");
+                setTransferAuthCode("");
+                setTransferNote("");
+              }
+            }}
+          >
+            Request transfer
+          </button>
+        </div>
+        <div className="mock-list">
+          {transfers.length ? (
+            transfers.map((transfer) => (
+              <div className="mock-list-row" key={transfer.id}>
+                <span>
+                  {transfer.domain_name}
+                  <small>
+                    {transfer.direction} ·{" "}
+                    {new Date(transfer.created_at).toLocaleDateString()}
+                  </small>
+                </span>
+                <span className="badge neutral">{transfer.status}</span>
+              </div>
+            ))
+          ) : (
+            <p className="muted">No transfer requests yet.</p>
+          )}
+        </div>
+      </section>
       <section className="panel mock-panel">
         <div className="section-heading">
           <div>

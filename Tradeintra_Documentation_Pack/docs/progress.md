@@ -248,3 +248,90 @@ Deploy Tradeintra itself to Stellar Plus, prove wildcard routing/SSL, publish se
 - Added marketplace uploads with a 5 MiB cap, XML/text/PDF allowlist, private storage, and upload metadata.
 - Added buyer-only delivery downloads and storage tests.
 - Final local verification: 92 unit tests, 13/13 Playwright journeys, typecheck, build, format, audit.
+
+## 2026-10-20 — Malware scanning, provider health, and host acceptance
+
+- Added marketplace upload scanning: basic allowlist/content checks and optional ClamAV path integration; unsafe uploads are deleted and rejected.
+- Added scan metadata to uploads.
+- Added `/api/health/providers` and `npm run provider:check` for redacted provider mode/configuration reporting.
+- Added `host-acceptance.md` with the required Stellar Plus evidence checklist.
+- Added malware-scanning tests.
+- Final local verification: 95 unit tests, 13/13 Playwright journeys, typecheck, build, format, audit.
+
+## 2026-10-20 — Studio gate, readiness, and host diagnostics
+
+- Added a server wrapper for `/studio`: local mode keeps the demo; staging PostgreSQL requires a session and redirects unauthenticated users to `/login`.
+- Added `/api/health/ready` for database, schema, RLS, and storage readiness without secrets.
+- Added `npm run host:check` for a redacted host/configuration report.
+- Updated the host acceptance checklist.
+- Final local verification: 95 unit tests, 13/13 Playwright journeys, typecheck, build, format, audit.
+
+## 2026-10-20 — Production gate, Namecheap adapter, and payout execution
+
+- Added an explicit production account mode gated by `STUDIO_ENV=production` and `PRODUCTION_APPROVED=true`; staging remains separate.
+- Added production-mode tests and the `/studio` session gate.
+- Implemented Namecheap XML adapter calls for search, purchase, renewal, and auto-renew disable, with failing-closed credentials.
+- Added a payout execution boundary with mock success and live provider fail-closed behavior; Super Admin “Pay” now executes the mock provider before marking a payout paid.
+- Added Namecheap XML parsing and mock payout tests.
+- Final local verification: 100 unit tests, 13/13 Playwright journeys, typecheck, build, format, audit.
+
+## 2026-10-20 — Production domain provider wiring
+
+- Wired live domain search, purchase, renewal, and auto-renew disable through the Namecheap adapter.
+- Added encrypted registrant contacts for purchased domains.
+- Added live registration contact validation and UI contact fields.
+- Added payout execution through a mock/live provider boundary; Super Admin “Pay” executes before marking paid.
+- Final local verification: 101 unit tests, 13/13 Playwright journeys, typecheck, build, format, audit.
+
+## 2026-10-20 — Server bot library and generation
+
+- Added `018-bots.sql` with account-scoped bot and generation-job tables.
+- Added DeepSeek-backed bot generation with credit debit, refund on failure, XML validation, compatibility labels, site assignment, and removal.
+- Wired signed-in XML Bots and AI Bot Generator to the server API; anonymous users retain the dev mock.
+- Added bot generation/library tests and extended the Playwright account journey.
+- Final local verification: 103 unit tests, 13/13 Playwright journeys, typecheck, build, format, audit.
+
+## 2026-10-20 — Referral display, password recovery, support, announcements, account tools
+
+- Displayed the account referral code with copy support in Settings.
+- Added forgot-password and reset-password pages and APIs with non-disclosing request responses, rate limits, SMTP/dev reset delivery, and password policy enforcement.
+- Added server-backed support tickets/messages, announcements, audit events, account export, and account deletion request/cancel.
+- Added ServerSupport and ServerAnnouncements UI for signed-in users; anonymous users keep the dev mock.
+- Added support/announcements/account lifecycle tests and expanded the account Playwright journey.
+- Final local verification: 106 unit tests, 13/13 Playwright journeys, typecheck, build, format, audit.
+
+## Public UI redesign
+
+- Replaced the lowercase CSS `t` with the supplied angular T mark and the lowercase `tradeintra` wordmark.
+- Added OS-default light/dark themes with persistence, favicon swap, animated reveal, and dark-surface tokens.
+- Added floating six-link navigation and a mobile drawer.
+- Added About and rebuilt Home, Developers, MCP, Status, Contact, Terms, and Privacy.
+- Added original CSS/SVG product mockups, scroll reveals, sticky system cards, reduced-motion fallbacks, and no-JS reveal fallback.
+- Updated Login/Signup with a premium split layout, field errors, email verification links, and a `/verify-email` page.
+- Final verification: 128/128 unit tests and 27/27 Playwright tests, including light/dark axe, responsive widths, reduced motion, and no-JS.
+
+## Latest verification
+
+- 128/128 unit tests and 13/13 Playwright journeys passed after TOTP 2FA, invoices, bot refine/verify/sandbox, audit UI, signal cron, backup/monitor scripts, domain verification, manual transfer/price workflows, and retention/revocation archiving.
+- Paystack/M-Pesa webhooks now settle pending signal subscriptions and pause signals on failed payment.
+- Added `/openapi.json`, `/llms.txt`, and `/status`; status links live health/provider endpoints without secrets.
+- Added public read-only MCP at `/api/mcp` with pricing, provider-mode, and boundary tools; account-scoped MCP remains gated.
+- Signal checkout attempts now preserve every payment reference; renewals extend from the existing paid date.
+- Payment hardening: mock provider is rejected outside mock mode; delivery requires a live trial or paid coverage; status activation is server-only.
+- MCP notifications no longer receive replies; batches and protocol negotiation are validated; OpenAPI paths match real routes.
+- Market refunds block downloaded goods and open payouts; account purge detaches site-linked assets before deleting sites.
+- Paystack/M-Pesa callbacks are checked against the expected amount and currency; mismatches are recorded and do not activate service.
+- Purge deletes private marketplace files after the database commit.
+- Playwright now uses a 120-second journey timeout for the local PGlite path; the full suite completes in about 2.8 minutes.
+- Custom domains now issue a TXT verification token and run DNS then TLS checks; mock mode advances them deterministically.
+- Super Admin can edit TLD registration/renewal costs and markup; quotes still apply the configured markup.
+- Purchase confirmation rejects stale prices; domain searches show approximate KES alongside USD.
+- Transfer-in/out requests are queued for manual Support/Super Admin review with encrypted auth codes.
+- TOTP 2FA is server-verified on password login and manageable from Settings.
+- Credit, domain, marketplace, and signal charges issue invoices with optional `TAX_RATE_PERCENT` separation.
+- Bot refine/verify/sandbox and the admin audit log are implemented.
+- Added signal cron, database backup, and readiness-monitor scripts to the host checklist.
+- Account purge archives retained financial/audit rows and queues Deriv/Telegram revocation tasks before deletion.
+- Refunds block downloaded goods and open seller payouts; purge detaches site-linked domains, bots, and commissions.
+- `FINANCE_EMAILS` and `SUPPORT_EMAILS` provide scoped admin access.
+- `npm run account:purge` executes due 30-day deletion requests, including sites, versions, routing, sessions, account, and credential rows.

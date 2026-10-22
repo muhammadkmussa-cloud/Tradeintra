@@ -13,11 +13,14 @@ export function AuthFormPage({ mode }: { mode: Mode }) {
   const [verificationToken, setVerificationToken] = useState<string | null>(
     null,
   );
+  const [mfaRequired, setMfaRequired] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
     setError("");
+    setFieldErrors({});
     const form = new FormData(event.currentTarget);
     const body =
       mode === "signup"
@@ -32,6 +35,9 @@ export function AuthFormPage({ mode }: { mode: Mode }) {
         : {
             email: String(form.get("email") ?? ""),
             password: String(form.get("password") ?? ""),
+            ...(String(form.get("mfaCode") ?? "").trim()
+              ? { mfaCode: String(form.get("mfaCode")).trim() }
+              : {}),
           };
     try {
       const response = await fetch(
@@ -45,6 +51,9 @@ export function AuthFormPage({ mode }: { mode: Mode }) {
       );
       const reply = await response.json();
       if (!response.ok) {
+        if (reply.code === "MFA_REQUIRED") setMfaRequired(true);
+        if (reply.fields && typeof reply.fields === "object")
+          setFieldErrors(reply.fields as Record<string, string>);
         setError(reply.error ?? "The request could not be completed.");
         return;
       }
@@ -52,6 +61,12 @@ export function AuthFormPage({ mode }: { mode: Mode }) {
         setVerificationToken(reply.devVerificationToken);
         setMessage(
           "Development verification token created. Verify now to claim 30 starter credits.",
+        );
+        return;
+      }
+      if (mode === "signup") {
+        setMessage(
+          "Check your email to verify your account before creating a site or using credits.",
         );
         return;
       }
@@ -78,6 +93,8 @@ export function AuthFormPage({ mode }: { mode: Mode }) {
         return;
       }
       window.location.href = "/studio";
+    } catch {
+      setError("Verification is unavailable. Try again.");
     } finally {
       setBusy(false);
     }
@@ -89,19 +106,15 @@ export function AuthFormPage({ mode }: { mode: Mode }) {
       <main className="auth-page">
         <section className="auth-card">
           <span className="marketing-eyebrow">
-            {mode === "signup" ? "CREATE AN ACCOUNT" : "WELCOME BACK"}
+            {mode === "signup" ? "CREATE AN ACCOUNT" : "SIGN IN"}
           </span>
-          <h1>
-            {mode === "signup"
-              ? "Start your operator studio."
-              : "Sign in to your studio."}
-          </h1>
+          <h1>{mode === "signup" ? "Start your studio." : "Welcome back."}</h1>
           <p>
             {mode === "signup"
-              ? "Create or connect a Deriv account before publishing. Email verification is required before the dashboard, site creation, and credits."
+              ? "Create or connect a Deriv account before publishing. Email verification is required before site creation and credits."
               : "Use email and password, or connect Google when credentials are configured."}
           </p>
-          <form onSubmit={submit}>
+          <form onSubmit={submit} aria-busy={busy}>
             {mode === "signup" ? (
               <>
                 <label className="field">
@@ -112,7 +125,16 @@ export function AuthFormPage({ mode }: { mode: Mode }) {
                     required
                     minLength={2}
                     maxLength={80}
+                    aria-invalid={Boolean(fieldErrors.fullName)}
+                    aria-describedby={
+                      fieldErrors.fullName ? "fullname-error" : undefined
+                    }
                   />
+                  {fieldErrors.fullName ? (
+                    <small className="field-error" id="fullname-error">
+                      {fieldErrors.fullName}
+                    </small>
+                  ) : null}
                 </label>
                 <label className="field">
                   Referral code (optional)
@@ -120,7 +142,16 @@ export function AuthFormPage({ mode }: { mode: Mode }) {
                     name="referralCode"
                     placeholder="TRD-XXXXXXXX"
                     maxLength={12}
+                    aria-invalid={Boolean(fieldErrors.referralCode)}
+                    aria-describedby={
+                      fieldErrors.referralCode ? "referral-error" : undefined
+                    }
                   />
+                  {fieldErrors.referralCode ? (
+                    <small className="field-error" id="referral-error">
+                      {fieldErrors.referralCode}
+                    </small>
+                  ) : null}
                 </label>
               </>
             ) : null}
@@ -132,7 +163,14 @@ export function AuthFormPage({ mode }: { mode: Mode }) {
                 autoComplete="email"
                 required
                 maxLength={254}
+                aria-invalid={Boolean(fieldErrors.email)}
+                aria-describedby={fieldErrors.email ? "email-error" : undefined}
               />
+              {fieldErrors.email ? (
+                <small className="field-error" id="email-error">
+                  {fieldErrors.email}
+                </small>
+              ) : null}
             </label>
             <label className="field">
               Password
@@ -145,13 +183,35 @@ export function AuthFormPage({ mode }: { mode: Mode }) {
                 required
                 minLength={8}
                 maxLength={128}
+                aria-invalid={Boolean(fieldErrors.password)}
+                aria-describedby={
+                  fieldErrors.password ? "password-error" : undefined
+                }
               />
+              {fieldErrors.password ? (
+                <small className="field-error" id="password-error">
+                  {fieldErrors.password}
+                </small>
+              ) : null}
               {mode === "signup" ? (
                 <small>
                   At least 8 characters, one uppercase letter, and one number.
                 </small>
               ) : null}
             </label>
+            {mode === "login" && mfaRequired ? (
+              <label className="field">
+                Authenticator code
+                <input
+                  name="mfaCode"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={8}
+                  required
+                  autoFocus
+                />
+              </label>
+            ) : null}
             {error ? (
               <p className="auth-error" role="alert">
                 {error}
@@ -188,9 +248,9 @@ export function AuthFormPage({ mode }: { mode: Mode }) {
             Continue with Google
           </a>
           <small className="auth-note">
-            Uses the real Google OAuth adapter when credentials are configured;
-            in local development it creates a clearly labelled mock Google
-            identity. No Google credentials are stored in the browser.
+            Google sign-in uses the configured OAuth adapter. Local development
+            creates a clearly labelled mock identity; your Google password is
+            never shared with Tradeintra.
           </small>
           <p className="auth-switch">
             {mode === "signup" ? (
@@ -199,6 +259,8 @@ export function AuthFormPage({ mode }: { mode: Mode }) {
               </>
             ) : (
               <>
+                <Link href="/forgot-password">Forgot password?</Link>
+                <span> · </span>
                 New here? <Link href="/signup">Create an account</Link>
               </>
             )}
@@ -207,6 +269,32 @@ export function AuthFormPage({ mode }: { mode: Mode }) {
         <aside className="auth-aside">
           <span className="marketing-eyebrow">ONE ACCOUNT / ONE SITE</span>
           <h2>Build the brand surface. Keep the trading boundary.</h2>
+          <div className="auth-aside-visual" aria-hidden="true">
+            <div className="auth-aside-bar">
+              <span />
+              <span />
+              <span />
+              <code>operator.tradeintra.com</code>
+            </div>
+            <div className="auth-aside-site">
+              <small>YOUR MARKETS. YOUR PERSPECTIVE.</small>
+              <strong>Your next move, in your own name.</strong>
+              <div className="auth-aside-chart">
+                <i />
+                <i />
+                <i />
+                <i />
+                <i />
+                <i />
+                <i />
+                <i />
+              </div>
+            </div>
+            <div className="auth-aside-badges">
+              <span>Domain verified</span>
+              <span>30 starter credits</span>
+            </div>
+          </div>
           <ul>
             <li>30 starter AI credits after verification</li>
             <li>Referrer also receives 30 credits</li>

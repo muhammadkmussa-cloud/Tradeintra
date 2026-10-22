@@ -5,7 +5,7 @@ const config: NextConfig = {
   images: { unoptimized: true },
   serverExternalPackages: ["@electric-sql/pglite", "pg"],
   devIndicators: false,
-  allowedDevOrigins: ["*.e2b.app"],
+  allowedDevOrigins: ["*.e2b.app", "127.0.0.1", "localhost"],
   outputFileTracingExcludes: {
     "*": [
       "./tests/**/*",

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import {
   ArrowUpRight,
   ArrowRight,
@@ -54,6 +55,12 @@ import { ServerEarnings } from "@/components/server-earnings";
 import { ServerMarketplace } from "@/components/server-marketplace";
 import { ServerSignals } from "@/components/server-signals";
 import { ServerAdmin } from "@/components/server-admin";
+import { ServerBots } from "@/components/server-bots";
+import { ServerMfa } from "@/components/server-mfa";
+import { BrandMark } from "@/components/brand-mark";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { ServerSupport } from "@/components/server-support";
+import { ServerAnnouncements } from "@/components/server-announcements";
 
 const MockOpsPage = dynamic(
   () => import("@/components/mock-ops").then((module) => module.MockOpsPage),
@@ -179,11 +186,7 @@ function Badge({
   );
 }
 function Mark() {
-  return (
-    <span className="brand-mark">
-      <img src="/favicon.svg" alt="" />
-    </span>
-  );
+  return <BrandMark />;
 }
 function Chart({
   color = "#b8a1e6",
@@ -709,8 +712,9 @@ export default function Home() {
       <aside className={`sidebar ${mobileNav ? "mobile-open" : ""}`}>
         <button className="wordmark" onClick={() => navigate("Overview")}>
           <Mark />
-          <span>
-            tradeintra<span className="wordmark-period">.</span>
+          <span className="brand-word" aria-label="tradeintra">
+            <span className="brand-word-trade">trade</span>
+            <span className="brand-word-intra">intra</span>
           </span>
         </button>
         <button
@@ -835,6 +839,7 @@ export default function Home() {
             <strong>{page}</strong>
           </div>
           <div className="top-actions">
+            <ThemeToggle />
             {!serverUser && server.enabled && (
               <button
                 className="account-access-button"
@@ -1359,6 +1364,18 @@ export default function Home() {
           {page === "Admin" && serverUser && (
             <ServerAdmin role={serverUser.role} notify={notify} />
           )}
+          {page === "XML Bots" && serverUser && (
+            <ServerBots mode="library" sites={mockSiteRefs} notify={notify} />
+          )}
+          {page === "AI Bot Generator" && serverUser && (
+            <ServerBots mode="generator" sites={mockSiteRefs} notify={notify} />
+          )}
+          {page === "Support" && serverUser && (
+            <ServerSupport notify={notify} />
+          )}
+          {page === "Announcements" && serverUser && (
+            <ServerAnnouncements sites={mockSiteRefs} notify={notify} />
+          )}
           {devMock &&
             !(page === "Domains" && serverUser) &&
             !(page === "Billing" && serverUser) &&
@@ -1366,6 +1383,10 @@ export default function Home() {
             !(page === "Marketplace" && serverUser) &&
             !(page === "AI Signals" && serverUser) &&
             !(page === "Admin" && serverUser) &&
+            !(page === "XML Bots" && serverUser) &&
+            !(page === "AI Bot Generator" && serverUser) &&
+            !(page === "Support" && serverUser) &&
+            !(page === "Announcements" && serverUser) &&
             mockPages.includes(page) && (
               <MockOpsPage page={page} sites={mockSiteRefs} notify={notify} />
             )}
@@ -1706,16 +1727,140 @@ export default function Home() {
                       ? `Your drafts and mock snapshots are stored server-side and scoped to your session. Email status: ${serverUser.emailVerified ? "verified" : "unverified"}. Recovery and 2FA are development adapters. Development limits: one active site and fifty snapshots per site. Do not enter sensitive or financial information.`
                       : "Demo data stays in this browser and is not protected by authentication. Create an account for a separate server-backed workspace; demo drafts are not automatically imported."}
                   </p>
+                  {serverUser ? (
+                    <>
+                      <div className="mock-kv">
+                        <span>Email verification</span>
+                        <strong>
+                          {serverUser.emailVerified ? "Verified" : "Unverified"}
+                        </strong>
+                      </div>
+                      <div className="mock-kv">
+                        <span>AI credits</span>
+                        <strong>{server.credits}</strong>
+                      </div>
+                      {serverUser.referralCode ? (
+                        <div className="mock-kv">
+                          <span>Referral code</span>
+                          <strong>{serverUser.referralCode}</strong>
+                          <button
+                            className="text-link"
+                            onClick={async () => {
+                              try {
+                                await navigator.clipboard.writeText(
+                                  serverUser.referralCode ?? "",
+                                );
+                                notify("Referral code copied.");
+                              } catch {
+                                notify(
+                                  `Referral code: ${serverUser.referralCode}`,
+                                );
+                              }
+                            }}
+                          >
+                            Copy
+                          </button>
+                        </div>
+                      ) : null}
+                      {!serverUser.emailVerified ? (
+                        <Button
+                          onClick={server.resendVerification}
+                          disabled={server.busy}
+                        >
+                          Resend verification
+                        </Button>
+                      ) : null}
+                    </>
+                  ) : null}
+                  <ServerMfa notify={notify} />
                   <div className="settings-data-actions">
                     <Button onClick={exportData}>
                       <Download size={15} />
                       Export workspace
                     </Button>
                     {serverUser ? (
-                      <Button onClick={server.signOut} disabled={server.busy}>
-                        <LogOut size={15} />
-                        Sign out
-                      </Button>
+                      <>
+                        <Button
+                          onClick={async () => {
+                            const response = await fetch(
+                              "/api/studio/account",
+                              {
+                                credentials: "same-origin",
+                                cache: "no-store",
+                              },
+                            );
+                            if (!response.ok) {
+                              notify("Account export failed.");
+                              return;
+                            }
+                            const blob = new Blob(
+                              [JSON.stringify(await response.json(), null, 2)],
+                              { type: "application/json" },
+                            );
+                            const url = URL.createObjectURL(blob);
+                            const link = document.createElement("a");
+                            link.href = url;
+                            link.download = "tradeintra-account-export.json";
+                            document.body.appendChild(link);
+                            link.click();
+                            link.remove();
+                            setTimeout(() => URL.revokeObjectURL(url), 0);
+                            notify("Account export downloaded.");
+                          }}
+                        >
+                          <Download size={15} />
+                          Export account
+                        </Button>
+                        <Button
+                          className="danger"
+                          onClick={async () => {
+                            const response = await fetch(
+                              "/api/studio/account",
+                              {
+                                method: "POST",
+                                credentials: "same-origin",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                  action: "request-deletion",
+                                }),
+                              },
+                            );
+                            notify(
+                              response.ok
+                                ? "Account deletion requested with a 30-day grace period."
+                                : "Deletion request failed.",
+                            );
+                          }}
+                        >
+                          Request account deletion
+                        </Button>
+                        <Button
+                          onClick={async () => {
+                            const response = await fetch(
+                              "/api/studio/account",
+                              {
+                                method: "POST",
+                                credentials: "same-origin",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                  action: "cancel-deletion",
+                                }),
+                              },
+                            );
+                            notify(
+                              response.ok
+                                ? "Deletion request cancelled."
+                                : "No pending deletion request.",
+                            );
+                          }}
+                        >
+                          Cancel deletion
+                        </Button>
+                        <Button onClick={server.signOut} disabled={server.busy}>
+                          <LogOut size={15} />
+                          Sign out
+                        </Button>
+                      </>
                     ) : (
                       <Button
                         className="danger"
@@ -1763,7 +1908,7 @@ export default function Home() {
               </div>
             </>
           )}
-          {!devMock && page === "Support" && (
+          {!devMock && page === "Support" && !serverUser && (
             <>
               <div className="support-banner">
                 <BookOpen size={36} />
@@ -1840,7 +1985,7 @@ export default function Home() {
               </section>
             </>
           )}
-          {!devMock && page === "Announcements" && (
+          {!devMock && page === "Announcements" && !serverUser && (
             <section className="panel announcement">
               <span className="announcement-icon">
                 <Sparkles size={25} />
@@ -1909,7 +2054,7 @@ export default function Home() {
             )}
           <footer className="main-footer">
             <span>
-              <span className="footer-mark">t</span> Tradeintra operator studio.
+              <BrandMark className="footer-mark" /> Tradeintra operator studio.
             </span>
             <span>
               Build. Deploy. Trade. <span className="footer-dot">·</span>
@@ -2500,6 +2645,18 @@ export default function Home() {
                 Never use your Deriv password.
               </small>
             </label>
+            {server.authMode === "login" ? (
+              <label className="field">
+                Authenticator code (if enabled)
+                <input
+                  name="mfaCode"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={8}
+                  placeholder="123456"
+                />
+              </label>
+            ) : null}
             {server.authError && (
               <p className="auth-error" role="alert">
                 {server.authError}
@@ -2528,6 +2685,9 @@ export default function Home() {
                 ? "Already have an account? Sign in"
                 : "New here? Create an account"}
             </button>
+            <p className="auth-switch">
+              <Link href="/forgot-password">Forgot password?</Link>
+            </p>
             <p className="fine-print">
               Email verification uses a development token in local mode.
               Password recovery and 2FA are adapters pending provider
@@ -2543,8 +2703,8 @@ export default function Home() {
           onClose={() => notify("Verify from Settings when you are ready.")}
         >
           <p className="confirm-text">
-            Development verification token. Verify now to unlock the dashboard,
-            site creation, and 30 starter credits.
+            Development verification token. Verify now to unlock site creation
+            and 30 starter credits.
           </p>
           <code className="mock-code">{server.verificationToken}</code>
           <div className="confirm-actions">

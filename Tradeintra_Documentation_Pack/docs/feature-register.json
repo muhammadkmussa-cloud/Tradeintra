@@ -1,0 +1,904 @@
+{
+  "version": 1,
+  "updated": "2026-10-20",
+  "statusKey": [
+    "IMPL",
+    "PART",
+    "MISS",
+    "MOCK",
+    "GATE",
+    "UNVER",
+    "DEFER"
+  ],
+  "domains": {
+    "public": [
+      {
+        "id": "PUB-01",
+        "name": "Premium marketing home",
+        "status": "IMPL"
+      },
+      {
+        "id": "PUB-02",
+        "name": "Top navigation and dock",
+        "status": "IMPL"
+      },
+      {
+        "id": "PUB-03",
+        "name": "Contact page",
+        "status": "IMPL"
+      },
+      {
+        "id": "PUB-04",
+        "name": "Developer resources",
+        "status": "PART"
+      },
+      {
+        "id": "PUB-05",
+        "name": "MCP boundary",
+        "status": "PART"
+      },
+      {
+        "id": "PUB-06",
+        "name": "Terms",
+        "status": "PART"
+      },
+      {
+        "id": "PUB-07",
+        "name": "Privacy",
+        "status": "PART"
+      },
+      {
+        "id": "PUB-08",
+        "name": "Login and signup CTAs",
+        "status": "IMPL"
+      },
+      {
+        "id": "PUB-09",
+        "name": "Responsive premium public site",
+        "status": "IMPL"
+      },
+      {
+        "id": "PUB-10",
+        "name": "Legal and risk disclosures",
+        "status": "PART"
+      }
+    ],
+    "identity": [
+      {
+        "id": "ONB-01",
+        "name": "Email/password signup",
+        "status": "IMPL"
+      },
+      {
+        "id": "ONB-02",
+        "name": "Login/logout/session",
+        "status": "IMPL"
+      },
+      {
+        "id": "ONB-03",
+        "name": "Google OAuth",
+        "status": "GATE"
+      },
+      {
+        "id": "ONB-04",
+        "name": "Password policy",
+        "status": "IMPL"
+      },
+      {
+        "id": "ONB-05",
+        "name": "Full name",
+        "status": "IMPL"
+      },
+      {
+        "id": "ONB-06",
+        "name": "Email verification",
+        "status": "IMPL"
+      },
+      {
+        "id": "ONB-07",
+        "name": "Verification resend",
+        "status": "IMPL"
+      },
+      {
+        "id": "ONB-08",
+        "name": "Referral code entry",
+        "status": "IMPL"
+      },
+      {
+        "id": "ONB-09",
+        "name": "Referral code display",
+        "status": "IMPL"
+      },
+      {
+        "id": "ONB-10",
+        "name": "30 starter credits",
+        "status": "IMPL"
+      },
+      {
+        "id": "ONB-11",
+        "name": "30 referrer credits",
+        "status": "IMPL"
+      },
+      {
+        "id": "ONB-12",
+        "name": "Password reset UI",
+        "status": "IMPL"
+      },
+      {
+        "id": "ONB-13",
+        "name": "Real TOTP 2FA",
+        "status": "IMPL"
+      },
+      {
+        "id": "ONB-14",
+        "name": "Account settings",
+        "status": "PART"
+      },
+      {
+        "id": "ONB-15",
+        "name": "Country/payment methods",
+        "status": "MISS"
+      },
+      {
+        "id": "ONB-16",
+        "name": "Account deletion/grace",
+        "status": "IMPL"
+      },
+      {
+        "id": "ONB-17",
+        "name": "Full account export",
+        "status": "IMPL"
+      },
+      {
+        "id": "ONB-18",
+        "name": "Super Admin allowlist",
+        "status": "IMPL"
+      },
+      {
+        "id": "ONB-19",
+        "name": "Support/Finance roles",
+        "status": "IMPL"
+      },
+      {
+        "id": "ONB-20",
+        "name": "Cross-tenant denial",
+        "status": "IMPL"
+      }
+    ],
+    "deriv": [
+      {
+        "id": "DER-01",
+        "name": "Create Deriv account path",
+        "status": "MISS"
+      },
+      {
+        "id": "DER-02",
+        "name": "Mock Deriv link",
+        "status": "IMPL"
+      },
+      {
+        "id": "DER-03",
+        "name": "Live Deriv OAuth/PKCE",
+        "status": "GATE"
+      },
+      {
+        "id": "DER-04",
+        "name": "Deriv PAT link",
+        "status": "MISS"
+      },
+      {
+        "id": "DER-05",
+        "name": "Deriv gate before site creation",
+        "status": "IMPL"
+      },
+      {
+        "id": "DER-06",
+        "name": "Deriv link status/unlink",
+        "status": "MOCK"
+      },
+      {
+        "id": "DER-07",
+        "name": "15% partner commission ledger",
+        "status": "IMPL"
+      },
+      {
+        "id": "DER-08",
+        "name": "Deriv partner API sync",
+        "status": "MISS"
+      },
+      {
+        "id": "DER-09",
+        "name": "Market data",
+        "status": "MOCK"
+      },
+      {
+        "id": "DER-10",
+        "name": "Trading terminal",
+        "status": "GATE"
+      }
+    ],
+    "sites": [
+      {
+        "id": "SITE-01",
+        "name": "One active site",
+        "status": "IMPL"
+      },
+      {
+        "id": "SITE-02",
+        "name": "Template selection",
+        "status": "IMPL"
+      },
+      {
+        "id": "SITE-03",
+        "name": "Creation wizard",
+        "status": "IMPL"
+      },
+      {
+        "id": "SITE-04",
+        "name": "Brand kit",
+        "status": "PART"
+      },
+      {
+        "id": "SITE-05",
+        "name": "Module configuration",
+        "status": "PART"
+      },
+      {
+        "id": "SITE-06",
+        "name": "Draft preview",
+        "status": "IMPL"
+      },
+      {
+        "id": "SITE-07",
+        "name": "Save draft",
+        "status": "IMPL"
+      },
+      {
+        "id": "SITE-08",
+        "name": "Publish snapshot",
+        "status": "IMPL"
+      },
+      {
+        "id": "SITE-09",
+        "name": "Restore version",
+        "status": "IMPL"
+      },
+      {
+        "id": "SITE-10",
+        "name": "Archive and replace",
+        "status": "IMPL"
+      },
+      {
+        "id": "SITE-11",
+        "name": "Published-only public render",
+        "status": "IMPL"
+      },
+      {
+        "id": "SITE-12",
+        "name": "Free subdomain",
+        "status": "IMPL"
+      },
+      {
+        "id": "SITE-13",
+        "name": "Subdomain update",
+        "status": "PART"
+      },
+      {
+        "id": "SITE-14",
+        "name": "Subdomain to custom upgrade",
+        "status": "PART"
+      },
+      {
+        "id": "SITE-15",
+        "name": "Custom domain remove/revert",
+        "status": "PART"
+      },
+      {
+        "id": "SITE-16",
+        "name": "Attach new custom domain",
+        "status": "IMPL"
+      },
+      {
+        "id": "SITE-17",
+        "name": "Site rename",
+        "status": "PART"
+      },
+      {
+        "id": "SITE-18",
+        "name": "Site search/filter",
+        "status": "IMPL"
+      },
+      {
+        "id": "SITE-19",
+        "name": "Site announcements",
+        "status": "PART"
+      },
+      {
+        "id": "SITE-20",
+        "name": "Plan quotas",
+        "status": "PART"
+      }
+    ],
+    "domains": [
+      {
+        "id": "DOM-01",
+        "name": "TLD catalog",
+        "status": "IMPL"
+      },
+      {
+        "id": "DOM-02",
+        "name": "Domain search",
+        "status": "IMPL"
+      },
+      {
+        "id": "DOM-03",
+        "name": "15% markup pricing",
+        "status": "IMPL"
+      },
+      {
+        "id": "DOM-04",
+        "name": "Registrant contact",
+        "status": "IMPL"
+      },
+      {
+        "id": "DOM-05",
+        "name": "Encrypted contact storage",
+        "status": "IMPL"
+      },
+      {
+        "id": "DOM-06",
+        "name": "Domain purchase",
+        "status": "IMPL"
+      },
+      {
+        "id": "DOM-07",
+        "name": "DNS verification",
+        "status": "IMPL"
+      },
+      {
+        "id": "DOM-08",
+        "name": "SSL verification",
+        "status": "IMPL"
+      },
+      {
+        "id": "DOM-09",
+        "name": "Renewal",
+        "status": "IMPL"
+      },
+      {
+        "id": "DOM-10",
+        "name": "Auto-renew",
+        "status": "IMPL"
+      },
+      {
+        "id": "DOM-11",
+        "name": "Remove domain",
+        "status": "IMPL"
+      },
+      {
+        "id": "DOM-12",
+        "name": "Connect external domain",
+        "status": "IMPL"
+      },
+      {
+        "id": "DOM-13",
+        "name": "Transfer in",
+        "status": "PART"
+      },
+      {
+        "id": "DOM-14",
+        "name": "Transfer out",
+        "status": "PART"
+      },
+      {
+        "id": "DOM-15",
+        "name": "Manual registrar fallback",
+        "status": "PART"
+      },
+      {
+        "id": "DOM-16",
+        "name": "Price-change confirmation",
+        "status": "IMPL"
+      },
+      {
+        "id": "DOM-17",
+        "name": "Failed registration refund",
+        "status": "MISS"
+      },
+      {
+        "id": "DOM-18",
+        "name": "Abuse/trademark screening",
+        "status": "MISS"
+      },
+      {
+        "id": "DOM-19",
+        "name": "KES display",
+        "status": "IMPL"
+      },
+      {
+        "id": "DOM-20",
+        "name": "Admin price rules",
+        "status": "IMPL"
+      }
+    ],
+    "billing": [
+      {
+        "id": "BILL-01",
+        "name": "Free account",
+        "status": "IMPL"
+      },
+      {
+        "id": "BILL-02",
+        "name": "Starter credits",
+        "status": "IMPL"
+      },
+      {
+        "id": "BILL-03",
+        "name": "Credit packs",
+        "status": "IMPL"
+      },
+      {
+        "id": "BILL-04",
+        "name": "Paystack checkout",
+        "status": "GATE"
+      },
+      {
+        "id": "BILL-05",
+        "name": "M-Pesa checkout",
+        "status": "GATE"
+      },
+      {
+        "id": "BILL-06",
+        "name": "Webhook idempotency",
+        "status": "IMPL"
+      },
+      {
+        "id": "BILL-07",
+        "name": "Credit ledger",
+        "status": "IMPL"
+      },
+      {
+        "id": "BILL-08",
+        "name": "Credit spend/refund",
+        "status": "IMPL"
+      },
+      {
+        "id": "BILL-09",
+        "name": "15% partner commission",
+        "status": "IMPL"
+      },
+      {
+        "id": "BILL-10",
+        "name": "Commission import",
+        "status": "IMPL"
+      },
+      {
+        "id": "BILL-11",
+        "name": "Domain markup ledger",
+        "status": "IMPL"
+      },
+      {
+        "id": "BILL-12",
+        "name": "Invoices/tax",
+        "status": "IMPL"
+      },
+      {
+        "id": "BILL-13",
+        "name": "Refund/chargeback",
+        "status": "PART"
+      },
+      {
+        "id": "BILL-14",
+        "name": "Paid subscriptions",
+        "status": "DEFER"
+      },
+      {
+        "id": "BILL-15",
+        "name": "Entitlements",
+        "status": "PART"
+      }
+    ],
+    "bots": [
+      {
+        "id": "BOT-01",
+        "name": "Bot library",
+        "status": "IMPL"
+      },
+      {
+        "id": "BOT-02",
+        "name": "Upload XML bot",
+        "status": "IMPL"
+      },
+      {
+        "id": "BOT-03",
+        "name": "Manual bot create",
+        "status": "IMPL"
+      },
+      {
+        "id": "BOT-04",
+        "name": "DeepSeek generation",
+        "status": "IMPL"
+      },
+      {
+        "id": "BOT-05",
+        "name": "Refine bot",
+        "status": "IMPL"
+      },
+      {
+        "id": "BOT-06",
+        "name": "Verify/auto-fix",
+        "status": "IMPL"
+      },
+      {
+        "id": "BOT-07",
+        "name": "Credits debit/refund",
+        "status": "IMPL"
+      },
+      {
+        "id": "BOT-08",
+        "name": "XML validation",
+        "status": "IMPL"
+      },
+      {
+        "id": "BOT-09",
+        "name": "Compatibility labels",
+        "status": "IMPL"
+      },
+      {
+        "id": "BOT-10",
+        "name": "Assign to site",
+        "status": "IMPL"
+      },
+      {
+        "id": "BOT-11",
+        "name": "Remove bot",
+        "status": "IMPL"
+      },
+      {
+        "id": "BOT-12",
+        "name": "Sandbox test",
+        "status": "IMPL"
+      },
+      {
+        "id": "BOT-13",
+        "name": "AI Builder config assistant",
+        "status": "MISS"
+      },
+      {
+        "id": "BOT-14",
+        "name": "Arbitrary generated apps",
+        "status": "DEFER"
+      }
+    ],
+    "signals": [
+      {
+        "id": "SIG-01",
+        "name": "Telegram provider connection",
+        "status": "IMPL"
+      },
+      {
+        "id": "SIG-02",
+        "name": "Telegram test/remove",
+        "status": "IMPL"
+      },
+      {
+        "id": "SIG-03",
+        "name": "Signal trial",
+        "status": "IMPL"
+      },
+      {
+        "id": "SIG-04",
+        "name": "Paid subscription",
+        "status": "IMPL"
+      },
+      {
+        "id": "SIG-05",
+        "name": "Signal delivery",
+        "status": "IMPL"
+      },
+      {
+        "id": "SIG-06",
+        "name": "Delivery logs",
+        "status": "IMPL"
+      },
+      {
+        "id": "SIG-07",
+        "name": "Pause/cancel",
+        "status": "IMPL"
+      },
+      {
+        "id": "SIG-08",
+        "name": "Failed-payment pause",
+        "status": "IMPL"
+      },
+      {
+        "id": "SIG-09",
+        "name": "Provider 85% earnings",
+        "status": "IMPL"
+      },
+      {
+        "id": "SIG-10",
+        "name": "Platform 15% fee",
+        "status": "IMPL"
+      },
+      {
+        "id": "SIG-11",
+        "name": "Cron delivery",
+        "status": "IMPL"
+      }
+    ],
+    "marketplace": [
+      {
+        "id": "MKT-01",
+        "name": "Seller application",
+        "status": "IMPL"
+      },
+      {
+        "id": "MKT-02",
+        "name": "Seller approval",
+        "status": "IMPL"
+      },
+      {
+        "id": "MKT-03",
+        "name": "Listing",
+        "status": "IMPL"
+      },
+      {
+        "id": "MKT-04",
+        "name": "Delivery upload",
+        "status": "IMPL"
+      },
+      {
+        "id": "MKT-05",
+        "name": "Malware scan",
+        "status": "IMPL"
+      },
+      {
+        "id": "MKT-06",
+        "name": "Purchase",
+        "status": "IMPL"
+      },
+      {
+        "id": "MKT-07",
+        "name": "Delivery download",
+        "status": "IMPL"
+      },
+      {
+        "id": "MKT-08",
+        "name": "15% fee",
+        "status": "IMPL"
+      },
+      {
+        "id": "MKT-09",
+        "name": "Seller earnings",
+        "status": "IMPL"
+      },
+      {
+        "id": "MKT-10",
+        "name": "Payout request",
+        "status": "IMPL"
+      },
+      {
+        "id": "MKT-11",
+        "name": "Finance review",
+        "status": "IMPL"
+      },
+      {
+        "id": "MKT-12",
+        "name": "Payout execution",
+        "status": "MOCK"
+      },
+      {
+        "id": "MKT-13",
+        "name": "Refunds/chargebacks",
+        "status": "PART"
+      },
+      {
+        "id": "MKT-14",
+        "name": "Seller KYC",
+        "status": "PART"
+      },
+      {
+        "id": "MKT-15",
+        "name": "Abuse handling",
+        "status": "PART"
+      }
+    ],
+    "admin": [
+      {
+        "id": "ADM-01",
+        "name": "Super Admin allowlist",
+        "status": "IMPL"
+      },
+      {
+        "id": "ADM-02",
+        "name": "Admin commerce",
+        "status": "IMPL"
+      },
+      {
+        "id": "ADM-03",
+        "name": "Seller approval UI",
+        "status": "IMPL"
+      },
+      {
+        "id": "ADM-04",
+        "name": "Payout review UI",
+        "status": "IMPL"
+      },
+      {
+        "id": "ADM-05",
+        "name": "Commission import",
+        "status": "IMPL"
+      },
+      {
+        "id": "ADM-06",
+        "name": "Support tickets",
+        "status": "PART"
+      },
+      {
+        "id": "ADM-07",
+        "name": "Announcements",
+        "status": "PART"
+      },
+      {
+        "id": "ADM-08",
+        "name": "Audit log",
+        "status": "IMPL"
+      },
+      {
+        "id": "ADM-09",
+        "name": "Support role",
+        "status": "IMPL"
+      },
+      {
+        "id": "ADM-10",
+        "name": "Finance role",
+        "status": "IMPL"
+      },
+      {
+        "id": "ADM-11",
+        "name": "Read-only MCP",
+        "status": "PART"
+      },
+      {
+        "id": "ADM-12",
+        "name": "OpenAPI/llms.txt",
+        "status": "IMPL"
+      },
+      {
+        "id": "ADM-13",
+        "name": "Status page",
+        "status": "PART"
+      }
+    ],
+    "operations": [
+      {
+        "id": "OPS-01",
+        "name": "CSRF/origin checks",
+        "status": "IMPL"
+      },
+      {
+        "id": "OPS-02",
+        "name": "Rate limits",
+        "status": "IMPL"
+      },
+      {
+        "id": "OPS-03",
+        "name": "Body bounds",
+        "status": "IMPL"
+      },
+      {
+        "id": "OPS-04",
+        "name": "RLS",
+        "status": "IMPL"
+      },
+      {
+        "id": "OPS-05",
+        "name": "Tenant isolation",
+        "status": "IMPL"
+      },
+      {
+        "id": "OPS-06",
+        "name": "Secret handling",
+        "status": "IMPL"
+      },
+      {
+        "id": "OPS-07",
+        "name": "Private storage",
+        "status": "IMPL"
+      },
+      {
+        "id": "OPS-08",
+        "name": "Email delivery",
+        "status": "IMPL"
+      },
+      {
+        "id": "OPS-09",
+        "name": "Liveness",
+        "status": "IMPL"
+      },
+      {
+        "id": "OPS-10",
+        "name": "Readiness",
+        "status": "IMPL"
+      },
+      {
+        "id": "OPS-11",
+        "name": "Provider health",
+        "status": "IMPL"
+      },
+      {
+        "id": "OPS-12",
+        "name": "Host check",
+        "status": "IMPL"
+      },
+      {
+        "id": "OPS-13",
+        "name": "Cron/jobs",
+        "status": "IMPL"
+      },
+      {
+        "id": "OPS-14",
+        "name": "Backups/restore",
+        "status": "PART"
+      },
+      {
+        "id": "OPS-15",
+        "name": "Monitoring/alerts",
+        "status": "PART"
+      },
+      {
+        "id": "OPS-16",
+        "name": "Error handling",
+        "status": "IMPL"
+      },
+      {
+        "id": "OPS-17",
+        "name": "Accessibility",
+        "status": "IMPL"
+      },
+      {
+        "id": "OPS-18",
+        "name": "Performance",
+        "status": "UNVER"
+      },
+      {
+        "id": "OPS-19",
+        "name": "Production mode",
+        "status": "IMPL"
+      },
+      {
+        "id": "OPS-20",
+        "name": "Host acceptance",
+        "status": "UNVER"
+      }
+    ],
+    "deferred": [
+      {
+        "id": "DEF-01",
+        "name": "Payment agent",
+        "status": "DEFER"
+      },
+      {
+        "id": "DEF-02",
+        "name": "Multi-broker",
+        "status": "DEFER"
+      },
+      {
+        "id": "DEF-03",
+        "name": "Arbitrary AI-generated apps",
+        "status": "DEFER"
+      },
+      {
+        "id": "DEF-04",
+        "name": "Teams/collaboration",
+        "status": "DEFER"
+      },
+      {
+        "id": "DEF-05",
+        "name": "Paid subscription tiers",
+        "status": "DEFER"
+      }
+    ]
+  }
+}

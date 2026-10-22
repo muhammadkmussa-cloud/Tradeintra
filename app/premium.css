@@ -57,9 +57,9 @@ small {
 
 .sidebar {
   width: 264px;
-  background: var(--ink-deep);
+  background: var(--deep-surface);
   border-right: 1px solid var(--line-ink);
-  color: var(--paper);
+  color: var(--on-deep);
   padding: 26px 18px 0;
   overflow-y: auto;
   scrollbar-width: thin;
@@ -73,22 +73,12 @@ small {
   font-size: 30px;
   font-weight: 500;
   letter-spacing: -1.4px;
-  color: var(--paper);
+  color: var(--on-deep);
 }
 
 .brand-mark {
   width: 32px;
   height: 34px;
-}
-
-.brand-mark img {
-  border-radius: var(--radius-xs);
-  outline: 1px solid #ffffff1f;
-  outline-offset: -1px;
-}
-
-.wordmark-period {
-  color: var(--yellow);
 }
 
 .workspace-switch {
@@ -100,7 +90,7 @@ small {
   background: #ffffff08;
   border: 1px solid #ffffff14;
   border-radius: var(--radius-sm);
-  color: var(--paper);
+  color: var(--on-deep);
 }
 
 .workspace-switch:hover {
@@ -112,7 +102,7 @@ small {
   width: 32px;
   height: 32px;
   background: var(--brass);
-  color: var(--ink-deep);
+  color: var(--on-brass);
   border-radius: var(--radius-xs);
   font-family: var(--font-display);
   font-size: 17px;
@@ -179,7 +169,7 @@ small {
 
 .nav-item:hover {
   background: #ffffff0a;
-  color: var(--paper);
+  color: var(--on-deep);
 }
 
 .nav-item:hover > svg {
@@ -188,7 +178,7 @@ small {
 
 .nav-item.active {
   background: #ffffff0e;
-  color: var(--paper);
+  color: var(--on-deep);
   font-weight: 600;
 }
 
@@ -262,7 +252,7 @@ small {
   background: transparent;
   border: 1px solid #ffffff24;
   border-radius: var(--radius-xs);
-  color: var(--paper);
+  color: var(--on-deep);
   font-size: 11px;
   font-weight: 600;
   transition:
@@ -291,7 +281,7 @@ small {
 .user-avatar,
 .top-avatar {
   background: var(--brass);
-  color: var(--ink-deep);
+  color: var(--on-brass);
   border: 0;
   border-radius: 50%;
   font-family: var(--font-display);
@@ -611,10 +601,10 @@ main {
   position: relative;
   display: flex;
   min-height: 372px;
-  border: 1px solid var(--ink-deep);
+  border: 1px solid var(--deep-border);
   border-radius: var(--radius-md);
-  background: var(--ink-deep);
-  color: var(--paper);
+  background: var(--deep-surface);
+  color: var(--on-deep);
   overflow: hidden;
 }
 
@@ -644,7 +634,7 @@ main {
   font-weight: 400;
   line-height: 0.98;
   letter-spacing: -1.8px;
-  color: var(--paper);
+  color: var(--on-deep);
 }
 
 .hero-copy h2 > span {
@@ -1115,9 +1105,9 @@ main {
 }
 
 .step-circle.completed {
-  background: var(--ink-deep);
-  border-color: var(--ink-deep);
-  color: var(--paper);
+  background: var(--deep-surface);
+  border-color: var(--deep-border);
+  color: var(--on-deep);
 }
 
 .checklist-row strong {
@@ -1137,10 +1127,10 @@ main {
 
 .resource-card {
   padding: 28px;
-  background: var(--ink-deep);
-  border: 1px solid var(--ink-deep);
+  background: var(--deep-surface);
+  border: 1px solid var(--deep-border);
   border-radius: var(--radius-md);
-  color: var(--paper);
+  color: var(--on-deep);
 }
 
 .resource-card:after {
@@ -1194,20 +1184,8 @@ main {
   color: var(--muted);
 }
 
-.footer-mark {
-  display: inline-grid;
-  place-items: center;
-  width: 18px;
-  height: 18px;
-  margin-right: 6px;
-  background: var(--ink-deep);
-  color: var(--yellow);
-  font-family: var(--font-display);
-  font-size: 12px;
-}
-
 .footer-dot {
-  color: var(--line-strong);
+  color: var(--muted);
 }
 
 /* --------------------------------------------------------------------------
@@ -1499,7 +1477,7 @@ main {
 .filter-tabs button.selected {
   background: transparent;
   color: var(--ink-deep);
-  border-bottom-color: var(--ink-deep);
+  border-bottom-color: var(--deep-border);
   box-shadow: none;
   font-weight: 600;
 }
@@ -1623,7 +1601,7 @@ main {
 
 .template-showcase {
   padding: 38px;
-  background: var(--ink-deep);
+  background: var(--deep-surface);
 }
 
 .template-showcase .mini-site {
@@ -1890,10 +1868,10 @@ td > svg {
 
 .support-banner {
   padding: 38px;
-  background: var(--ink-deep);
-  border: 1px solid var(--ink-deep);
+  background: var(--deep-surface);
+  border: 1px solid var(--deep-border);
   border-radius: var(--radius-md);
-  color: var(--paper);
+  color: var(--on-deep);
   text-align: left;
 }
 
@@ -1903,7 +1881,7 @@ td > svg {
 
 .support-banner h2 {
   margin: 18px 0 8px;
-  color: var(--paper);
+  color: var(--on-deep);
   font-family: var(--font-display);
   font-size: 42px;
   font-weight: 400;
@@ -2202,9 +2180,9 @@ td > svg {
 }
 
 .wizard-step.current > span {
-  background: var(--ink-deep);
-  border-color: var(--ink-deep);
-  color: var(--paper);
+  background: var(--deep-surface);
+  border-color: var(--deep-border);
+  color: var(--on-deep);
 }
 
 .wizard-step.done {
@@ -2248,9 +2226,9 @@ td > svg {
 
 .wizard-preview {
   padding: 28px;
-  background: var(--ink-deep);
-  border-left: 1px solid var(--ink-deep);
-  color: var(--paper);
+  background: var(--deep-surface);
+  border-left: 1px solid var(--deep-border);
+  color: var(--on-deep);
 }
 
 .preview-label {
@@ -2296,7 +2274,7 @@ td > svg {
   margin-top: 24px;
   padding: 18px;
   background: var(--paper);
-  border: 1px solid var(--ink-deep);
+  border: 1px solid var(--deep-border);
   border-radius: var(--radius-sm);
 }
 
@@ -2325,8 +2303,8 @@ td > svg {
 .selected-check {
   width: 22px;
   height: 22px;
-  background: var(--ink-deep);
-  color: var(--paper);
+  background: var(--deep-surface);
+  color: var(--on-deep);
 }
 
 .field-note {
@@ -2568,8 +2546,8 @@ td > svg {
 }
 
 .icon-btn.selected {
-  background: var(--ink-deep);
-  color: var(--paper);
+  background: var(--deep-surface);
+  color: var(--on-deep);
 }
 
 /* --------------------------------------------------------------------------
@@ -2579,7 +2557,7 @@ td > svg {
 .full-site-preview {
   margin: 20px auto;
   max-width: calc(100% - 40px);
-  background: var(--ink-deep);
+  background: var(--deep-surface);
   color: #ece7df;
   border: 1px solid #ffffff1a;
   border-radius: var(--radius-sm);
@@ -2632,7 +2610,7 @@ td > svg {
   font-weight: 400;
   line-height: 1.02;
   letter-spacing: -1.3px;
-  color: var(--paper);
+  color: var(--on-deep);
 }
 
 .tenant-hero p {
@@ -2660,7 +2638,7 @@ td > svg {
   font-size: 22px;
   font-weight: 500;
   letter-spacing: -0.3px;
-  color: var(--paper);
+  color: var(--on-deep);
 }
 
 .tenant-markets .badge {
@@ -2694,7 +2672,7 @@ td > svg {
   font-size: 24px;
   font-weight: 500;
   letter-spacing: -0.5px;
-  color: var(--paper);
+  color: var(--on-deep);
   font-variant-numeric: tabular-nums;
 }
 
@@ -2722,7 +2700,7 @@ td > svg {
   font-family: var(--font-display);
   font-size: 24px;
   font-weight: 500;
-  color: var(--paper);
+  color: var(--on-deep);
 }
 
 .tenant-about p {
@@ -2796,8 +2774,8 @@ td > svg {
 }
 
 .server-saving {
-  background: var(--ink-deep);
-  color: var(--paper);
+  background: var(--deep-surface);
+  color: var(--on-deep);
   border: 1px solid #ffffff1f;
   border-radius: var(--radius-xs);
   font-family: var(--font-mono);
@@ -2812,8 +2790,8 @@ td > svg {
 }
 
 .toast {
-  background: var(--ink-deep);
-  color: var(--paper);
+  background: var(--deep-surface);
+  color: var(--on-deep);
   border: 1px solid #ffffff1f;
   border-radius: var(--radius-sm);
   font-size: 12px;
@@ -3175,7 +3153,7 @@ td > svg {
 }
 
 .mock-plan.current {
-  border-color: var(--ink-deep);
+  border-color: var(--deep-border);
 }
 
 .mock-plan-top {

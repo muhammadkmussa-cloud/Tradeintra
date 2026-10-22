@@ -12,7 +12,9 @@ import {
   deliverSignal,
   listDeliveries,
   listSignals,
+  resumeSignal,
   setSignalStatus,
+  subscribeSignal,
 } from "@/lib/server/signals";
 
 export const dynamic = "force-dynamic";
@@ -74,14 +76,34 @@ export async function POST(request: NextRequest) {
           String(input.telegram ?? ""),
         ),
       });
-    if (action === "status")
+    if (action === "status") {
+      const status = String(input.status ?? "paused");
+      if (!["paused", "cancelled"].includes(status))
+        throw new StudioError(
+          422,
+          "Only pause or cancel are allowed here.",
+          "VALIDATION",
+        );
       return json({
         order: await setSignalStatus(
           db,
           session.id,
           String(input.orderId ?? ""),
-          String(input.status ?? "paused") as
-            "trial" | "active" | "paused" | "cancelled" | "expired",
+          status as "paused" | "cancelled",
+        ),
+      });
+    }
+    if (action === "resume")
+      return json({
+        order: await resumeSignal(db, session.id, String(input.orderId ?? "")),
+      });
+    if (action === "subscribe")
+      return json({
+        subscription: await subscribeSignal(
+          db,
+          session.id,
+          String(input.orderId ?? ""),
+          String(input.provider ?? "mock") as "mock" | "paystack" | "mpesa",
         ),
       });
     if (action === "deliver")

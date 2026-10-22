@@ -19,6 +19,11 @@ export type CheckoutResult = {
   reference: string;
 };
 
+export function paymentMode(): PaymentMode {
+  const mode = (process.env.PAYMENT_MODE ?? "mock").toLowerCase();
+  return mode === "sandbox" || mode === "live" ? mode : "mock";
+}
+
 function configured(provider: Exclude<PaymentProvider, "mock">) {
   if (provider === "paystack") return Boolean(process.env.PAYSTACK_SECRET_KEY);
   return Boolean(
@@ -34,10 +39,21 @@ export async function createCheckout(
   const mode = (
     process.env.PAYMENT_MODE ?? "mock"
   ).toLowerCase() as PaymentMode;
-  if (mode === "mock" || request.provider === "mock")
+  if (request.provider === "mock") {
+    if (mode !== "mock")
+      throw new Error("Mock payments are disabled outside mock mode.");
     return {
       id: `mock-${request.reference}`,
       provider: "mock",
+      status: "paid",
+      checkoutUrl: null,
+      reference: request.reference,
+    };
+  }
+  if (mode === "mock")
+    return {
+      id: `mock-${request.reference}`,
+      provider: request.provider,
       status: "paid",
       checkoutUrl: null,
       reference: request.reference,
@@ -117,7 +133,12 @@ export async function createCheckout(
       Password: password,
       Timestamp: timestamp,
       TransactionType: "CustomerPayBillOnline",
-      Amount: Math.max(1, Math.round(request.amount)),
+      Amount: Math.max(
+        1,
+        Math.round(
+          request.amount * (Number(process.env.MPESA_USD_KES_RATE) || 130),
+        ),
+      ),
       PartyA: request.phone,
       PartyB: process.env.MPESA_SHORTCODE,
       PhoneNumber: request.phone,
@@ -151,14 +172,13 @@ export function verifyWebhook(
   if (mode === "mock") return true;
   if (!signature) return false;
   if (provider === "paystack") {
-    const crypto = require("node:crypto") as typeof import("node:crypto");
-    const expected = crypto
-      .createHmac("sha512", process.env.PAYSTACK_SECRET_KEY ?? "")
+    if (!process.env.PAYSTACK_SECRET_KEY) return false;
+    const expected = createHmac("sha512", process.env.PAYSTACK_SECRET_KEY)
       .update(payload)
-      .digest("hex");
-    return crypto.timingSafeEqual(
-      Buffer.from(signature),
-      Buffer.from(expected),
+      .digest();
+    const received = Buffer.from(signature, "hex");
+    return (
+      received.length === expected.length && timingSafeEqual(received, expected)
     );
   }
   return false;

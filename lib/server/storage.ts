@@ -69,6 +69,20 @@ export async function writeMarketplaceDelivery(
   return { key, size: content.byteLength, mime };
 }
 
+export function marketplaceDeliveryPath(key: string) {
+  if (!KEY_PATTERN.test(key))
+    throw new Error("Invalid marketplace delivery key.");
+  const root = rootPath();
+  const target = path.resolve(root, key);
+  if (!target.startsWith(root + path.sep))
+    throw new Error("Invalid marketplace delivery path.");
+  return target;
+}
+
+export async function deleteMarketplaceDelivery(key: string) {
+  await fs.unlink(marketplaceDeliveryPath(key)).catch(() => {});
+}
+
 export async function readMarketplaceDelivery(key: string) {
   if (!KEY_PATTERN.test(key))
     throw new Error("Invalid marketplace delivery key.");

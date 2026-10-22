@@ -25,18 +25,18 @@ For each: purpose, retention period, deletion trigger, access control, backup tr
 
 ## 2. Proposed defaults (to be approved)
 
-| Category | Proposed retention |
-|---|---|
-| Account/profile | Active account + 30 days after deletion |
-| Deriv tokens | Until revoked/link removed; revoke immediately on deletion |
-| Site configs/assets | Active + 30 days after deletion, unless export requested |
-| Domain records | Life of domain + 7 years for financial records |
-| Registrant contacts | Life of domain + required registrar retention |
-| Payment/transaction records | 7 years |
-| Publish/release logs | 30–90 days (redacted) |
-| Audit events | 1–7 years depending on sensitivity |
-| Support tickets | 2 years |
-| Backups | 30–90 days rolling, with restore tests |
+| Category                    | Proposed retention                                         |
+| --------------------------- | ---------------------------------------------------------- |
+| Account/profile             | Active account + 30 days after deletion                    |
+| Deriv tokens                | Until revoked/link removed; revoke immediately on deletion |
+| Site configs/assets         | Active + 30 days after deletion, unless export requested   |
+| Domain records              | Life of domain + 7 years for financial records             |
+| Registrant contacts         | Life of domain + required registrar retention              |
+| Payment/transaction records | 7 years                                                    |
+| Publish/release logs        | 30–90 days (redacted)                                      |
+| Audit events                | 1–7 years depending on sensitivity                         |
+| Support tickets             | 2 years                                                    |
+| Backups                     | 30–90 days rolling, with restore tests                     |
 
 Reference-observed DForge policy: account data deleted/anonymised within 30 days; payment records kept 7 years; server/security logs up to 12 months. Use only as a comparison, not as Tradeintra policy.
 
@@ -61,7 +61,14 @@ Reference-observed DForge policy: account data deleted/anonymised within 30 days
 - Financial records for domain sales must be retained.
 - A deleted account must not lose the ability to transfer a domain before expiry.
 
-## 5. Rules
+## 5. Implementation notes
+
+- `npm run account:purge` archives payment, payout, earnings, invoice, domain-order, commission, marketplace-order, and audit rows in `deletion_archives` before deleting the account.
+- Active Deriv and Telegram links create `provider_revocation_tasks`; provider revocation is completed by an operator or a future adapter.
+- Marketplace files are deleted after the database commit.
+- Retention periods remain proposed until counsel and the operator approve them.
+
+## 6. Rules
 
 - Do not promise immediate deletion from all backups.
 - Do not delete financial/audit records required by law.
