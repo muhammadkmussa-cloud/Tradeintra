@@ -2,15 +2,10 @@
 const http = require("node:http");
 const next = require("next");
 if (
-  (process.env.DERIV_MODE && process.env.DERIV_MODE !== "mock") ||
-  (process.env.FEATURE_LIVE_DERIV &&
-    process.env.FEATURE_LIVE_DERIV !== "false") ||
-  (process.env.FEATURE_PAYMENT_AGENT &&
-    process.env.FEATURE_PAYMENT_AGENT !== "false")
+  process.env.FEATURE_PAYMENT_AGENT &&
+  process.env.FEATURE_PAYMENT_AGENT !== "false"
 ) {
-  console.error(
-    "Startup refused: only mock Deriv and disabled payment-agent features are supported.",
-  );
+  console.error("Startup refused: payment-agent features are not supported.");
   process.exit(1);
 }
 const rawPort = process.env.PORT || "3000";

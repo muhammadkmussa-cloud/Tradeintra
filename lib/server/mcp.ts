@@ -1,5 +1,4 @@
 import { studioMode } from "./studio/database";
-import { aiMode } from "./providers/ai";
 import { domainMode } from "./providers/domain";
 import { emailMode } from "./providers/email";
 import { paymentMode } from "./providers/payments";
@@ -17,7 +16,7 @@ const tools = [
   {
     name: "tradeintra_pricing",
     description:
-      "Read the public credit, domain, commission, signal, and marketplace pricing rules.",
+      "Read the public preset, domain, commission, signal, and marketplace pricing rules.",
     inputSchema: {
       type: "object",
       properties: {},
@@ -47,15 +46,10 @@ const tools = [
 ] as const;
 
 const pricing = {
-  credits: {
-    starter: 30,
-    referral: 30,
-    packs: [
-      { credits: 30, usd: 4.99 },
-      { credits: 65, usd: 9.99 },
-      { credits: 150, usd: 19.99 },
-    ],
-    botCosts: { generate: 10, refine: 3, verify: 3 },
+  botPresets: {
+    count: 9,
+    licence: "MIT",
+    source: "deriv-com/trading-bot-template",
   },
   domainMarkupPercent: 15,
   derivCommissionPlatformPercent: 15,
@@ -74,7 +68,6 @@ function safeMode(read: () => string) {
 function status() {
   return {
     studio: safeMode(studioMode),
-    ai: safeMode(aiMode),
     email: safeMode(emailMode),
     domains: safeMode(domainMode),
     payments: safeMode(paymentMode),

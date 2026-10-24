@@ -15,8 +15,6 @@ import { requireMfa } from "../mfa";
 
 export const SESSION_COOKIE = "tradeintra_session";
 export const SESSION_SECONDS = 7 * 24 * 60 * 60;
-export const STARTER_CREDITS = 30;
-export const REFERRAL_CREDITS = 30;
 export const PASSWORD_PATTERN = /^(?=.*[A-Z])(?=.*[0-9]).{8,128}$/;
 export const REFERRAL_PATTERN = /^TRD-[A-F0-9]{8}$/;
 
@@ -87,34 +85,6 @@ export async function rateLimit(
 
 function referralCode() {
   return `TRD-${randomBytes(4).toString("hex").toUpperCase()}`;
-}
-
-export async function grantCredits(
-  db: StudioDb,
-  accountId: string,
-  delta: number,
-  reason: string,
-  reference?: string,
-) {
-  await db
-    .insertInto("credit_ledger")
-    .values({
-      id: randomUUID(),
-      account_id: accountId,
-      delta,
-      reason,
-      reference: reference ?? null,
-    })
-    .execute();
-}
-
-export async function creditBalance(db: StudioDb, accountId: string) {
-  const row = await db
-    .selectFrom("credit_ledger")
-    .select(({ fn }) => fn.sum<number>("delta").as("balance"))
-    .where("account_id", "=", accountId)
-    .executeTakeFirst();
-  return Number(row?.balance ?? 0);
 }
 
 async function createSession(db: StudioDb, id: string) {
@@ -337,23 +307,6 @@ async function markVerifiedAndGrant(tx: StudioTrx, accountId: string) {
     .set({ email_verified_at: now })
     .where("id", "=", accountId)
     .execute();
-  const starter = await tx
-    .selectFrom("credit_ledger")
-    .select("id")
-    .where("account_id", "=", accountId)
-    .where("reason", "=", "Starter credits")
-    .executeTakeFirst();
-  if (!starter)
-    await tx
-      .insertInto("credit_ledger")
-      .values({
-        id: randomUUID(),
-        account_id: accountId,
-        delta: STARTER_CREDITS,
-        reason: "Starter credits",
-        reference: "starter",
-      })
-      .execute();
   const referral = await tx
     .selectFrom("referrals")
     .select(["id", "referrer_id", "reward_credits"])
@@ -366,16 +319,6 @@ async function markVerifiedAndGrant(tx: StudioTrx, accountId: string) {
       .updateTable("referrals")
       .set({ status: "rewarded", rewarded_at: now })
       .where("id", "=", referral.id)
-      .execute();
-    await tx
-      .insertInto("credit_ledger")
-      .values({
-        id: randomUUID(),
-        account_id: referral.referrer_id,
-        delta: referral.reward_credits,
-        reason: "Referral reward",
-        reference: referral.id,
-      })
       .execute();
   }
 }

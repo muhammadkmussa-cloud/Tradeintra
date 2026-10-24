@@ -89,6 +89,30 @@ export interface StudioDatabase {
     reference: string | null;
     created_at: Generated<Date>;
   };
+  deriv_oauth_states: {
+    state_hash: string;
+    site: string;
+    code_verifier: string;
+    return_path: string;
+    created_at: Generated<Date>;
+    expires_at: Date;
+    used_at: Date | null;
+  };
+  deriv_trader_sessions: {
+    id: string;
+    token_hash: string;
+    site: string;
+    mode: "mock" | "demo" | "real";
+    encrypted_token: string | null;
+    email: string | null;
+    account_id: string | null;
+    account_login: string | null;
+    account_currency: string | null;
+    created_at: Generated<Date>;
+    expires_at: Date;
+    last_seen_at: Generated<Date>;
+    revoked_at: Date | null;
+  };
   deriv_links: {
     account_id: string;
     mode: "mock" | "sandbox" | "live";
@@ -200,8 +224,21 @@ export interface CommerceDatabase {
     period: string;
     gross_commission: string;
     platform_share: string;
-    status: "estimated" | "imported" | "settled" | "reversed";
+    status:
+      | "estimated"
+      | "imported"
+      | "settled"
+      | "reversed"
+      | "submitted"
+      | "approved"
+      | "rejected";
     provider_reference: string | null;
+    statement_name: string | null;
+    statement_sha256: string | null;
+    statement_csv: string | null;
+    submitted_at: Date | null;
+    reviewed_at: Date | null;
+    reviewer_note: string | null;
     created_at: Generated<Date>;
   };
   seller_profiles: {

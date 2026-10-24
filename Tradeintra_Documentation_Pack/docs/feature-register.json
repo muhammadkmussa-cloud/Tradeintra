@@ -1,15 +1,7 @@
 {
   "version": 1,
   "updated": "2026-10-20",
-  "statusKey": [
-    "IMPL",
-    "PART",
-    "MISS",
-    "MOCK",
-    "GATE",
-    "UNVER",
-    "DEFER"
-  ],
+  "statusKey": ["IMPL", "PART", "MISS", "MOCK", "GATE", "UNVER", "DEFER"],
   "domains": {
     "public": [
       {
@@ -111,13 +103,13 @@
       },
       {
         "id": "ONB-10",
-        "name": "30 starter credits",
-        "status": "IMPL"
+        "name": "No starter-credit requirement",
+        "status": "REMOVED"
       },
       {
         "id": "ONB-11",
-        "name": "30 referrer credits",
-        "status": "IMPL"
+        "name": "No credit-based referral reward",
+        "status": "REMOVED"
       },
       {
         "id": "ONB-12",
@@ -430,12 +422,12 @@
       {
         "id": "BILL-02",
         "name": "Starter credits",
-        "status": "IMPL"
+        "status": "REMOVED"
       },
       {
         "id": "BILL-03",
         "name": "Credit packs",
-        "status": "IMPL"
+        "status": "REMOVED"
       },
       {
         "id": "BILL-04",
@@ -455,7 +447,7 @@
       {
         "id": "BILL-07",
         "name": "Credit ledger",
-        "status": "IMPL"
+        "status": "REMOVED"
       },
       {
         "id": "BILL-08",
@@ -516,7 +508,7 @@
       },
       {
         "id": "BOT-04",
-        "name": "DeepSeek generation",
+        "name": "Deriv MIT preset library",
         "status": "IMPL"
       },
       {

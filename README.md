@@ -13,17 +13,17 @@ npm run dev
 
 Open `http://localhost:3000` for the public site, or `http://localhost:3000/studio` for the operator studio. No paid service, API key, or external database is needed for local development. Fonts are bundled, and browser requests use relative API URLs.
 
-You can use the two sample drafts in **anonymous demo mode**, or create an account for a separate, initially empty **server-backed development workspace**. Signup requires a full name, email, and a password with at least 8 characters, one uppercase letter, and one number. Local mode returns a development verification token; verifying awards 30 starter credits. Google sign-in uses a labelled mock identity locally until OAuth credentials are supplied. Do not use Deriv credentials or sensitive data. Accounts are limited to one active site; archive or delete before creating a replacement. Password recovery and real 2FA remain provider adapters.
+Anonymous demo mode starts empty with the same one-site creation flow as a server-backed development workspace. Signup requires a full name, email, and a password with at least 8 characters, one uppercase letter, and one number. Local mode returns a development verification token; verifying unlocks site creation. Google sign-in uses a labelled mock identity locally until OAuth credentials are supplied. Do not use Deriv credentials or sensitive data. Accounts are limited to one active site; archive or delete before creating a replacement. Password recovery and real 2FA remain provider adapters.
 
 ### The completed local flow
 
 1. Create an account or sign in.
 2. Choose the curated Deriv Studio template.
 3. Set a brand name, accent, headline, and description.
-4. Select market-watchlist, mock-terminal, and about modules.
+4. Choose from 20 brand-safe modules and enter optional operator content. Load a Deriv DBot preset from the included library.
 5. Choose a preview name; the server checks reservations across accounts.
 6. Save a private draft or publish an immutable mock snapshot.
-7. Open the snapshot at `/sites/your-slug` using **site actions → Open mock site**.
+7. Open the snapshot at `/sites/your-slug` using **site actions → Open mock site**, then launch the shared demo workspace from the Trade module at `/trade`.
 8. Edit drafts without changing the published site; publish a new version or restore an earlier version.
 9. Change workspace/mock-link settings, export configuration, archive a site, or sign out and return later.
 
@@ -31,8 +31,8 @@ Published mock snapshots are visible to anyone who knows their URL. **Never publ
 
 ## Implemented
 
-- Responsive dashboard with real workspace counts and clearly labeled sample drafts.
-- Five-step wizard, field validation, live brand preview, three configurable modules, desktop/mobile previews.
+- Responsive one-site manager with explicit empty and active-site states.
+- Five-step wizard, field validation, live brand preview, 20 configurable modules with operator-entered content, desktop/mobile previews, and dark/light site themes.
 - Server registration/sign-in/out, salted scrypt password hashes, hashed random session tokens, HttpOnly/SameSite cookies, Secure cookies on HTTPS.
 - Account-scoped SQL transactions and FORCE RLS; no client-supplied account ownership.
 - Cross-account name reservations, private drafts, published-only public rendering, immutable snapshots and append-only restore.
@@ -44,13 +44,13 @@ Published mock snapshots are visible to anyone who knows their URL. **Never publ
 
 ## Development-only mock operations
 
-In `next dev`, the studio exposes browser-local mock workflows for domains, billing, credits, email/2FA, support tickets, bots, AI generation, signals, marketplace, earnings, announcements, custom hosts, jobs, storage, backups, audit, and account lifecycle. They call no external provider, are clearly labelled `DEVELOPMENT MOCK`, and are hidden in production builds unless `NEXT_PUBLIC_MOCK_OPS=true` is set explicitly. Mock state is stored in the browser, not in the account database.
+In `next dev`, the studio exposes browser-local mock workflows for domains, email/2FA, support tickets, bots, signals, marketplace, earnings, announcements, custom hosts, jobs, storage, backups, audit, and account lifecycle. They call no external provider, are clearly labelled `DEVELOPMENT MOCK`, and are hidden in production builds unless `NEXT_PUBLIC_MOCK_OPS=true` is set explicitly. Mock state is stored in the browser, not in the account database.
 
 ## Storage modes and safety
 
 | Mode                      | How enabled                                                                                                                  | Persistence / limitations                                                                                                                                                               |
 | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Anonymous demo            | Always available at `/`                                                                                                      | `tradeintra-studio-v1` in this browser's localStorage; no authentication. Two editable sample drafts. Browser-only snapshots, not public URLs.                                          |
+| Anonymous demo            | Always available at `/`                                                                                                      | `tradeintra-studio-v1` in this browser's localStorage; no authentication. One editable demo site. Browser-only snapshots, not public URLs.                                              |
 | Local account studio      | Default for `npm run dev`; or explicit `STUDIO_DB_MODE=local` and `STUDIO_ENV=local` for a built local server                | Private on-disk PostgreSQL-in-WASM (PGlite); one process with serialized connection leases. Accounts/sessions/configuration survive process restarts. Not a production database choice. |
 | PostgreSQL staging studio | `STUDIO_DB_MODE=postgres`, `STUDIO_ENV=staging`, `STUDIO_ENABLED=true`, `APP_URL`, `DATABASE_URL`, and explicit schema setup | Uses `pg`/Kysely and a dedicated schema on an approved staging DB. No automatic hosted migration or silent local fallback. Actual Namecheap/PG 10/network/SSL limits remain unverified. |
 | Production/built default  | `npm run build && npm start`, no studio mode configured                                                                      | Server accounts disabled; browser demo remains available. No production account mode has been approved.                                                                                 |
@@ -110,4 +110,4 @@ The confirmed production target remains one Node.js runtime on Namecheap Stellar
 
 ## Explicitly unavailable
 
-Real Namecheap deployment, domain purchase/DNS/SSL, Deriv OAuth/trading, payments/earnings, email verification/recovery, 2FA, customer asset uploads/scanning, bot/AI/signal/marketplace operations, production billing/plan enforcement, admin/team RBAC, and permanent account erasure. The UI does not pretend these work. Read the delivery record for the production gate; this repository is not a production-release sign-off.
+Real Namecheap deployment, domain purchase/DNS/SSL, Deriv OAuth/trading, payments/earnings, email verification/recovery, 2FA, customer asset uploads/scanning, bot preset/signal/marketplace operations, production billing/plan enforcement, admin/team RBAC, and permanent account erasure. The UI does not pretend these work. Read the delivery record for the production gate; this repository is not a production-release sign-off.

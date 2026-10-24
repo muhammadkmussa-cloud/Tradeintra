@@ -4,7 +4,7 @@ import { Reveal } from "@/components/reveal";
 import { HomeAnnouncement } from "@/components/home-announcement";
 
 const proof = [
-  ["30", "starter credits", "when your email is verified"],
+  ["09", "Deriv presets", "MIT-licensed DBot starting points"],
   ["15%", "platform share", "of attributed Deriv commission"],
   ["85%", "provider share", "after marketplace fees"],
   ["01", "active site", "focused by design"],
@@ -56,10 +56,10 @@ const system = [
   },
   {
     key: "bots",
-    eyebrow: "AI BOTS",
-    title: "Turn an idea into something you can inspect.",
-    text: "Generate DBot XML with credits you can see, refine the logic, verify compatibility, and keep a library of versions. AI assists; you stay responsible for the strategy.",
-    points: ["10 credits to generate", "3 to refine", "3 to verify"],
+    eyebrow: "DERIV PRESETS",
+    title: "Start from a strategy you can inspect.",
+    text: "Load Deriv’s MIT-licensed DBot presets, review stake and stop-loss settings, verify the XML, and keep a private library. No AI generation charges.",
+    points: ["9 reviewed presets", "No AI credits", "Verify before assign"],
   },
   {
     key: "signals",
@@ -91,8 +91,8 @@ const faqs = [
     "Yes. Launch on a free subdomain, buy a domain through the desk, or connect one you already own. DNS and TLS are verified before activation.",
   ],
   [
-    "What do credits cost?",
-    "Verified accounts start with 30 credits. Additional packs are 30 for $4.99, 65 for $9.99, and 150 for $19.99. There is no monthly subscription.",
+    "Do bots cost credits?",
+    "No. The Deriv preset library and XML tools are included. There are no AI credits, credit packs, or generation charges.",
   ],
   [
     "What happens when I change my mind?",
@@ -329,37 +329,37 @@ export default function MarketingHome() {
       >
         <Reveal>
           <span className="marketing-eyebrow">PRICING / SIMPLE BY DESIGN</span>
-          <h2>Start free. Pay for what you use.</h2>
+          <h2>One platform share. No credit packs.</h2>
           <p>
-            No monthly subscription. Verified accounts receive 30 AI credits.
-            Buy more when the work asks for it; domain and marketplace purchases
-            are priced separately.
+            Start with the builder and Deriv preset library at no monthly fee.
+            Tradeintra earns 15% of attributed Deriv commission; domains and
+            marketplace purchases are priced separately.
           </p>
           <div className="home-price-note">
-            <span>30 starter credits</span>
+            <span>No AI credits</span>
             <span>No subscription</span>
-            <span>Buy only when needed</span>
+            <span>15% platform share</span>
           </div>
         </Reveal>
         <Reveal className="marketing-price-card home-price-card" delay={120}>
-          <span>AI CREDIT PACKS</span>
+          <span>OPERATOR ACCESS</span>
           <ul>
             <li>
-              <strong>30</strong>
-              <span>$4.99</span>
+              <strong>1</strong>
+              <span>active site</span>
             </li>
             <li>
-              <strong>65</strong>
-              <span>$9.99</span>
+              <strong>15</strong>
+              <span>modules</span>
             </li>
             <li>
-              <strong>150</strong>
-              <span>$19.99</span>
+              <strong>9</strong>
+              <span>Deriv presets</span>
             </li>
           </ul>
-          <p>Generate 10 · refine 3 · verify 3 credits.</p>
+          <p>No AI credits. No monthly subscription.</p>
           <Link className="btn primary" href="/signup">
-            Start with 30 free
+            Start building
           </Link>
         </Reveal>
       </section>

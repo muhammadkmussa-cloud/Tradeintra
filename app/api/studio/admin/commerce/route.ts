@@ -17,6 +17,7 @@ import {
   listAllTransferRequests,
   setTransferStatus,
   recordCommission,
+  reviewCommission,
   updateDomainPriceRule,
 } from "@/lib/server/commerce";
 
@@ -37,7 +38,7 @@ async function admin(request: NextRequest) {
   if (!actor) throw new StudioError(401, "Sign in first.", "UNAUTHENTICATED");
   if (!["super_admin", "finance", "support"].includes(actor.role))
     throw new StudioError(403, "Admin access is required.", "FORBIDDEN");
-  return { db, role: actor.role };
+  return { db, role: actor.role, actorId: actor.id };
 }
 function requireRole(role: string, allowed: string[]) {
   if (!allowed.includes(role))
@@ -56,7 +57,7 @@ function failure(error: unknown) {
 
 export async function GET(request: NextRequest) {
   try {
-    const { db, role } = await admin(request);
+    const { db, role, actorId } = await admin(request);
     if (role === "support")
       return json({
         sellers: await listSellerProfiles(db),
@@ -91,7 +92,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     checkOrigin(request);
-    const { db, role } = await admin(request);
+    const { db, role, actorId } = await admin(request);
     const body = await readJson(request);
     const input =
       body && typeof body === "object" ? (body as Record<string, unknown>) : {};
@@ -162,10 +163,32 @@ export async function POST(request: NextRequest) {
           String(input.period ?? new Date().toISOString().slice(0, 7)),
           Number(input.gross ?? 0),
           String(input.status ?? "imported") as
-            "estimated" | "imported" | "settled" | "reversed",
+            | "estimated"
+            | "imported"
+            | "settled"
+            | "reversed"
+            | "submitted"
+            | "approved"
+            | "rejected",
           input.reference ? String(input.reference) : undefined,
         ),
       );
+    }
+    if (action === "review-commission") {
+      requireRole(role, ["super_admin", "finance"]);
+      const status = String(input.status ?? "") as
+        "approved" | "rejected" | "settled";
+      if (!["approved", "rejected", "settled"].includes(status))
+        throw new StudioError(422, "Invalid commission status.", "VALIDATION");
+      return json({
+        commissions: await reviewCommission(
+          db,
+          String(input.id ?? ""),
+          status,
+          String(input.note ?? ""),
+          actorId,
+        ),
+      });
     }
     throw new StudioError(
       400,

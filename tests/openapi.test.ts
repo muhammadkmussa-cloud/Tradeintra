@@ -6,7 +6,6 @@ describe("public OpenAPI contract", () => {
     const document = (await GET().json()) as {
       paths: Record<string, Record<string, { responses?: unknown }>>;
     };
-    expect(document.paths["/api/studio/credits"]).toBeTruthy();
     expect(document.paths["/api/studio/sites"]).toBeUndefined();
     expect(document.paths["/api/studio/billing"]).toBeUndefined();
     for (const path of Object.values(document.paths))

@@ -11,7 +11,7 @@
 7. Preview and publish.
 8. Domain search, purchase, connection, DNS/SSL status, renewals.
 9. Publish status and history.
-10. XML bots, AI Bot Generator, AI Builder.
+10. XML bots and Deriv preset library.
 11. AI Signals and Telegram.
 12. Marketplace/bot store (phase).
 13. Commissions, earnings, payouts.
@@ -21,13 +21,12 @@
 
 Authenticated sidebar (reference-derived, adapted):
 
-- Overview
-- Sites
+- My Site
 - Templates
 - Domains
 - Publish status
 - XML Bots
-- AI Bot Generator
+- Deriv preset library
 - AI Builder
 - AI Signals
 - Marketplace
@@ -59,7 +58,7 @@ Must show:
 
 - account status and plan;
 - Deriv link status (`Not linked`, `Mock linked`, `Live linked`);
-- sites and their status;
+- the active site and its status;
 - domains and expiry warnings;
 - recent publishes;
 - usage against limits;
@@ -150,7 +149,7 @@ Show a live preview and a “reset to template default” action with confirmati
 - rename/describe/tag;
 - delete with confirmation.
 
-### AI Bot Generator
+### Deriv preset library
 
 - prompt or video link;
 - quick templates;

@@ -14,7 +14,12 @@ import {
   PocConfigurationError,
   type TenantSlug,
 } from "./poc-config";
-import { defaultConfig, validateConfig, type Config } from "../studio";
+import {
+  defaultConfig,
+  normalizeConfig,
+  validateConfig,
+  type Config,
+} from "../studio";
 
 export interface PocDatabase {
   accounts: { id: string; name: string };
@@ -215,16 +220,17 @@ export async function loadPublishedTenant(
       .where("sites.slug", "=", slug)
       .where("sites.account_id", "=", route.account_id)
       .executeTakeFirst();
+    if (!version) return null;
+    const config = normalizeConfig(version.config);
     if (
-      !version ||
       Object.keys(
-        validateConfig(version.config, [], undefined, {
+        validateConfig(config, [], undefined, {
           allowLegacySlug: true,
         }),
       ).length
     )
       return null;
-    return version.config;
+    return config;
   });
 }
 export async function runPocCron(db: PocDb) {

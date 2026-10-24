@@ -20,7 +20,6 @@ export default defineConfig({
       STORAGE_ROOT: "/tmp/tradeintra-e2e-storage",
       STUDIO_DATA_DIR: "/tmp/tradeintra-e2e-db",
       STUDIO_ENV: "local",
-      DEEPSEEK_MODE: "mock",
       TELEGRAM_MODE: "mock",
       PAYMENT_MODE: "mock",
       PAYOUT_MODE: "mock",

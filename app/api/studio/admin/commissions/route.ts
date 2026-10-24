@@ -61,8 +61,24 @@ export async function POST(request: NextRequest) {
     if (!accountId)
       throw new StudioError(422, "accountId is required.", "VALIDATION");
     const status = String(input.status ?? "imported") as
-      "estimated" | "imported" | "settled" | "reversed";
-    if (!["estimated", "imported", "settled", "reversed"].includes(status))
+      | "estimated"
+      | "imported"
+      | "settled"
+      | "reversed"
+      | "submitted"
+      | "approved"
+      | "rejected";
+    if (
+      ![
+        "estimated",
+        "imported",
+        "settled",
+        "reversed",
+        "submitted",
+        "approved",
+        "rejected",
+      ].includes(status)
+    )
       throw new StudioError(422, "Invalid commission status.", "VALIDATION");
     return json(
       await recordCommission(

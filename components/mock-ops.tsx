@@ -18,19 +18,15 @@ import {
 } from "lucide-react";
 import {
   MOCK_OPS_KEY,
-  MOCK_PLANS,
-  availableCredits,
+  availableEarnings,
   addAsset,
   addHostMapping,
   advanceDomain,
   createBackup,
   assignBot,
-  buyCredits,
   buyDomain,
   buyListing,
   cancelDeletion,
-  cancelSubscription,
-  changePlan,
   closeTicket,
   connectDomain,
   createAnnouncement,
@@ -50,7 +46,6 @@ import {
   requestDeletion,
   requestPayout,
   restoreBackup,
-  resumeSubscription,
   runJobs,
   searchDomains,
   sendEmail,
@@ -58,7 +53,6 @@ import {
   setDomainMarkup,
   setHostStatus,
   setSignalStatus,
-  spendCredits,
   toggleTwoFactor,
   validateBot,
   verifyEmail,
@@ -211,7 +205,6 @@ export function MockOpsPage({
     if (message) notify(message);
   };
 
-  const plan = MOCK_PLANS.find((p) => p.id === state.planId) ?? MOCK_PLANS[0];
   const connectHost = normalizeMockHostname(connectName);
   const connectTaken = Boolean(
     connectHost && state.domains.some((domain) => domain.name === connectHost),
@@ -221,7 +214,7 @@ export function MockOpsPage({
     mappingHost &&
     state.hostMappings.some((mapping) => mapping.hostname === mappingHost),
   );
-  const creditsAvailable = availableCredits(state);
+  const earningsAvailable = availableEarnings(state);
   const siteName = (siteId?: string) =>
     sites.find((s) => s.id === siteId)?.name ?? "No site";
 
@@ -576,165 +569,6 @@ export function MockOpsPage({
     );
   }
 
-  if (page === "Billing") {
-    return (
-      <div className="mock-stack">
-        {header}
-        <div className="mock-plan-grid">
-          {MOCK_PLANS.map((option) => (
-            <section
-              className={`mock-plan ${option.id === state.planId ? "current" : ""}`}
-              key={option.id}
-            >
-              <div className="mock-plan-top">
-                <span>{option.name}</span>
-                {option.id === state.planId ? <Badge status="current" /> : null}
-              </div>
-              <strong>
-                {option.price ? `${money(option.price)}/mo` : "Free"}
-              </strong>
-              <ul>
-                {option.features.map((feature) => (
-                  <li key={feature}>
-                    <Check size={14} />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-              <button
-                className={`btn ${option.id === state.planId ? "" : "primary"}`}
-                disabled={option.id === state.planId}
-                onClick={() =>
-                  commit(
-                    changePlan(state, option.id),
-                    `${option.name} plan selected in the mock billing provider.`,
-                  )
-                }
-              >
-                {option.id === state.planId ? "Current plan" : "Switch plan"}
-              </button>
-            </section>
-          ))}
-        </div>
-
-        <div className="mock-two-col">
-          <Panel
-            title="Subscription"
-            detail="Mock provider state; no payment is taken."
-          >
-            <div className="mock-kv">
-              <span>Status</span>
-              <Badge status={state.subscription} />
-            </div>
-            <div className="mock-kv">
-              <span>Renews</span>
-              <strong>{date(state.renewsAt)}</strong>
-            </div>
-            <div className="mock-kv">
-              <span>Cancels at period end</span>
-              <strong>{state.cancelAtPeriodEnd ? "Yes" : "No"}</strong>
-            </div>
-            <div className="mock-actions">
-              {state.cancelAtPeriodEnd ? (
-                <button
-                  className="btn primary"
-                  onClick={() =>
-                    commit(
-                      resumeSubscription(state),
-                      "Mock subscription resumed.",
-                    )
-                  }
-                >
-                  Resume
-                </button>
-              ) : (
-                <button
-                  className="btn"
-                  onClick={() =>
-                    commit(
-                      cancelSubscription(state),
-                      "Mock subscription will cancel at period end.",
-                    )
-                  }
-                >
-                  Cancel at period end
-                </button>
-              )}
-            </div>
-          </Panel>
-          <Panel
-            title="AI credits"
-            detail="Credit ledger with mock pack purchase."
-            action={<Badge status={`${state.credits} credits`} />}
-          >
-            <div className="mock-credit-balance">
-              {state.credits}
-              <small>credits available</small>
-            </div>
-            <div className="mock-actions">
-              {[
-                { amount: 30, price: 4.99 },
-                { amount: 65, price: 9.99 },
-                { amount: 150, price: 19.99 },
-              ].map((pack) => (
-                <button
-                  className="btn"
-                  key={pack.amount}
-                  onClick={() =>
-                    commit(
-                      buyCredits(state, pack.amount, pack.price),
-                      `${pack.amount} mock credits added.`,
-                    )
-                  }
-                >
-                  +{pack.amount} · {money(pack.price)}
-                </button>
-              ))}
-            </div>
-            <div className="mock-list">
-              {state.creditLedger.slice(0, 6).map((entry) => (
-                <div className="mock-list-row" key={entry.id}>
-                  <span>
-                    {entry.reason}
-                    <small>{date(entry.at)}</small>
-                  </span>
-                  <strong>
-                    {entry.delta > 0 ? "+" : ""}
-                    {entry.delta}
-                  </strong>
-                </div>
-              ))}
-            </div>
-          </Panel>
-        </div>
-
-        <Panel
-          title="Entitlements"
-          detail="Mock plan limits used by this development workspace."
-        >
-          <div className="mock-entitlements">
-            <div>
-              <span>Sites</span>
-              <strong>{plan.limits.sites}</strong>
-            </div>
-            <div>
-              <span>Domains</span>
-              <strong>{plan.limits.domains}</strong>
-            </div>
-            <div>
-              <span>Storage</span>
-              <strong>{plan.limits.storageMb} MB</strong>
-            </div>
-            <div>
-              <span>AI credits included</span>
-              <strong>{plan.limits.aiCredits}</strong>
-            </div>
-          </div>
-        </Panel>
-      </div>
-    );
-  }
-
   if (page === "XML Bots") {
     return (
       <div className="mock-stack">
@@ -857,78 +691,6 @@ export function MockOpsPage({
             </div>
           </Panel>
         </div>
-      </div>
-    );
-  }
-
-  if (page === "AI Bot Generator") {
-    return (
-      <div className="mock-stack">
-        {header}
-        <Panel
-          title="AI bot generator"
-          detail="Mock generation job. Costs 10 credits; no AI provider is called."
-          action={<Badge status={`${state.credits} credits`} />}
-        >
-          <label className="field">
-            Strategy prompt
-            <textarea
-              rows={4}
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-            />
-          </label>
-          <div className="mock-actions">
-            <button
-              className="btn primary"
-              disabled={state.credits < 10}
-              onClick={() => {
-                const next = createBot(
-                  spendCredits(state, 10, "AI bot generation · mock"),
-                  "Generated strategy",
-                  '<xml><strategy name="generated" /><tradeintra>true</tradeintra></xml>',
-                );
-                commit(next, "Generated a mock bot. 10 credits spent.");
-              }}
-            >
-              Generate · 10 credits
-            </button>
-            <span className="mock-note">
-              Insufficient credits blocks generation in the fixture.
-            </span>
-          </div>
-          <div className="mock-list">
-            {state.bots
-              .filter((bot) => bot.name === "Generated strategy")
-              .map((bot) => (
-                <div className="mock-card" key={bot.id}>
-                  <div className="mock-card-top">
-                    <strong>{bot.name}</strong>
-                    <Badge status={bot.compatibility} />
-                  </div>
-                  <code className="mock-code">{bot.xml}</code>
-                </div>
-              ))}
-          </div>
-        </Panel>
-        <Panel
-          title="Generation jobs"
-          detail="Jobs are completed synchronously in this mock."
-        >
-          <div className="mock-list">
-            {state.creditLedger
-              .filter((entry) => entry.reason.includes("AI bot"))
-              .map((entry) => (
-                <div className="mock-list-row" key={entry.id}>
-                  <span>
-                    {entry.reason}
-                    <small>{date(entry.at)}</small>
-                  </span>
-                  <strong>{entry.delta}</strong>
-                </div>
-              ))}
-          </div>
-        </Panel>
       </div>
     );
   }
@@ -1157,7 +919,7 @@ export function MockOpsPage({
         <div className="mock-metrics">
           <div>
             <span>Available</span>
-            <strong>{money(creditsAvailable)}</strong>
+            <strong>{money(earningsAvailable)}</strong>
           </div>
           <div>
             <span>Pending</span>

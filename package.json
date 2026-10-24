@@ -18,7 +18,7 @@
     "poc:cron": "tsx --env-file-if-exists=.env.poc scripts/poc-cron.ts",
     "poc:smoke": "node scripts/poc-runtime-smoke.mjs",
     "studio:migrate": "tsx --env-file-if-exists=.env.studio scripts/studio-migrate.ts",
-    "package:cpanel": "npm run build && node scripts/package-release.mjs",
+    "package:cpanel": "npm run build && node scripts/package-release.mjs && node scripts/verify-release.mjs",
     "provider:check": "node scripts/provider-check.mjs",
     "host:check": "tsx --env-file-if-exists=.env.studio scripts/host-check.ts",
     "account:purge": "tsx scripts/account-deletion.ts",

@@ -9,7 +9,6 @@ import {
   authenticate,
   createEmailVerification,
   createPasswordReset,
-  creditBalance,
   googleMockSignIn,
   resetPassword,
   sessionActor,
@@ -124,7 +123,7 @@ describe("authenticated local MVP database and service", () => {
     });
     expect(await sessionActor(db, "forged")).toBeNull();
   });
-  it("enforces the password policy and awards verified starter/referral credits", async () => {
+  it("enforces the password policy without a credit balance", async () => {
     expect(() => validatePasswordPolicy("weakpass")).toThrow();
     expect(() => validatePasswordPolicy("NoNumberHere")).toThrow();
     expect(() => validatePasswordPolicy("GoodPass1")).not.toThrow();
@@ -147,7 +146,6 @@ describe("authenticated local MVP database and service", () => {
       },
     );
     expect(referred.actor.emailVerified).toBe(false);
-    expect(await creditBalance(db, referred.actor.id)).toBe(0);
     const token = await createEmailVerification(db, referred.actor.id);
     const outbox = await db
       .selectFrom("email_outbox")
@@ -162,8 +160,6 @@ describe("authenticated local MVP database and service", () => {
     });
     expect(outbox?.body).toContain("/verify-email?token=");
     await verifyEmail(db, token);
-    expect(await creditBalance(db, referred.actor.id)).toBe(30);
-    expect(await creditBalance(db, a.id)).toBe(30);
     await expect(verifyEmail(db, token)).rejects.toMatchObject({
       status: 400,
     });
@@ -203,10 +199,9 @@ describe("authenticated local MVP database and service", () => {
       }),
     ).resolves.toMatchObject({ revision: expect.any(Number) });
   });
-  it("creates a verified mock Google account with starter credits", async () => {
+  it("creates a verified mock Google account without starter credits", async () => {
     const google = await googleMockSignIn(db);
     expect(google.actor.emailVerified).toBe(true);
-    expect(await creditBalance(db, google.actor.id)).toBe(30);
   });
   it("supports password reset tokens without weakening the policy", async () => {
     const token = await createPasswordReset(db, a.id);

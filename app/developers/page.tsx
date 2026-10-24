@@ -8,7 +8,7 @@ const capabilities = [
   {
     n: "01",
     title: "Account-aware contracts",
-    text: "Session-scoped routes for the studio, domains, credits, signals, marketplace, support, and account export. Tenant boundaries are enforced on the server, not in the browser.",
+    text: "Session-scoped routes for the studio, domains, bots, signals, marketplace, support, and account export. Tenant boundaries are enforced on the server, not in the browser.",
   },
   {
     n: "02",
@@ -69,7 +69,6 @@ export default function DevelopersPage() {
     "fullName": "Operator",
     "emailVerified": true
   },
-  "credits": 30,
   "studio": {
     "workspace": "My workspace",
     "derivLinked": false,
@@ -91,8 +90,8 @@ export default function DevelopersPage() {
           <h2>Enough control to build. Enough boundary to trust.</h2>
           <p>
             Start with the account and site model. Add domains, publishing,
-            credits, bots, signals, or marketplace workflows only where the
-            product has a real contract behind them.
+            bots, signals, or marketplace workflows only where the product has a
+            real contract behind them.
           </p>
         </Reveal>
         <div className="info-grid">
@@ -127,7 +126,6 @@ export default function DevelopersPage() {
             {[
               ["/api/studio/session", "Current account and studio state"],
               ["/api/studio/domains", "Search, purchase, connect, verify"],
-              ["/api/studio/credits", "Balance, packs, invoices"],
               ["/api/studio/signals", "Trials, subscriptions, delivery"],
               ["/api/studio/marketplace", "Listings, orders, refunds"],
               ["/api/mcp", "Public read-only MCP tools"],

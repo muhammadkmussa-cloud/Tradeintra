@@ -13,6 +13,8 @@ const config: NextConfig = {
       "./.playwright-mcp/**/*",
       "./.github/**/*",
       "./README.md",
+      "./*.png",
+      "./dist/**/*",
       "./node_modules/@electric-sql/**/*",
       "./node_modules/@img/**/*",
       "./node_modules/sharp/**/*",

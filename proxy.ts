@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
+  assertMockOnly,
   getTenantForHost,
   isPocEnabled,
   normalizeHostname,
@@ -75,6 +76,7 @@ export function proxy(request: NextRequest) {
       process.env.TENANT_CUSTOM_HOSTS === "true";
 
     if (isPocEnabled()) {
+      assertMockOnly();
       if (!host) return notFound();
       const tenant = getTenantForHost(host);
       if (!tenant) return NextResponse.next();

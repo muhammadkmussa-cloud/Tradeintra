@@ -8,12 +8,12 @@ const tools = [
   {
     name: "tradeintra_pricing",
     label: "Pricing",
-    text: "Read the public credit packs, bot costs, domain markup, signal price, and marketplace split. No account data.",
+    text: "Read the public Deriv preset library, domain markup, signal price, and marketplace split. No account data.",
   },
   {
     name: "tradeintra_status",
     label: "Provider modes",
-    text: "Read whether the studio, AI, email, domains, payments, and Telegram adapters are configured for mock, sandbox, or live use.",
+    text: "Read whether the studio, email, domains, payments, and Telegram adapters are configured for mock, sandbox, or live use.",
   },
   {
     name: "tradeintra_boundaries",

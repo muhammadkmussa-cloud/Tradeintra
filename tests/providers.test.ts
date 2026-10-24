@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { generateBotXml } from "../lib/server/providers/ai";
 import {
   createCheckout,
   verifyWebhook,
@@ -15,16 +14,6 @@ import { sendPayout } from "../lib/server/providers/payouts";
 afterEach(() => vi.unstubAllGlobals());
 
 describe("provider adapters", () => {
-  it("returns a deterministic mock bot without a DeepSeek key", async () => {
-    process.env.DEEPSEEK_MODE = "mock";
-    const result = await generateBotXml("range breakout", 10);
-    expect(result.provider).toBe("mock");
-    expect(result.credits).toBe(10);
-    expect(result.xml).toContain("<xml>");
-    expect(result.xml).toContain("range breakout");
-    delete process.env.DEEPSEEK_MODE;
-  });
-
   it("keeps the mock domain provider separate from unconfigured Namecheap", async () => {
     const mock = new MockDomainProvider();
     await expect(mock.search("acme.com")).resolves.toMatchObject({
@@ -145,13 +134,13 @@ describe("provider adapters", () => {
       provider: "mock",
       amount: 499,
       currency: "KES",
-      reference: "credits-30",
-      description: "30 AI credits",
+      reference: "domain-acme",
+      description: "Domain order",
     });
     expect(checkout).toMatchObject({
       provider: "mock",
       status: "paid",
-      reference: "credits-30",
+      reference: "domain-acme",
     });
     expect(verifyWebhook("paystack", null, "{}")).toBe(true);
   });

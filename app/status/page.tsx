@@ -2,7 +2,6 @@ import Link from "next/link";
 import { MarketingShell } from "@/components/marketing-shell";
 import { Reveal } from "@/components/reveal";
 import { studioMode } from "@/lib/server/studio/database";
-import { aiMode } from "@/lib/server/providers/ai";
 import { emailMode } from "@/lib/server/providers/email";
 import { domainMode } from "@/lib/server/providers/domain";
 import { paymentMode } from "@/lib/server/providers/payments";
@@ -22,7 +21,6 @@ function safeMode(read: () => string) {
 export default function StatusPage() {
   const providers = [
     ["Studio persistence", safeMode(studioMode)],
-    ["AI", safeMode(aiMode)],
     ["Email", safeMode(emailMode)],
     ["Domains", safeMode(domainMode)],
     ["Payments", safeMode(paymentMode)],

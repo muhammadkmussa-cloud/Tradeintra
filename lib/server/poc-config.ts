@@ -20,7 +20,6 @@ export function assertMockOnly(env: Environment = process.env) {
   }
 }
 export function isPocEnabled(env: Environment = process.env) {
-  assertMockOnly(env);
   return env.POC_ENABLED === "true";
 }
 export function requirePoc(env: Environment = process.env) {
@@ -28,6 +27,7 @@ export function requirePoc(env: Environment = process.env) {
     throw new PocConfigurationError(
       "Set POC_ENABLED=true only in an approved staging environment.",
     );
+  assertMockOnly(env);
 }
 export function normalizeHostname(
   input: string | null | undefined,

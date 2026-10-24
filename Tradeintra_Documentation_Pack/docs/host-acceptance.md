@@ -65,7 +65,7 @@
 ## 6. Providers
 
 - [ ] Google OAuth redirect URI and authorized origins.
-- [ ] DeepSeek sandbox/live request and spend cap.
+- [ ] Deriv preset XML validates without external AI calls.
 - [ ] Paystack test transaction and webhook signature, including credit packs and signal subscriptions.
 - [ ] M-Pesa sandbox STK and callback, including credit packs and signal subscriptions; set `MPESA_CALLBACK_SECRET` and `MPESA_ALLOWED_IPS` before live mode.
 - [ ] Confirm a failed signal payment pauses the order.

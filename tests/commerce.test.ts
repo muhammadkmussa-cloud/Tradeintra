@@ -17,6 +17,9 @@ import {
   quoteDomain,
   recordCommission,
   removeDomain,
+  getCommissionStatement,
+  reviewCommission,
+  submitCommissionStatement,
   renewDomain,
   listTransferRequests,
   requestTransfer,
@@ -175,6 +178,76 @@ describe("domain and commission lifecycle", () => {
     delete process.env.NAMECHEAP_MODE;
   });
 
+  it("submits a commission statement and records Finance review", async () => {
+    const csv = "period,gross_commission\n2026-11,250.00\n2026-11,50.00\n";
+    const summary = await submitCommissionStatement(
+      db,
+      actor.id,
+      "2026-11",
+      300,
+      "deriv-november.csv",
+      "hash-2026-11",
+      csv,
+    );
+    expect(summary.pending).toBe(45);
+    const entry = summary.entries.find((row) => row.period === "2026-11");
+    expect(entry).toMatchObject({
+      gross_commission: "300.00",
+      platform_share: "45.00",
+      status: "submitted",
+      statement_name: "deriv-november.csv",
+    });
+    expect("statement_csv" in entry!).toBe(false);
+    await expect(
+      submitCommissionStatement(
+        db,
+        actor.id,
+        "2026-12",
+        100,
+        "duplicate.csv",
+        "hash-2026-11",
+        "gross_commission\n100",
+      ),
+    ).rejects.toMatchObject({ code: "DUPLICATE_STATEMENT" });
+    const formula = await submitCommissionStatement(
+      db,
+      actor.id,
+      "2027-01",
+      10,
+      "formula.csv",
+      "hash-formula",
+      'period,gross_commission,note\n2027-01,10,=HYPERLINK("https://bad")\n',
+    );
+    const formulaEntry = formula.entries.find(
+      (row) => row.period === "2027-01",
+    )!;
+    const saved = await getCommissionStatement(db, formulaEntry.id);
+    expect(saved.statement_csv).toContain("'=HYPERLINK");
+    const quoted = await submitCommissionStatement(
+      db,
+      actor.id,
+      "2027-02",
+      10,
+      "quoted.csv",
+      "hash-quoted",
+      'period,gross_commission,note\n2027-02,10,"=HYPERLINK(""https://bad"")"\n',
+    );
+    const quotedEntry = quoted.entries.find((row) => row.period === "2027-02")!;
+    expect(
+      (await getCommissionStatement(db, quotedEntry.id)).statement_csv,
+    ).toContain("'=HYPERLINK");
+    const reviewed = await reviewCommission(
+      db,
+      entry!.id,
+      "approved",
+      "Matched partner statement.",
+      actor.id,
+    );
+    expect(reviewed.find((row) => row.id === entry!.id)?.status).toBe(
+      "approved",
+    );
+  });
+
   it("is idempotent and computes the 15% commission share", async () => {
     const first = await buyDomain(
       db,
@@ -197,6 +270,7 @@ describe("domain and commission lifecycle", () => {
     ).toHaveLength(
       first.filter((domain) => domain.name === "idempotent.com").length,
     );
+    const before = await commissionSummary(db, actor.id);
     const summary = await recordCommission(
       db,
       actor.id,
@@ -206,14 +280,14 @@ describe("domain and commission lifecycle", () => {
       "imported",
       "deriv-ref",
     );
-    expect(summary.gross).toBe(100);
-    expect(summary.platformShare).toBe(15);
+    expect(summary.gross).toBe(before.gross + 100);
+    expect(summary.platformShare).toBe(before.platformShare + 15);
     expect(summary.entries[0].status).toBe("imported");
     const listed = await listDomains(db, actor.id);
     expect(listed.length).toBeGreaterThanOrEqual(2);
     expect(await commissionSummary(db, actor.id)).toMatchObject({
-      gross: 100,
-      platformShare: 15,
+      gross: before.gross + 100,
+      platformShare: before.platformShare + 15,
     });
   });
 });

@@ -4,13 +4,9 @@ import {
   addHostMapping,
   advanceDomain,
   assignBot,
-  availableCredits,
-  buyCredits,
   buyDomain,
   buyListing,
   cancelDeletion,
-  cancelSubscription,
-  changePlan,
   closeTicket,
   connectDomain,
   createAnnouncement,
@@ -31,7 +27,6 @@ import {
   requestDeletion,
   requestPayout,
   restoreBackup,
-  resumeSubscription,
   runJobs,
   searchDomains,
   sendEmail,
@@ -112,17 +107,8 @@ describe("development mock operations", () => {
     ).toBe(false);
   });
 
-  it("handles plans, credits, cancellation, and payroll fixtures", () => {
+  it("handles marketplace and payroll fixtures", () => {
     let state = initialMockState();
-    state = changePlan(state, "scale");
-    expect(state.planId).toBe("scale");
-    state = cancelSubscription(state);
-    expect(state.cancelAtPeriodEnd).toBe(true);
-    state = resumeSubscription(state);
-    expect(state.cancelAtPeriodEnd).toBe(false);
-    state = buyCredits(state, 30, 4.99);
-    expect(state.credits).toBe(70);
-    expect(state.creditLedger[0].delta).toBe(30);
     const before = state.earnings.length;
     state = buyListing(state, state.listings[0].id);
     expect(state.earnings.length).toBe(before + 1);

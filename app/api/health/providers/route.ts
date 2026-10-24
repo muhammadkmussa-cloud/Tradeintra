@@ -1,4 +1,3 @@
-import { aiMode } from "@/lib/server/providers/ai";
 import { emailMode } from "@/lib/server/providers/email";
 import { domainMode } from "@/lib/server/providers/domain";
 import { paymentMode } from "@/lib/server/providers/payments";
@@ -13,10 +12,6 @@ export function GET() {
     {
       service: "tradeintra",
       providers: {
-        ai: {
-          mode: aiMode(),
-          configured: Boolean(process.env.DEEPSEEK_API_KEY),
-        },
         email: {
           mode: emailMode(),
           configured: Boolean(

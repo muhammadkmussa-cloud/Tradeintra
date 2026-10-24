@@ -37,7 +37,8 @@ describe("public read-only MCP", () => {
     };
     const body = JSON.parse(response.result.content[0].text);
     expect(body.signal.priceUsd).toBe(8.99);
-    expect(body.credits.packs).toHaveLength(3);
+    expect(body.botPresets.count).toBe(9);
+    expect(body.botPresets.licence).toBe("MIT");
     expect(JSON.stringify(body)).not.toContain("@example");
   });
 

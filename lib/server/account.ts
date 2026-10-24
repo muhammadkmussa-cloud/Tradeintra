@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { StudioError, type StudioDb, type StudioTrx } from "./studio/types";
 import { scope, serviceScope } from "./studio/database";
-import { creditBalance } from "./studio/auth";
 import { loadState } from "./studio/service";
 import { listDomains } from "./commerce";
 import { listBots } from "./bots";
@@ -23,7 +22,6 @@ export async function exportAccount(db: StudioDb, account: string) {
     purchases,
     tickets,
     announcements,
-    credits,
     commissions,
   ] = await Promise.all([
     loadState(db, account),
@@ -34,13 +32,11 @@ export async function exportAccount(db: StudioDb, account: string) {
     listBuyerOrders(db, account),
     listTickets(db, account),
     listAnnouncements(db, account),
-    creditBalance(db, account),
     commissionSummary(db, account),
   ]);
   return {
     exportedAt: new Date().toISOString(),
     account: { id: account },
-    credits,
     studio,
     domains,
     bots,

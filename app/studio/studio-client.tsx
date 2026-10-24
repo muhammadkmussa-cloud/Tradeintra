@@ -13,11 +13,9 @@ import {
   Globe2,
   Rocket,
   Bot,
-  WandSparkles,
   Radio,
   Store,
   Wallet,
-  CreditCard,
   Megaphone,
   CircleHelp,
   Settings,
@@ -25,7 +23,6 @@ import {
   ChevronRight,
   Check,
   X,
-  Search,
   Bell,
   MoreHorizontal,
   ExternalLink,
@@ -50,7 +47,6 @@ import { useServerWorkspace } from "@/lib/use-server-workspace";
 import dynamic from "next/dynamic";
 import { mockOpsEnabled } from "@/lib/mock-ops";
 import { ServerDomains } from "@/components/server-domains";
-import { ServerBilling } from "@/components/server-billing";
 import { ServerEarnings } from "@/components/server-earnings";
 import { ServerMarketplace } from "@/components/server-marketplace";
 import { ServerSignals } from "@/components/server-signals";
@@ -58,6 +54,11 @@ import { ServerAdmin } from "@/components/server-admin";
 import { ServerBots } from "@/components/server-bots";
 import { ServerMfa } from "@/components/server-mfa";
 import { BrandMark } from "@/components/brand-mark";
+import { ModuleEditor } from "@/components/module-editor";
+import { LogoUpload } from "@/components/logo-upload";
+import { PublishedSite } from "@/components/published-site";
+import { WorkspacePreview } from "@/components/workspace-preview";
+import { LiveSitePreview } from "@/components/live-site-preview";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ServerSupport } from "@/components/server-support";
 import { ServerAnnouncements } from "@/components/server-announcements";
@@ -70,7 +71,6 @@ import {
   Config,
   Site,
   Studio,
-  ModuleKey,
   defaultConfig,
   initialStudio,
   validateConfig,
@@ -86,14 +86,11 @@ import {
 } from "@/lib/studio";
 
 type Page =
-  | "Overview"
-  | "Sites"
+  | "My Site"
   | "Templates"
   | "Domains"
   | "Publish status"
-  | "Billing"
   | "XML Bots"
-  | "AI Bot Generator"
   | "AI Signals"
   | "Marketplace"
   | "Earnings"
@@ -107,43 +104,15 @@ const nav: {
   soon?: boolean;
   devOnly?: boolean;
 }[] = [
-  { label: "Overview", icon: LayoutDashboard },
-  { label: "Sites", icon: PanelsTopLeft },
+  { label: "My Site", icon: LayoutDashboard },
   { label: "Templates", icon: Shapes },
   { label: "Domains", icon: Globe2 },
   { label: "Publish status", icon: Rocket },
-  { label: "Billing", icon: CreditCard },
   { label: "XML Bots", icon: Bot, soon: true },
-  { label: "AI Bot Generator", icon: WandSparkles, soon: true },
   { label: "AI Signals", icon: Radio, soon: true },
   { label: "Marketplace", icon: Store, soon: true },
   { label: "Earnings", icon: Wallet, soon: true },
   { label: "Admin", icon: ShieldCheck, devOnly: true },
-];
-const moduleInfo: {
-  key: ModuleKey;
-  name: string;
-  text: string;
-  icon: LucideIcon;
-}[] = [
-  {
-    key: "markets",
-    name: "Market watchlist",
-    text: "A focused overview of simulated market prices.",
-    icon: Activity,
-  },
-  {
-    key: "terminal",
-    name: "Demo terminal",
-    text: "An interactive layout preview. No orders or live trading.",
-    icon: PanelTop,
-  },
-  {
-    key: "about",
-    name: "About & contact",
-    text: "Introduce your brand and tell visitors what you do.",
-    icon: BookOpen,
-  },
 ];
 function Button({
   children,
@@ -188,56 +157,6 @@ function Badge({
 function Mark() {
   return <BrandMark />;
 }
-function Chart({
-  color = "#b8a1e6",
-  compact = false,
-}: {
-  color?: string;
-  compact?: boolean;
-}) {
-  const stroke = accentOnDark(color);
-  return (
-    <svg
-      className={`chart ${compact ? "compact" : ""}`}
-      viewBox="0 0 440 150"
-      fill="none"
-      aria-label="Illustrative market chart. Simulated data."
-      role="img"
-    >
-      <defs>
-        <linearGradient
-          id={`fill-${color.slice(1)}`}
-          x1="0"
-          y1="0"
-          x2="0"
-          y2="1"
-        >
-          <stop stopColor={stroke} stopOpacity=".24" />
-          <stop offset="1" stopColor={stroke} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      {[30, 65, 100, 135].map((y) => (
-        <path
-          key={y}
-          d={`M0 ${y}H440`}
-          stroke="currentColor"
-          strokeOpacity=".07"
-          strokeDasharray="3 4"
-        />
-      ))}
-      <path
-        d="M0 128L14 116L28 121L41 95L54 108L68 89L82 97L97 76L110 88L125 83L138 104L153 90L167 96L182 69L196 75L210 48L224 57L239 43L252 64L267 52L280 67L295 39L308 46L324 34L338 51L352 29L365 36L379 16L394 29L408 9L423 20L440 7V150H0Z"
-        fill={`url(#fill-${color.slice(1)})`}
-      />
-      <path
-        d="M0 128L14 116L28 121L41 95L54 108L68 89L82 97L97 76L110 88L125 83L138 104L153 90L167 96L182 69L196 75L210 48L224 57L239 43L252 64L267 52L280 67L295 39L308 46L324 34L338 51L352 29L365 36L379 16L394 29L408 9L423 20L440 7"
-        stroke={stroke}
-        strokeWidth="2.2"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 function MiniSite({
   config,
   hero = false,
@@ -259,11 +178,20 @@ function MiniSite({
     >
       <div className="mini-nav">
         <span className="mini-brand">
-          <span className="tiny-brand">{config.name.charAt(0)}</span>
+          {config.logo ? (
+            <img
+              className="tiny-brand tiny-brand-logo"
+              src={config.logo}
+              alt=""
+              aria-hidden="true"
+            />
+          ) : (
+            <span className="tiny-brand">{config.name.charAt(0)}</span>
+          )}
           {config.name}
         </span>
         <span className="mini-links">
-          Markets <span>About</span>
+          Workspace <span>Markets</span> <span>Strategies</span>
         </span>
         <span className="mini-connect">
           Connect <ArrowUpRight size={8} />
@@ -271,31 +199,23 @@ function MiniSite({
       </div>
       <div className="mini-content">
         <span className="mini-eyebrow">
-          <span /> A DIFFERENT PERSPECTIVE
+          <span /> ANALYTICS · STRATEGIES · DEMO WORKSPACE
         </span>
         <h3>{config.headline}</h3>
         <p>{config.description}</p>
         <span className="mini-cta">
-          Explore markets <ArrowRight size={9} />
+          Explore workspace <ArrowRight size={9} />
         </span>
-        {config.modules.includes("terminal") && (
-          <div className="mini-terminal">
-            <div className="mini-terminal-top">
-              <span>
-                <i />
-                Volatility 100 Index
-              </span>
-              <span className="mock-label">DEMO</span>
-            </div>
-            <Chart color={config.color} compact />
-            <div className="mini-axis">
-              <span>09:00</span>
-              <span>12:00</span>
-              <span>15:00</span>
-              <span>18:00</span>
-            </div>
-          </div>
-        )}
+        <div className="mini-workspace">
+          <WorkspacePreview
+            name={config.name}
+            accent={accentOnDark(config.color)}
+            tradeHref="#"
+            logo={config.logo}
+            compact
+            decorative
+          />
+        </div>
       </div>
       <div className="mini-disclaimer">
         Simulated data · Trading involves risk
@@ -306,11 +226,9 @@ function MiniSite({
 
 export default function Home() {
   const [studio, setStudio] = useState<Studio | null>(null);
-  const [page, setPage] = useState<Page>("Overview");
+  const [page, setPage] = useState<Page>("My Site");
   const [mobileNav, setMobileNav] = useState(false);
   const [toast, setToast] = useState("");
-  const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState("All sites");
   const [menu, setMenu] = useState<string | null>(null);
   const [wizard, setWizard] = useState<{
     id?: string;
@@ -323,6 +241,8 @@ export default function Home() {
     published: boolean;
   } | null>(null);
   const [smallPreview, setSmallPreview] = useState(false);
+  const [wizardPane, setWizardPane] = useState<"edit" | "preview">("edit");
+  const [previewSection, setPreviewSection] = useState("home");
   const [notifications, setNotifications] = useState(false);
   const [confirm, setConfirm] = useState<{
     title: string;
@@ -370,10 +290,6 @@ export default function Home() {
         setNotifications(false);
         setMenu(null);
       }
-      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
-        e.preventDefault();
-        document.getElementById("site-search")?.focus();
-      }
     };
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
@@ -402,15 +318,21 @@ export default function Home() {
   function navigate(to: Page) {
     setPage(to);
     setMobileNav(false);
-    setQuery("");
     setMenu(null);
   }
   function openWizard(site?: Site) {
+    setWizardPane("edit");
+    const target = site ?? studio?.sites[0];
+    if (serverUser && !studio?.derivLinked && !target) {
+      notify("Link a mock Deriv account before creating your site.");
+      setPage("Settings");
+      return;
+    }
     setErrors({});
     setWizard({
-      id: site?.id,
+      id: target?.id,
       step: 0,
-      config: structuredClone(site?.draft ?? defaultConfig),
+      config: structuredClone(target?.draft ?? defaultConfig),
     });
   }
   async function saveSite(publish = false) {
@@ -422,6 +344,12 @@ export default function Home() {
       return;
     }
     if (serverUser) {
+      if (publish && !studio.derivLinked) {
+        setErrors({
+          general: "Link a mock Deriv account before publishing.",
+        });
+        return;
+      }
       const result = await server.mutate({
         kind: "save",
         ...(wizard.id ? { id: wizard.id } : {}),
@@ -430,10 +358,10 @@ export default function Home() {
       });
       if (result.ok) {
         setWizard(null);
-        setPage("Sites");
+        setPage("My Site");
         notify(
           publish
-            ? "Mock snapshot published to the server preview path. DNS and SSL are unchanged."
+            ? "Demo version saved to the server preview path. DNS and SSL are unchanged."
             : "Draft saved to your server account.",
         );
       } else if (result.fields) {
@@ -443,14 +371,20 @@ export default function Home() {
       return;
     }
     const now = new Date().toISOString();
+    const existing = studio.sites.find(
+      (s) => s.id === (wizard.id ?? studio.sites[0]?.id),
+    );
     let site: Site = {
-      id: wizard.id ?? crypto.randomUUID(),
+      id: wizard.id ?? existing?.id ?? crypto.randomUUID(),
       createdAt: now,
       updatedAt: now,
       draft: structuredClone(wizard.config),
       versions: [],
     };
-    const existing = studio.sites.find((s) => s.id === wizard.id);
+    if (!existing && studio.sites.length > 0) {
+      setErrors({ name: "One site per account. Edit your existing site." });
+      return;
+    }
     if (existing)
       site = {
         ...existing,
@@ -470,7 +404,7 @@ export default function Home() {
         ? "Local version published. No DNS or live site was created."
         : "Site saved to your browser workspace.",
     );
-    setPage("Sites");
+    setPage("My Site");
   }
   async function publish(site: Site) {
     if (!studio) return;
@@ -478,7 +412,7 @@ export default function Home() {
       const result = await server.mutate({ kind: "publish", id: site.id });
       if (result.ok)
         notify(
-          "Mock snapshot published. No domain or trading integration was enabled.",
+          "Demo version saved. No domain or trading integration was enabled.",
         );
       setMenu(null);
       return;
@@ -540,12 +474,11 @@ export default function Home() {
         <span>Opening your studio…</span>
       </div>
     );
-  const sites = studio.sites;
+  const sites = studio.sites.slice(0, 1);
   const devMock = mockOpsEnabled();
   const visibleNav = nav.filter((item) => !item.devOnly || devMock);
   const toolLabels = new Set([
     "XML Bots",
-    "AI Bot Generator",
     "AI Signals",
     "Marketplace",
     "Earnings",
@@ -554,10 +487,8 @@ export default function Home() {
   const workspaceNav = visibleNav.filter((item) => !toolLabels.has(item.label));
   const toolsNav = visibleNav.filter((item) => toolLabels.has(item.label));
   const mockPages = [
-    "Billing",
     "Domains",
     "XML Bots",
-    "AI Bot Generator",
     "AI Signals",
     "Marketplace",
     "Earnings",
@@ -574,16 +505,6 @@ export default function Home() {
   const events = sites
     .flatMap((s) => s.versions.map((v) => ({ site: s, version: v })))
     .sort((a, b) => b.version.createdAt.localeCompare(a.version.createdAt));
-  const visibleSites = sites.filter(
-    (s) =>
-      (filter === "All sites" ||
-        (filter === "Published"
-          ? s.versions.length > 0
-          : !s.versions.length)) &&
-      (s.draft.name + " " + s.draft.slug)
-        .toLowerCase()
-        .includes(query.toLowerCase()),
-  );
   const goNext = () => {
     if (!wizard) return;
     const err = validateConfig(wizard.config, sites, wizard.id);
@@ -600,7 +521,7 @@ export default function Home() {
     if (!Object.keys(relevant).length)
       setWizard({ ...wizard, step: wizard.step + 1 });
   };
-  const update = (key: keyof Config, value: string | ModuleKey[]) => {
+  const update = (key: keyof Config, value: unknown) => {
     if (!wizard) return;
     let config = { ...wizard.config, [key]: value };
     if (
@@ -670,7 +591,7 @@ export default function Home() {
                   )}
                   <button onClick={() => publish(site)}>
                     <Rocket size={15} />
-                    {serverUser ? "Publish mock snapshot" : "Publish locally"}
+                    {serverUser ? "Save demo version" : "Save demo locally"}
                   </button>
                   <button onClick={() => removeSite(site)} className="danger">
                     Delete site
@@ -710,7 +631,7 @@ export default function Home() {
         <div className="sidebar-scrim" onClick={() => setMobileNav(false)} />
       )}
       <aside className={`sidebar ${mobileNav ? "mobile-open" : ""}`}>
-        <button className="wordmark" onClick={() => navigate("Overview")}>
+        <button className="wordmark" onClick={() => navigate("My Site")}>
           <Mark />
           <span className="brand-word" aria-label="tradeintra">
             <span className="brand-word-trade">trade</span>
@@ -739,9 +660,6 @@ export default function Home() {
             >
               <n.icon size={18} />
               <span>{n.label}</span>
-              {n.label === "Sites" && (
-                <span className="nav-count">{sites.length}</span>
-              )}
               {page === n.label && <span className="active-dot" />}
             </button>
           ))}
@@ -759,9 +677,6 @@ export default function Home() {
             >
               <n.icon size={18} />
               <span>{n.label}</span>
-              {!devMock && n.label === "AI Bot Generator" && (
-                <span className="soon-pill">SOON</span>
-              )}
             </button>
           ))}
         </nav>
@@ -778,13 +693,9 @@ export default function Home() {
               <br />
               brand, domains, and publication.
             </p>
-            <p className="plan-credits">
-              {serverUser
-                ? `${server.credits} AI credits`
-                : "30 credits on verification"}
-            </p>
-            <button onClick={() => openWizard()}>
-              Create a site <ArrowUpRight size={14} />
+            <button onClick={() => openWizard(sites[0])}>
+              {sites.length ? "Manage site" : "Create a site"}{" "}
+              <ArrowUpRight size={14} />
             </button>
           </div>
           <button
@@ -908,64 +819,60 @@ export default function Home() {
             <div>
               <div className="eyebrow">OPERATOR STUDIO / CONTROL PLANE</div>
               <h1>
-                {page === "Overview"
-                  ? "Your operator desk."
-                  : page === "Sites"
-                    ? "Sites, under control."
-                    : page === "Templates"
-                      ? "One template. Considered."
-                      : page === "Domains"
-                        ? "Domain desk."
-                        : page === "Publish status"
-                          ? "Launch ledger."
-                          : page === "Billing"
-                            ? "Billing and credits."
-                            : page === "Admin"
-                              ? "Platform controls."
-                              : page}
+                {page === "My Site"
+                  ? "My site."
+                  : page === "Templates"
+                    ? "One template. Considered."
+                    : page === "Domains"
+                      ? "Domain desk."
+                      : page === "Publish status"
+                        ? "Launch ledger."
+                        : page === "Admin"
+                          ? "Platform controls."
+                          : page}
               </h1>
               <p>
-                {page === "Overview"
-                  ? "Brand, domains, drafts, and publication in one measured workspace."
-                  : page === "Sites"
-                    ? "Review every brand, draft, and published snapshot without losing the thread."
-                    : page === "Templates"
-                      ? "A single, well-built starting point. Your brand does the rest."
-                      : page === "Domains"
-                        ? "Reserve the address behind the brand and see its provisioning status."
-                        : page === "Publish status"
-                          ? "The publish history for each site, in one ledger."
-                          : page === "Settings"
-                            ? "Workspace, connection, and account controls."
-                            : page === "Billing"
-                              ? "Plan, subscription, entitlements, and the mock credit ledger."
-                              : page === "Admin"
-                                ? "Development-only plans, markup, jobs, hosts, and audit."
-                                : page === "XML Bots"
-                                  ? "Upload, validate, and assign mock DBot XML."
-                                  : page === "AI Bot Generator"
-                                    ? "Generate a mock bot from a prompt against the local credit ledger."
-                                    : page === "AI Signals"
-                                      ? "Signal orders, Telegram delivery logs, and trial state."
-                                      : page === "Marketplace"
-                                        ? "Mock listings, purchases, and seller revenue."
-                                        : page === "Earnings"
-                                          ? "Separate earnings streams and payout requests."
-                                          : page === "Announcements"
-                                            ? "Draft and publish mock announcements."
-                                            : page === "Support"
-                                              ? "Mock support tickets, replies, and ticket states."
-                                              : "Build your trading business, one step at a time."}
+                {page === "My Site"
+                  ? "One site. One clear place to shape, preview, and publish it."
+                  : page === "Templates"
+                    ? "A single, well-built starting point. Your brand does the rest."
+                    : page === "Domains"
+                      ? "Reserve the address behind the brand and see its provisioning status."
+                      : page === "Publish status"
+                        ? "The publish history for each site, in one ledger."
+                        : page === "Settings"
+                          ? "Workspace, connection, and account controls."
+                          : page === "Admin"
+                            ? "Development-only plans, markup, jobs, hosts, and audit."
+                            : page === "XML Bots"
+                              ? "Load Deriv presets, validate, and assign DBot XML."
+                              : page === "AI Signals"
+                                ? "Signal orders, Telegram delivery logs, and trial state."
+                                : page === "Marketplace"
+                                  ? "Mock listings, purchases, and seller revenue."
+                                  : page === "Earnings"
+                                    ? "Separate earnings streams and payout requests."
+                                    : page === "Announcements"
+                                      ? "Draft and publish mock announcements."
+                                      : page === "Support"
+                                        ? "Mock support tickets, replies, and ticket states."
+                                        : "Build your trading business, one step at a time."}
               </p>
             </div>
-            {["Overview", "Sites", "Templates"].includes(page) && (
-              <Button primary onClick={() => openWizard()}>
-                <Plus size={17} />
-                Create site
-              </Button>
-            )}
+            {page === "My Site" &&
+              (sites.length ? (
+                <Button primary onClick={() => openWizard(sites[0])}>
+                  <Palette size={17} />
+                  Manage site
+                </Button>
+              ) : (
+                <Button primary onClick={() => openWizard(sites[0])}>
+                  <Plus size={17} />
+                  Create site
+                </Button>
+              ))}
           </div>
-          {page === "Overview" && (
+          {page === "My Site" && (
             <>
               <section className="hero-banner">
                 <div className="hero-copy">
@@ -986,8 +893,9 @@ export default function Home() {
                     no live Deriv connection.
                   </p>
                   <div className="hero-buttons">
-                    <Button primary onClick={() => openWizard()}>
-                      Create a site <ArrowUpRight size={16} />
+                    <Button primary onClick={() => openWizard(sites[0])}>
+                      {sites.length ? "Manage your site" : "Create a site"}{" "}
+                      <ArrowUpRight size={16} />
                     </Button>
                     <button
                       className="hero-secondary"
@@ -1031,29 +939,33 @@ export default function Home() {
               <section className="stats-grid" aria-label="Workspace overview">
                 {[
                   {
-                    label: "Total sites",
-                    value: sites.length,
+                    label: "Site status",
+                    value: sites[0]
+                      ? sites[0].versions.length
+                        ? "Published"
+                        : "Draft"
+                      : "No site",
                     icon: PanelsTopLeft,
-                    detail: `${sites.filter((s) => !s.versions.length).length} drafts ready for your touch`,
-                    tag: "Your workspace",
+                    detail: sites[0]
+                      ? "One active site, managed below"
+                      : "Create your single site to begin",
+                    tag: "One-site model",
                   },
                   {
-                    label: "Published sites",
-                    value: published.length,
+                    label: "Snapshots",
+                    value: sites[0]?.versions.length ?? 0,
                     icon: Rocket,
-                    detail: published.length
-                      ? serverUser
-                        ? "Published mock preview paths"
-                        : "Local versions · not publicly hosted"
+                    detail: sites[0]?.versions.length
+                      ? "Latest version is ready to preview"
                       : "No snapshot published yet",
                     tag: serverUser ? "Mock only" : "Local only",
                   },
                   {
-                    label: "Connected domains",
-                    value: 0,
+                    label: "Domain",
+                    value: "Not connected",
                     icon: Globe2,
-                    detail: "Production DNS not configured",
-                    tag: "Not connected",
+                    detail: "Subdomain is reserved; custom domain comes next",
+                    tag: "Pending",
                   },
                   {
                     label: "Deriv connection",
@@ -1093,42 +1005,36 @@ export default function Home() {
                   </div>
                 ))}
               </section>
-              <section className="sites-section">
+              <section className="panel my-site-manager">
                 <div className="section-heading">
                   <div>
-                    <h2>
-                      Your sites{" "}
-                      <span className="count-pill">{sites.length}</span>
-                    </h2>
-                    <p>Every brand, draft, and snapshot in one view.</p>
+                    <span className="eyebrow">YOUR SINGLE ACTIVE SITE</span>
+                    <h2>{sites[0] ? "Your active site" : "No site yet."}</h2>
+                    <p>
+                      {sites[0]
+                        ? "Edit the brand, modules, domain, and publishing state from this one workspace."
+                        : "Create your one site from the curated template. There is no multi-site dashboard."}
+                    </p>
                   </div>
-                  <button
-                    className="text-link"
-                    onClick={() => navigate("Sites")}
-                  >
-                    View all sites <ArrowRight size={15} />
-                  </button>
+                  <span className="count-pill">1 site limit</span>
                 </div>
-                <div className="sites-grid">
-                  {sites.slice(0, 2).map(siteCard)}
-                  <button
-                    className="new-site-card"
-                    onClick={() => openWizard()}
-                  >
-                    <span className="new-site-icon">
-                      <Plus size={24} />
-                    </span>
-                    <strong>Create a site</strong>
-                    <span>
-                      Start from the curated
-                      <br />
-                      Deriv Studio template.
-                    </span>
-                    <span className="text-link">
-                      Create a site <ArrowUpRight size={14} />
-                    </span>
-                  </button>
-                </div>
+                {sites[0] ? (
+                  <div className="single-site-grid">{siteCard(sites[0])}</div>
+                ) : (
+                  <div className="my-site-empty">
+                    <PanelsTopLeft size={32} />
+                    <div>
+                      <strong>Start with one focused site.</strong>
+                      <p>
+                        Choose the template, brand it, add modules, and publish
+                        when it feels right.
+                      </p>
+                    </div>
+                    <Button primary onClick={() => openWizard(sites[0])}>
+                      Create your site <ArrowRight size={15} />
+                    </Button>
+                  </div>
+                )}
               </section>
               <div className="bottom-grid">
                 <section className="getting-started panel">
@@ -1154,7 +1060,7 @@ export default function Home() {
                         icon: Palette,
                         title: "Make a site your own",
                         text: "Choose your template and add your brand.",
-                        action: () => openWizard(),
+                        action: () => openWizard(sites[0]),
                       },
                       {
                         done: studio.derivLinked,
@@ -1168,7 +1074,7 @@ export default function Home() {
                         icon: Rocket,
                         title: "Publish your first local version",
                         text: "Preview your site and save a launch snapshot.",
-                        action: () => navigate("Sites"),
+                        action: () => navigate("Publish status"),
                       },
                     ].map((item, i) => (
                       <button
@@ -1214,75 +1120,6 @@ export default function Home() {
               </div>
             </>
           )}
-          {page === "Sites" && (
-            <>
-              <div className="list-toolbar">
-                <div className="filter-tabs">
-                  {["All sites", "Published", "Drafts"].map((f) => (
-                    <button
-                      key={f}
-                      onClick={() => setFilter(f)}
-                      className={filter === f ? "selected" : ""}
-                    >
-                      {f} {f === "All sites" && <span>{sites.length}</span>}
-                    </button>
-                  ))}
-                </div>
-                <label className="search-input">
-                  <Search size={16} />
-                  <input
-                    id="site-search"
-                    placeholder="Search sites…"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                  />
-                  <kbd>⌘ K</kbd>
-                </label>
-              </div>
-              {visibleSites.length ? (
-                <div className="sites-grid full-grid">
-                  {visibleSites.map(siteCard)}
-                  <button
-                    className="new-site-card"
-                    onClick={() => openWizard()}
-                  >
-                    <span className="new-site-icon">
-                      <Plus size={24} />
-                    </span>
-                    <strong>Create a new site</strong>
-                    <span>Make your next idea happen.</span>
-                  </button>
-                </div>
-              ) : (
-                <div className="empty-state">
-                  <PanelsTopLeft size={35} />
-                  <h2>
-                    {query
-                      ? "No matching sites"
-                      : "A blank canvas. A fresh start."}
-                  </h2>
-                  <p>
-                    {query
-                      ? "Try another site name or clear your filters."
-                      : "Create a site from our ready-made Deriv template."}
-                  </p>
-                  <Button
-                    primary
-                    onClick={() => (query ? setQuery("") : openWizard())}
-                  >
-                    {query ? "Clear search" : "Create your first site"}
-                    <ArrowRight size={16} />
-                  </Button>
-                </div>
-              )}
-              <div className="info-note">
-                <ShieldCheck size={15} />
-                {serverUser
-                  ? "Account drafts stay private. Published mock snapshots are visible at /sites/your-slug. Open one from the site’s Actions menu. No DNS is changed."
-                  : "Sample sites are editable drafts. Published versions are local snapshots, not live websites."}
-              </div>
-            </>
-          )}
           {page === "Templates" && (
             <>
               <div className="template-intro">
@@ -1307,8 +1144,8 @@ export default function Home() {
                   <Badge tone="green">Available in mock mode</Badge>
                   <h2>Deriv Studio</h2>
                   <p>
-                    A modern, responsive trading site with a market watchlist,
-                    mock terminal, and space for your story.
+                    A modern, responsive trading brand site with a product
+                    workspace, Deriv preset library, and space for your story.
                   </p>
                   <ul>
                     <li>
@@ -1321,14 +1158,14 @@ export default function Home() {
                     </li>
                     <li>
                       <Check size={16} />
-                      Three configurable modules
+                      Twenty configurable modules
                     </li>
                     <li>
                       <Check size={16} />
                       Required risk disclosure included
                     </li>
                   </ul>
-                  <Button primary onClick={() => openWizard()}>
+                  <Button primary onClick={() => openWizard(sites[0])}>
                     Use this template <ArrowUpRight size={16} />
                   </Button>
                   <button
@@ -1349,9 +1186,6 @@ export default function Home() {
           {page === "Domains" && serverUser && (
             <ServerDomains sites={mockSiteRefs} notify={notify} />
           )}
-          {page === "Billing" && serverUser && (
-            <ServerBilling notify={notify} />
-          )}
           {page === "Earnings" && serverUser && (
             <ServerEarnings notify={notify} />
           )}
@@ -1365,10 +1199,7 @@ export default function Home() {
             <ServerAdmin role={serverUser.role} notify={notify} />
           )}
           {page === "XML Bots" && serverUser && (
-            <ServerBots mode="library" sites={mockSiteRefs} notify={notify} />
-          )}
-          {page === "AI Bot Generator" && serverUser && (
-            <ServerBots mode="generator" sites={mockSiteRefs} notify={notify} />
+            <ServerBots sites={mockSiteRefs} notify={notify} />
           )}
           {page === "Support" && serverUser && (
             <ServerSupport notify={notify} />
@@ -1378,25 +1209,16 @@ export default function Home() {
           )}
           {devMock &&
             !(page === "Domains" && serverUser) &&
-            !(page === "Billing" && serverUser) &&
             !(page === "Earnings" && serverUser) &&
             !(page === "Marketplace" && serverUser) &&
             !(page === "AI Signals" && serverUser) &&
             !(page === "Admin" && serverUser) &&
             !(page === "XML Bots" && serverUser) &&
-            !(page === "AI Bot Generator" && serverUser) &&
             !(page === "Support" && serverUser) &&
             !(page === "Announcements" && serverUser) &&
             mockPages.includes(page) && (
               <MockOpsPage page={page} sites={mockSiteRefs} notify={notify} />
             )}
-          {!devMock && page === "Billing" && !serverUser && (
-            <div className="empty-state">
-              <CreditCard size={34} />
-              <h2>Sign in to manage credits.</h2>
-              <p>Credit packs and purchase history are account-scoped.</p>
-            </div>
-          )}
           {!devMock && page === "Domains" && !serverUser && (
             <>
               <div className="notice-panel">
@@ -1414,9 +1236,9 @@ export default function Home() {
               <section className="panel domain-table">
                 <div className="section-heading">
                   <h2>Workspace subdomains</h2>
-                  <Button onClick={() => openWizard()}>
-                    <Plus size={15} />
-                    Add a site
+                  <Button onClick={() => openWizard(sites[0])}>
+                    <Palette size={15} />
+                    Manage site
                   </Button>
                 </div>
                 {sites.length ? (
@@ -1587,7 +1409,7 @@ export default function Home() {
                     <br />
                     No real DNS or hosting changes will be made.
                   </p>
-                  <Button primary onClick={() => navigate("Sites")}>
+                  <Button primary onClick={() => navigate("My Site")}>
                     Choose a site <ArrowRight size={16} />
                   </Button>
                 </div>
@@ -1735,10 +1557,6 @@ export default function Home() {
                           {serverUser.emailVerified ? "Verified" : "Unverified"}
                         </strong>
                       </div>
-                      <div className="mock-kv">
-                        <span>AI credits</span>
-                        <strong>{server.credits}</strong>
-                      </div>
                       {serverUser.referralCode ? (
                         <div className="mock-kv">
                           <span>Referral code</span>
@@ -1867,14 +1685,14 @@ export default function Home() {
                         onClick={() =>
                           setConfirm({
                             title: "Reset your workspace?",
-                            text: "All your local sites and publish history will be deleted and replaced with the two sample drafts. Export your workspace first if you want to keep it.",
+                            text: "All local site data and publish history will be deleted, and your workspace will return to an empty state. Export your workspace first if you want to keep it.",
                             action: () => {
                               const data = initialStudio();
                               setStorageError("");
                               setStudio(data);
                               setWorkspaceName(data.workspace);
                               setConfirm(null);
-                              notify("Workspace reset to sample drafts.");
+                              notify("Workspace reset.");
                             },
                           })
                         }
@@ -1927,16 +1745,16 @@ export default function Home() {
                   {
                     n: "02",
                     title: "Make it unmistakably yours",
-                    text: "Set your brand name, headline, description, and accent color. Enable or disable the three mock modules.",
-                    action: "Create a site",
-                    go: () => openWizard(),
+                    text: "Set your brand name, headline, description, and accent color. Enable or disable the modules you need.",
+                    action: sites.length ? "Manage your site" : "Create a site",
+                    go: () => openWizard(sites[0]),
                   },
                   {
                     n: "03",
                     title: "Preview, then publish locally",
                     text: "Save your draft and preview it. Publishing makes an immutable local snapshot. Restore any previous version from Publish status.",
-                    action: "View your sites",
-                    go: () => navigate("Sites"),
+                    action: "View your site",
+                    go: () => navigate("My Site"),
                   },
                 ].map((g) => (
                   <section className="panel guide" key={g.n}>
@@ -2013,7 +1831,7 @@ export default function Home() {
                   Version history & restore
                 </span>
               </div>
-              <Button primary onClick={() => openWizard()}>
+              <Button primary onClick={() => openWizard(sites[0])}>
                 Take it for a spin <ArrowUpRight size={16} />
               </Button>
               <p className="fine-print">
@@ -2024,13 +1842,9 @@ export default function Home() {
           )}
           {!devMock &&
             !serverUser &&
-            [
-              "XML Bots",
-              "AI Bot Generator",
-              "AI Signals",
-              "Marketplace",
-              "Earnings",
-            ].includes(page) && (
+            ["XML Bots", "AI Signals", "Marketplace", "Earnings"].includes(
+              page,
+            ) && (
               <section className="deferred-state">
                 <div className="deferred-art">
                   <Sparkles size={38} />
@@ -2047,7 +1861,7 @@ export default function Home() {
                   <ShieldCheck size={17} />
                   No live integrations, transactions, or generated content.
                 </div>
-                <Button primary onClick={() => navigate("Sites")}>
+                <Button primary onClick={() => navigate("My Site")}>
                   Build your site first <ArrowRight size={16} />
                 </Button>
               </section>
@@ -2065,8 +1879,9 @@ export default function Home() {
           </footer>
         </main>
       </div>
-      {wizard && (
+      {wizard && !preview && !confirm && (
         <Modal
+          fullscreen
           title={wizard.id ? "Edit the site." : "Configure the site."}
           onClose={() =>
             setConfirm({
@@ -2080,8 +1895,13 @@ export default function Home() {
           }
           wide
         >
-          <div className="wizard-steps">
-            {["Template", "Brand", "Modules", "Domain", "Review"].map(
+          <div
+            className="wizard-steps"
+            role="group"
+            aria-label="Site setup steps"
+            tabIndex={0}
+          >
+            {["Template", "Brand", "Sections", "Address", "Review"].map(
               (label, i) => (
                 <div
                   className={`wizard-step ${wizard.step === i ? "current" : ""} ${wizard.step > i ? "done" : ""}`}
@@ -2093,7 +1913,25 @@ export default function Home() {
               ),
             )}
           </div>
-          <div className="wizard-body">
+          <div className="builder-mobile-tabs">
+            <button
+              type="button"
+              aria-pressed={wizardPane === "edit"}
+              className={wizardPane === "edit" ? "chosen" : ""}
+              onClick={() => setWizardPane("edit")}
+            >
+              Edit
+            </button>
+            <button
+              type="button"
+              aria-pressed={wizardPane === "preview"}
+              className={wizardPane === "preview" ? "chosen" : ""}
+              onClick={() => setWizardPane("preview")}
+            >
+              Live preview
+            </button>
+          </div>
+          <div className={`wizard-body pane-${wizardPane}`}>
             <div className="wizard-fields">
               {wizard.step === 0 && (
                 <>
@@ -2113,7 +1951,7 @@ export default function Home() {
                     </span>
                     <span>
                       <strong>Deriv Studio</strong>
-                      <small>Markets · Demo terminal · About</small>
+                      <small>Workspace · Markets · Strategies</small>
                     </span>
                     <span className="selected-check">
                       <Check size={14} />
@@ -2130,114 +1968,135 @@ export default function Home() {
                 <>
                   <span className="eyebrow">02 / MAKE IT YOURS</span>
                   <h2>Your brand, front and center.</h2>
-                  <label className="field">
-                    Site name <span>*</span>
-                    <input
-                      autoFocus
-                      maxLength={60}
-                      value={wizard.config.name}
-                      onChange={(e) => update("name", e.target.value)}
-                      placeholder="e.g. Aurora Markets"
-                      aria-invalid={!!errors.name}
-                    />
-                    {errors.name && (
-                      <small className="field-error">{errors.name}</small>
-                    )}
-                  </label>
-                  <label className="field">
-                    Hero headline <span>*</span>
-                    <input
-                      maxLength={100}
-                      value={wizard.config.headline}
-                      onChange={(e) => update("headline", e.target.value)}
-                    />
-                    {errors.headline && (
-                      <small className="field-error">{errors.headline}</small>
-                    )}
-                  </label>
-                  <label className="field">
-                    Short description
-                    <textarea
-                      maxLength={240}
-                      rows={3}
-                      value={wizard.config.description}
-                      onChange={(e) => update("description", e.target.value)}
-                    />
-                  </label>
-                  <div className="field">
-                    Brand accent
-                    <div className="color-options">
-                      {[
-                        { hex: "#B08D57", label: "Brass" },
-                        { hex: "#2F6B4F", label: "Forest" },
-                        { hex: "#8C2F2F", label: "Oxblood" },
-                        { hex: "#FEDD00", label: "Bullion" },
-                        { hex: "#315A7D", label: "Steel" },
-                      ].map(({ hex, label }) => (
-                        <button
-                          className={`color-swatch ${hex === wizard.config.color ? "chosen" : ""}`}
-                          key={hex}
-                          aria-label={`Use ${label} accent`}
-                          onClick={() => update("color", hex)}
-                          aria-pressed={hex === wizard.config.color}
-                          style={{ background: hex, color: accentInk(hex) }}
-                        >
-                          {hex === wizard.config.color && <Check size={16} />}
-                        </button>
-                      ))}
-                      <label className="custom-color">
-                        <input
-                          aria-label="Custom accent color"
-                          type="color"
-                          value={wizard.config.color}
-                          onChange={(e) => update("color", e.target.value)}
-                        />
-                        <Plus size={17} />
-                      </label>
-                      <span>{wizard.config.color.toUpperCase()}</span>
+                  <LogoUpload
+                    name={wizard.config.name}
+                    value={wizard.config.logo}
+                    onChange={(logo) => update("logo", logo)}
+                    error={errors.logo}
+                  />
+                  <div className="brand-name-row">
+                    <label className="field">
+                      Site name <span>*</span>
+                      <input
+                        autoFocus
+                        maxLength={60}
+                        value={wizard.config.name}
+                        onChange={(e) => update("name", e.target.value)}
+                        placeholder="e.g. Aurora Markets"
+                        aria-invalid={!!errors.name}
+                      />
+                      {errors.name && (
+                        <small className="field-error">{errors.name}</small>
+                      )}
+                    </label>
+                    <label className="field">
+                      Big title <span>*</span>
+                      <input
+                        maxLength={100}
+                        value={wizard.config.headline}
+                        onChange={(e) => update("headline", e.target.value)}
+                        onFocus={() => setPreviewSection("hero")}
+                      />
+                      {errors.headline && (
+                        <small className="field-error">{errors.headline}</small>
+                      )}
+                    </label>
+                  </div>
+                  <div className="brand-details-row">
+                    <label className="field">
+                      A sentence about your site
+                      <textarea
+                        maxLength={240}
+                        rows={2}
+                        value={wizard.config.description}
+                        onChange={(e) => update("description", e.target.value)}
+                        onFocus={() => setPreviewSection("hero")}
+                      />
+                    </label>
+                    <div className="brand-appearance">
+                      <div className="field">
+                        Main colour
+                        <div className="color-options">
+                          {[
+                            { hex: "#B08D57", label: "Brass" },
+                            { hex: "#2F6B4F", label: "Forest" },
+                            { hex: "#8C2F2F", label: "Oxblood" },
+                            { hex: "#FEDD00", label: "Bullion" },
+                            { hex: "#315A7D", label: "Steel" },
+                          ].map(({ hex, label }) => (
+                            <button
+                              className={`color-swatch ${hex === wizard.config.color ? "chosen" : ""}`}
+                              key={hex}
+                              aria-label={`Use ${label} colour`}
+                              onClick={() => {
+                                setPreviewSection("hero");
+                                update("color", hex);
+                              }}
+                              aria-pressed={hex === wizard.config.color}
+                              style={{ background: hex, color: accentInk(hex) }}
+                            >
+                              {hex === wizard.config.color && (
+                                <Check size={16} />
+                              )}
+                            </button>
+                          ))}
+                          <label className="custom-color">
+                            <input
+                              aria-label="Custom brand colour"
+                              type="color"
+                              value={wizard.config.color}
+                              onChange={(e) => update("color", e.target.value)}
+                            />
+                            <Plus size={17} />
+                          </label>
+                          <span>{wizard.config.color.toUpperCase()}</span>
+                        </div>
+                        <small>
+                          This colour is used for buttons, highlights, and the
+                          chart.
+                        </small>
+                      </div>
+                      <div className="field">
+                        Theme
+                        <div className="theme-options">
+                          {(["dark", "light"] as const).map((theme) => (
+                            <button
+                              key={theme}
+                              className={
+                                (wizard.config.theme ?? "dark") === theme
+                                  ? "chosen"
+                                  : ""
+                              }
+                              aria-pressed={
+                                (wizard.config.theme ?? "dark") === theme
+                              }
+                              onClick={() => {
+                                setPreviewSection("hero");
+                                update("theme", theme);
+                              }}
+                            >
+                              {theme === "dark" ? "Deep ink" : "Warm paper"}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                     </div>
-                    <small>
-                      Accent is used decoratively. Text remains high-contrast.
-                    </small>
                   </div>
                 </>
               )}
               {wizard.step === 2 && (
                 <>
-                  <span className="eyebrow">03 / THE RIGHT TOOLS</span>
-                  <h2>Only what you need.</h2>
+                  <span className="eyebrow">03 / YOUR SECTIONS</span>
+                  <h2>Choose your sections.</h2>
                   <p className="muted">
                     Choose the sections for your site. You can change these
                     anytime.
                   </p>
-                  <div className="module-options">
-                    {moduleInfo.map((m) => (
-                      <label
-                        className={`module-option ${wizard.config.modules.includes(m.key) ? "enabled" : ""}`}
-                        key={m.key}
-                      >
-                        <m.icon size={21} />
-                        <span>
-                          <strong>{m.name}</strong>
-                          <small>{m.text}</small>
-                        </span>
-                        <input
-                          type="checkbox"
-                          checked={wizard.config.modules.includes(m.key)}
-                          onChange={(e) =>
-                            update(
-                              "modules",
-                              e.target.checked
-                                ? [...wizard.config.modules, m.key]
-                                : wizard.config.modules.filter(
-                                    (x) => x !== m.key,
-                                  ),
-                            )
-                          }
-                        />
-                      </label>
-                    ))}
-                  </div>
+                  <ModuleEditor
+                    config={wizard.config}
+                    update={update}
+                    onSectionFocus={setPreviewSection}
+                  />
                   <div className="required-module">
                     <ShieldCheck size={18} />
                     <span>
@@ -2260,7 +2119,7 @@ export default function Home() {
                       : "Choose a free subdomain for your local configuration."}
                   </p>
                   <label className="field">
-                    Subdomain <span>*</span>
+                    Web address <span>*</span>
                     <div className="domain-input">
                       <input
                         autoFocus
@@ -2323,18 +2182,23 @@ export default function Home() {
                       <strong>Deriv Studio</strong>
                     </div>
                     <div>
-                      <span>Subdomain</span>
+                      <span>Web address</span>
                       <strong>{wizard.config.slug}.tradeintra.com</strong>
                     </div>
                     <div>
-                      <span>Modules</span>
+                      <span>Sections</span>
                       <strong>{wizard.config.modules.length} enabled</strong>
                     </div>
                     <div>
                       <span>Environment</span>
-                      <Badge tone="lavender">Mock / local only</Badge>
+                      <Badge tone="lavender">Demo / local only</Badge>
                     </div>
                   </div>
+                  {errors.general ? (
+                    <p className="auth-error" role="alert">
+                      {errors.general}
+                    </p>
+                  ) : null}
                   <div className="risk-box">
                     <ShieldCheck size={18} />
                     <p>{RISK}</p>
@@ -2352,25 +2216,13 @@ export default function Home() {
                 <Monitor size={14} />
                 LIVE BRAND PREVIEW <span>MOCK</span>
               </div>
-              <div className="wizard-site-frame">
-                <MiniSite
-                  config={{
-                    ...wizard.config,
-                    name: wizard.config.name || "Your brand",
-                  }}
-                />
-              </div>
-              <p>Your site, your style. Changes appear as you go.</p>
-              <div className="preview-feature-list">
-                <span>
-                  <Check size={13} />
-                  Responsive by default
-                </span>
-                <span>
-                  <Check size={13} />
-                  Risk disclosure included
-                </span>
-              </div>
+              <LiveSitePreview
+                config={wizard.config}
+                activeSection={previewSection}
+                onOpen={() =>
+                  setPreview({ config: wizard.config, published: false })
+                }
+              />
             </div>
           </div>
           <div className="wizard-footer">
@@ -2403,7 +2255,7 @@ export default function Home() {
                   onClick={() => saveSite(true)}
                 >
                   <Rocket size={15} />
-                  {serverUser ? "Publish mock snapshot" : "Publish locally"}
+                  {serverUser ? "Save demo version" : "Save demo locally"}
                 </Button>
               )}
             </div>
@@ -2432,6 +2284,7 @@ export default function Home() {
             <div>
               <button
                 aria-label="Desktop preview"
+                aria-pressed={!smallPreview}
                 className={`icon-btn ${!smallPreview ? "selected" : ""}`}
                 onClick={() => setSmallPreview(false)}
               >
@@ -2439,6 +2292,7 @@ export default function Home() {
               </button>
               <button
                 aria-label="Mobile preview"
+                aria-pressed={smallPreview}
                 className={`icon-btn ${smallPreview ? "selected" : ""}`}
                 onClick={() => setSmallPreview(true)}
               >
@@ -2448,96 +2302,8 @@ export default function Home() {
           </div>
           <div
             className={`full-site-preview ${smallPreview ? "mobile-preview" : ""}`}
-            style={
-              {
-                "--site-accent": preview.config.color,
-                "--site-accent-on-dark": accentOnDark(preview.config.color),
-                "--site-ink": accentInk(preview.config.color),
-              } as React.CSSProperties
-            }
           >
-            <div className="tenant-nav">
-              <span>
-                <span className="tenant-logo">
-                  {preview.config.name.charAt(0)}
-                </span>
-                {preview.config.name}
-              </span>
-              <Badge tone="lavender">Mock demo</Badge>
-            </div>
-            <div className="tenant-hero">
-              <span className="eyebrow">YOUR MARKETS. YOUR PERSPECTIVE.</span>
-              <h2>{preview.config.headline}</h2>
-              <p>{preview.config.description}</p>
-              {preview.config.modules.includes("markets") && (
-                <Button
-                  primary
-                  onClick={() =>
-                    document.getElementById("tenant-markets")?.scrollIntoView({
-                      behavior: window.matchMedia(
-                        "(prefers-reduced-motion: reduce)",
-                      ).matches
-                        ? "auto"
-                        : "smooth",
-                      block: "nearest",
-                    })
-                  }
-                >
-                  Explore markets <ArrowDownIcon />
-                </Button>
-              )}
-            </div>
-            {preview.config.modules.includes("markets") && (
-              <div id="tenant-markets" className="tenant-markets">
-                <div className="section-heading">
-                  <h3>Market watchlist</h3>
-                  <Badge>Simulated prices</Badge>
-                </div>
-                <div className="market-items">
-                  {[
-                    "Volatility 100 Index",
-                    "Volatility 75 Index",
-                    "Volatility 50 Index",
-                  ].map((n, i) => (
-                    <div key={n}>
-                      <span>{n}</span>
-                      <strong>
-                        {[1452.38, 875.21, 2341.65][i].toLocaleString()}
-                        <small>Illustrative only</small>
-                      </strong>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            {preview.config.modules.includes("terminal") && (
-              <div className="tenant-terminal">
-                <div className="section-heading">
-                  <h3>Volatility 100 Index</h3>
-                  <span className="mock-label">
-                    SIMULATED CHART · NO TRADING
-                  </span>
-                </div>
-                <Chart color={preview.config.color} />
-              </div>
-            )}
-            {preview.config.modules.includes("about") && (
-              <div className="tenant-about">
-                <h3>About {preview.config.name}</h3>
-                <p>{preview.config.description}</p>
-                <p>
-                  Independent operator site. All features shown in this preview
-                  use mock data.
-                </p>
-              </div>
-            )}
-            <div className="tenant-risk">
-              <ShieldCheck size={18} />
-              <p>{RISK}</p>
-            </div>
-            <div className="tenant-footer">
-              Built with tradeintra · Local proof-of-concept
-            </div>
+            <PublishedSite config={preview.config} environment="Preview" />
           </div>
         </Modal>
       )}
@@ -2703,8 +2469,7 @@ export default function Home() {
           onClose={() => notify("Verify from Settings when you are ready.")}
         >
           <p className="confirm-text">
-            Development verification token. Verify now to unlock site creation
-            and 30 starter credits.
+            Development verification token. Verify now to unlock site creation.
           </p>
           <code className="mock-code">{server.verificationToken}</code>
           <div className="confirm-actions">
@@ -2753,11 +2518,13 @@ function Modal({
   title,
   onClose,
   wide = false,
+  fullscreen = false,
 }: {
   children: React.ReactNode;
   title: string;
   onClose: () => void;
   wide?: boolean;
+  fullscreen?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const titleId = "modal-" + title.replace(/[^a-z]/gi, "");
@@ -2772,7 +2539,7 @@ function Modal({
       if (e.key !== "Tab" || !el) return;
       const controls = Array.from(
         el.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), input:not([disabled]), textarea, select, [tabindex="0"]',
+          'a[href], button:not([disabled]), input:not([disabled]), textarea, select, summary, [tabindex="0"]',
         ),
       ).filter((x) => x.offsetParent !== null);
       const start = controls[0],
@@ -2793,13 +2560,13 @@ function Modal({
   }, []);
   return (
     <div
-      className="modal-backdrop"
+      className={`modal-backdrop ${fullscreen ? "fullscreen-backdrop" : ""}`}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div
-        className={`modal ${wide ? "wide" : ""}`}
+        className={`modal ${wide ? "wide" : ""} ${fullscreen ? "fullscreen" : ""}`}
         ref={ref}
         onKeyDown={(e) => {
           if (e.key === "Escape") {

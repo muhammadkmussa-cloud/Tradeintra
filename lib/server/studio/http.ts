@@ -53,13 +53,16 @@ export function checkOrigin(request: NextRequest) {
     );
   return origin.protocol === "https:";
 }
-export async function readJson(request: NextRequest): Promise<unknown> {
+export async function readJson(
+  request: NextRequest,
+  limit = 16384,
+): Promise<unknown> {
   if (
     request.headers.get("content-type")?.split(";")[0].trim().toLowerCase() !==
     "application/json"
   )
     throw new StudioError(415, "Use an application/json request.");
-  if (Number(request.headers.get("content-length") ?? 0) > 16384)
+  if (Number(request.headers.get("content-length") ?? 0) > limit)
     throw new StudioError(413, "Request is too large.");
   const reader = request.body?.getReader();
   if (!reader) throw new StudioError(400, "A JSON body is required.");
@@ -70,7 +73,7 @@ export async function readJson(request: NextRequest): Promise<unknown> {
       const { value, done } = await reader.read();
       if (done) break;
       bytes += value.byteLength;
-      if (bytes > 16384) {
+      if (bytes > limit) {
         await reader.cancel();
         throw new StudioError(413, "Request is too large.");
       }

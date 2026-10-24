@@ -8,7 +8,7 @@ const document = {
     title: "Tradeintra API",
     version: "0.1.0",
     description:
-      "Development contract for account, site, domain, billing, signals, marketplace, support, and health workflows. Provider secrets and payout execution are never exposed.",
+      "Development contract for account, site, domain, bot preset, signals, marketplace, support, and health workflows. Provider secrets and payout execution are never exposed.",
   },
   servers: [{ url: "/" }],
   paths: {
@@ -46,9 +46,9 @@ const document = {
       get: { summary: "Export the signed-in account", ...authed },
       post: { summary: "Request or cancel account deletion", ...authed },
     },
-    "/api/studio/credits": {
-      get: { summary: "Credit balance and purchases", ...authed },
-      post: { summary: "Purchase a credit pack", ...authed },
+    "/api/studio/commissions": {
+      get: { summary: "Commission entries and totals", ...authed },
+      post: { summary: "Upload a monthly CSV commission statement", ...authed },
     },
     "/api/studio/domains": {
       get: { summary: "List domains", ...authed },
@@ -86,8 +86,11 @@ const document = {
       post: { summary: "Create or publish an announcement", ...authed },
     },
     "/api/studio/bots": {
-      get: { summary: "List bots and generation jobs", ...authed },
-      post: { summary: "Generate, verify, assign, or delete a bot", ...authed },
+      get: { summary: "List saved bots", ...authed },
+      post: {
+        summary: "Create, verify, validate, assign, or delete a bot",
+        ...authed,
+      },
     },
     "/api/studio/telegram": {
       get: { summary: "Read Telegram connection state", ...authed },

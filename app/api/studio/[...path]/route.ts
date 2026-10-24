@@ -10,7 +10,6 @@ import {
 import {
   authenticate,
   createEmailVerification,
-  creditBalance,
   sessionActor,
   logout,
   rateLimit,
@@ -78,7 +77,6 @@ export async function GET(
       enabled: true,
       user: actor,
       mode,
-      credits: await creditBalance(db, actor.id),
       ...(await loadState(db, actor.id)),
     });
   } catch (error) {
@@ -104,7 +102,7 @@ export async function POST(
       )
     )
       return json({ error: "Not found." }, 404);
-    const body = await readJson(request);
+    const body = await readJson(request, 524_288);
     const db = await getStudioDb();
     const token = request.cookies.get(SESSION_COOKIE)?.value;
     if (endpoint === "verify-email") {
@@ -121,7 +119,6 @@ export async function POST(
         enabled: true,
         user: actor,
         mode,
-        credits: await creditBalance(db, actor.id),
         ...(await loadState(db, actor.id)),
       });
     }
@@ -145,7 +142,6 @@ export async function POST(
           enabled: true,
           user: actor,
           mode,
-          credits: await creditBalance(db, actor.id),
           ...(mode === "local" && verificationToken
             ? { devVerificationToken: verificationToken }
             : {}),
@@ -176,7 +172,6 @@ export async function POST(
         enabled: true,
         user: actor,
         mode,
-        credits: await creditBalance(db, actor.id),
         ...(await loadState(db, actor.id)),
       });
       response.cookies.set(SESSION_COOKIE, newToken, {

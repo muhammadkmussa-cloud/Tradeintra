@@ -7,13 +7,6 @@ const mode = (value, fallback = "mock") => {
     : fallback;
 };
 const report = {
-  ai: {
-    mode: mode(
-      process.env.DEEPSEEK_MODE,
-      process.env.DEEPSEEK_API_KEY ? "live" : "mock",
-    ),
-    configured: Boolean(process.env.DEEPSEEK_API_KEY),
-  },
   email: {
     mode: mode(process.env.SMTP_MODE, process.env.SMTP_HOST ? "smtp" : "mock"),
     configured: Boolean(

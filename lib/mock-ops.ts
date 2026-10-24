@@ -705,38 +705,6 @@ export function resumeSubscription(state: MockState): MockState {
   };
 }
 
-export function buyCredits(
-  state: MockState,
-  amount: number,
-  price: number,
-): MockState {
-  return {
-    ...state,
-    credits: state.credits + amount,
-    creditLedger: [
-      { id: id(), delta: amount, reason: `Credit pack · $${price}`, at: now() },
-      ...state.creditLedger,
-    ],
-    audit: audit(state, "billing.credits", `+${amount}`),
-  };
-}
-
-export function spendCredits(
-  state: MockState,
-  amount: number,
-  reason: string,
-): MockState {
-  if (state.credits < amount) return state;
-  return {
-    ...state,
-    credits: state.credits - amount,
-    creditLedger: [
-      { id: id(), delta: -amount, reason, at: now() },
-      ...state.creditLedger,
-    ],
-  };
-}
-
 export function createTicket(
   state: MockState,
   subject: string,
@@ -1157,7 +1125,7 @@ export function setDomainMarkup(state: MockState, percent: number): MockState {
   };
 }
 
-export function availableCredits(state: MockState) {
+export function availableEarnings(state: MockState) {
   return state.earnings
     .filter((e) => e.status === "available")
     .reduce((sum, e) => sum + e.amount, 0);

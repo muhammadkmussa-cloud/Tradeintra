@@ -60,13 +60,13 @@ export function AuthFormPage({ mode }: { mode: Mode }) {
       if (mode === "signup" && reply.devVerificationToken) {
         setVerificationToken(reply.devVerificationToken);
         setMessage(
-          "Development verification token created. Verify now to claim 30 starter credits.",
+          "Development verification token created. Verify now to open your studio.",
         );
         return;
       }
       if (mode === "signup") {
         setMessage(
-          "Check your email to verify your account before creating a site or using credits.",
+          "Check your email to verify your account before creating a site.",
         );
         return;
       }
@@ -111,7 +111,7 @@ export function AuthFormPage({ mode }: { mode: Mode }) {
           <h1>{mode === "signup" ? "Start your studio." : "Welcome back."}</h1>
           <p>
             {mode === "signup"
-              ? "Create or connect a Deriv account before publishing. Email verification is required before site creation and credits."
+              ? "Create or connect a Deriv account before publishing. Email verification is required before site creation."
               : "Use email and password, or connect Google when credentials are configured."}
           </p>
           <form onSubmit={submit} aria-busy={busy}>
@@ -292,12 +292,11 @@ export function AuthFormPage({ mode }: { mode: Mode }) {
             </div>
             <div className="auth-aside-badges">
               <span>Domain verified</span>
-              <span>30 starter credits</span>
+              <span>Deriv presets included</span>
             </div>
           </div>
           <ul>
-            <li>30 starter AI credits after verification</li>
-            <li>Referrer also receives 30 credits</li>
+            <li>Deriv preset library and 20 site modules</li>
             <li>One active site; archive before replacement</li>
             <li>Free subdomain or custom domain</li>
             <li>Deriv account required before site creation</li>

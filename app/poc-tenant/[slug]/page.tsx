@@ -60,7 +60,8 @@ export default async function StagingTenant({
           <h1>{config.headline}</h1>
           <p>{config.description}</p>
         </section>
-        {config.modules.includes("markets") && (
+        {(config.modules.includes("watchlist") ||
+          config.modules.includes("markets")) && (
           <section className="poc-module">
             <h2>Market watchlist</h2>
             <p>Illustrative data only — not a live feed.</p>
@@ -81,7 +82,8 @@ export default async function StagingTenant({
             </div>
           </section>
         )}
-        {config.modules.includes("terminal") && (
+        {(config.modules.includes("chart") ||
+          config.modules.includes("terminal")) && (
           <section className="poc-module">
             <h2>Demo terminal</h2>
             <p>

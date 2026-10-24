@@ -86,7 +86,7 @@ These are hypotheses derived from the reference; validate with real customers.
 - Multi-broker support.
 - Arbitrary customer code in curated template sites.
 - AI-generated standalone applications.
-- AI Bot Generator and AI Signals until hosting job limits are proven.
+- AI Signals until hosting job limits are proven.
 - Marketplace/bot store.
 - Free-form drag-and-drop page builder.
 - Unverified market-data or broker integrations.
@@ -96,7 +96,6 @@ These are hypotheses derived from the reference; validate with real customers.
 - Free plan: one published app, free subdomain, selected modules, basic customization, Tradeintra branding, fair-use limits.
 - Paid plans: custom domains, more apps, premium modules, higher limits, branding removal.
 - Domain sales: registrar cost + centrally configurable markup per TLD.
-- AI Bot Generator credits.
 - AI Builder top-ups.
 - Marketplace commission (configurable, subject to review).
 - Signal subscriptions (phase).

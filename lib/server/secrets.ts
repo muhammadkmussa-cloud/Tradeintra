@@ -8,7 +8,11 @@ import {
 function key() {
   const configured = process.env.TOKEN_ENCRYPTION_KEY;
   if (!configured) {
-    if (process.env.NODE_ENV === "production")
+    if (
+      process.env.NODE_ENV === "production" ||
+      (process.env.DERIV_MODE &&
+        !["mock", "false"].includes(process.env.DERIV_MODE))
+    )
       throw new Error("TOKEN_ENCRYPTION_KEY is required in production.");
     return createHash("sha256").update("tradeintra-development-key").digest();
   }

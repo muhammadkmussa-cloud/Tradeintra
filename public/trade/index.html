@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta
+      name="description"
+      content="Tradeintra shared demo trading workspace. Simulated data only. No real money, deposits, or withdrawals."
+    />
+    <title>Demo trading — Tradeintra</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23fedd00'/%3E%3Cpath d='M18 20h30v7H37v22h-8V27H18z' fill='%230d000a'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="./styles.css?v=3" />
+  </head>
+  <body>
+    <div class="demo-ribbon">
+      <span>DEMO ONLY · SIMULATED MARKET · NO REAL MONEY</span>
+      <span class="connection"><i></i> Demo feed</span>
+    </div>
+
+    <header class="topbar">
+      <a class="brand" href="#overview" aria-label="Demo trading home">
+        <span class="brand-mark" id="brand-mark" aria-hidden="true">T</span>
+        <img class="brand-logo" id="brand-logo" alt="" hidden />
+        <span>
+          <strong id="operator-name">Tradeintra Demo</strong>
+          <small>Powered by Tradeintra</small>
+        </span>
+      </a>
+      <div class="topbar-actions">
+        <span class="demo-chip" id="account-mode">Demo account</span>
+        <button class="ghost-button" id="login-button" type="button">
+          Sign in with Deriv
+        </button>
+        <span class="balance-pill"
+          ><small>Demo balance</small
+          ><strong id="balance">$10,000.00</strong></span
+        >
+      </div>
+    </header>
+
+    <div class="app-shell">
+      <aside class="app-rail" aria-label="Workspace navigation">
+        <span class="rail-label">WORKSPACE</span>
+        <button class="rail-button active" data-route="overview" type="button">
+          <span aria-hidden="true">◫</span> Overview
+        </button>
+        <button class="rail-button" data-route="markets" type="button">
+          <span aria-hidden="true">≡</span> Markets
+        </button>
+        <button class="rail-button" data-route="trade" type="button">
+          <span aria-hidden="true">↗</span> Trade
+        </button>
+        <button class="rail-button" data-route="strategies" type="button">
+          <span aria-hidden="true">◇</span> Strategies
+        </button>
+        <button class="rail-button" data-route="signals" type="button">
+          <span aria-hidden="true">≈</span> Signals
+        </button>
+        <button class="rail-button" data-route="reports" type="button">
+          <span aria-hidden="true">▤</span> Reports
+        </button>
+        <button class="rail-button" data-route="learn" type="button">
+          <span aria-hidden="true">?</span> Learn
+        </button>
+        <button class="rail-button" data-route="settings" type="button">
+          <span aria-hidden="true">⚙</span> Settings
+        </button>
+      </aside>
+
+      <main class="app-main">
+        <section class="app-view" data-view="overview">
+          <div class="view-heading">
+            <div>
+              <span class="eyebrow">DEMO WORKSPACE / OVERVIEW</span>
+              <h1>Good to see you.</h1>
+              <p>
+                A simulated market desk. No real account, deposit, or trade is
+                connected.
+              </p>
+            </div>
+            <button class="primary-button" data-route="trade" type="button">
+              Open trade ticket
+            </button>
+          </div>
+          <div class="metric-grid">
+            <div class="metric-card">
+              <span>Demo balance</span>
+              <strong id="overview-balance">$10,000.00</strong>
+              <small>Simulated funds</small>
+            </div>
+            <div class="metric-card">
+              <span>Open positions</span>
+              <strong id="overview-open">0</strong>
+              <small>Demo contracts</small>
+            </div>
+            <div class="metric-card">
+              <span>Session P/L</span>
+              <strong id="overview-pnl">$0.00</strong>
+              <small>Settled demo trades</small>
+            </div>
+            <div class="metric-card">
+              <span>Settled trades</span>
+              <strong id="overview-trades">0</strong>
+              <small>No live orders</small>
+            </div>
+          </div>
+          <div class="overview-grid">
+            <section class="panel overview-chart-panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="eyebrow">SIMULATED CHART</span>
+                  <h2 id="overview-chart-title">Volatility 100 Index</h2>
+                </div>
+                <span class="demo-chip">1 tick · 2s</span>
+              </div>
+              <p class="overview-price" id="overview-chart-price">1,452.38</p>
+              <canvas
+                id="overview-chart"
+                role="img"
+                aria-label="Illustrative simulated overview chart"
+              ></canvas>
+            </section>
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="eyebrow">MARKET SNAPSHOT</span>
+                  <h2>Watchlist</h2>
+                </div>
+                <button class="text-button" data-route="markets" type="button">
+                  All markets
+                </button>
+              </div>
+              <div id="overview-markets" class="overview-markets"></div>
+            </section>
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="eyebrow">STRATEGY LIBRARY</span>
+                  <h2>Start from a preset</h2>
+                </div>
+                <button
+                  class="text-button"
+                  data-route="strategies"
+                  type="button"
+                >
+                  View all
+                </button>
+              </div>
+              <div id="overview-strategies" class="overview-strategies"></div>
+            </section>
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="eyebrow">RECENT ACTIVITY</span>
+                  <h2>Demo trades</h2>
+                </div>
+                <button class="text-button" data-route="reports" type="button">
+                  Reports
+                </button>
+              </div>
+              <div id="overview-recent" class="overview-recent"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="app-view" data-view="trade" hidden>
+          <div class="view-heading">
+            <div>
+              <span class="eyebrow">DEMO WORKSPACE / TRADE</span>
+              <h1>Trade ticket</h1>
+              <p>Simulated prices, simulated contracts, no real money.</p>
+            </div>
+            <span class="demo-chip">Simulated only</span>
+          </div>
+          <div class="terminal">
+            <aside class="watchlist panel" aria-label="Market watchlist">
+              <div class="panel-heading">
+                <div>
+                  <span class="eyebrow">MARKETS</span>
+                  <h2>Watchlist</h2>
+                </div>
+                <button
+                  class="icon-button"
+                  id="refresh-button"
+                  aria-label="Refresh simulated prices"
+                >
+                  ↻
+                </button>
+              </div>
+              <div id="market-list" class="market-list"></div>
+              <p class="fine-print">
+                Simulated prices. Not live Deriv data and not a performance
+                claim.
+              </p>
+            </aside>
+
+            <section class="chart-column">
+              <div class="panel chart-panel">
+                <div class="chart-heading">
+                  <div>
+                    <span class="eyebrow">SIMULATED CHART</span>
+                    <h1 id="chart-title">Volatility 100 Index</h1>
+                    <p id="chart-price" class="chart-price">1,452.38</p>
+                  </div>
+                  <div class="chart-meta">
+                    <span id="chart-change" class="change">+0.00%</span>
+                    <span class="demo-chip">1 tick · 2s</span>
+                  </div>
+                </div>
+                <canvas
+                  id="chart"
+                  role="img"
+                  aria-label="Illustrative simulated price chart, not live market data"
+                ></canvas>
+                <div class="chart-scale" aria-hidden="true">
+                  <span id="scale-high">—</span>
+                  <span id="scale-low">—</span>
+                </div>
+              </div>
+
+              <div class="panel positions-panel">
+                <div class="panel-heading">
+                  <div>
+                    <span class="eyebrow">OPEN POSITIONS</span>
+                    <h2>Demo contracts</h2>
+                  </div>
+                  <span class="badge-neutral" id="position-count">0 open</span>
+                </div>
+                <div id="positions" class="positions"></div>
+              </div>
+            </section>
+
+            <aside class="ticket panel" aria-label="Demo trade ticket">
+              <div class="panel-heading">
+                <div>
+                  <span class="eyebrow">TRADE TICKET</span>
+                  <h2>Place a demo trade</h2>
+                </div>
+              </div>
+              <label class="field">
+                Stake (USD)
+                <input
+                  id="stake"
+                  type="number"
+                  min="1"
+                  max="1000"
+                  step="1"
+                  value="10"
+                  inputmode="decimal"
+                />
+              </label>
+              <label class="field">
+                Duration
+                <select id="duration">
+                  <option value="5">5 ticks</option>
+                  <option value="10" selected>10 ticks</option>
+                  <option value="20">20 ticks</option>
+                </select>
+              </label>
+              <div class="quote">
+                <span>Potential payout</span>
+                <strong id="payout">$19.50</strong>
+                <small>95% illustrative payout · not a guarantee</small>
+              </div>
+              <p id="trade-status" class="trade-status" role="status"></p>
+              <div class="trade-buttons">
+                <button class="trade-button rise" id="buy-rise" type="button">
+                  <span>Rise</span>
+                  <small id="rise-price">1,452.38</small>
+                </button>
+                <button class="trade-button fall" id="buy-fall" type="button">
+                  <span>Fall</span>
+                  <small id="fall-price">1,452.38</small>
+                </button>
+              </div>
+              <p class="fine-print">
+                Demo contracts settle against the simulated tick stream. No
+                order is sent to Deriv and no money is at risk.
+              </p>
+            </aside>
+          </div>
+        </section>
+
+        <section class="app-view" data-view="markets" hidden>
+          <div class="view-heading">
+            <div>
+              <span class="eyebrow">DEMO WORKSPACE / MARKETS</span>
+              <h1>Simulated markets</h1>
+              <p>Select a market to carry it into the trade ticket.</p>
+            </div>
+          </div>
+          <section class="panel">
+            <div id="market-table" class="market-table"></div>
+          </section>
+        </section>
+
+        <section class="app-view" data-view="strategies" hidden>
+          <div class="view-heading">
+            <div>
+              <span class="eyebrow">DEMO WORKSPACE / STRATEGIES</span>
+              <h1>Deriv preset library</h1>
+              <p>
+                MIT-licensed DBot XML starting points. Review stake and
+                stop-loss settings before use.
+              </p>
+            </div>
+          </div>
+          <div class="strategy-filters" id="strategy-filters"></div>
+          <div id="strategy-grid" class="strategy-grid"></div>
+        </section>
+
+        <section class="app-view" data-view="signals" hidden>
+          <div class="view-heading">
+            <div>
+              <span class="eyebrow">DEMO WORKSPACE / SIGNALS</span>
+              <h1>Signal journal</h1>
+              <p>
+                A simulated feed for interface testing. No provider subscription
+                or live recommendation is active.
+              </p>
+            </div>
+          </div>
+          <div class="signal-note" role="note">
+            Signals are disabled until a reviewed provider and the required
+            approvals are in place. The entries below are generated from the
+            local demo stream.
+          </div>
+          <div id="signal-list" class="signal-list"></div>
+        </section>
+
+        <section class="app-view" data-view="reports" hidden>
+          <div class="view-heading">
+            <div>
+              <span class="eyebrow">DEMO WORKSPACE / REPORTS</span>
+              <h1>Demo reports</h1>
+              <p>Local contract history only. Nothing is fetched from Deriv.</p>
+            </div>
+            <button class="ghost-button" id="export-button" type="button">
+              Export CSV
+            </button>
+          </div>
+          <div class="metric-grid report-metrics">
+            <div class="metric-card">
+              <span>Wins</span><strong id="report-wins">0</strong>
+            </div>
+            <div class="metric-card">
+              <span>Losses</span><strong id="report-losses">0</strong>
+            </div>
+            <div class="metric-card">
+              <span>Net P/L</span><strong id="report-pnl">$0.00</strong>
+            </div>
+            <div class="metric-card">
+              <span>Total</span><strong id="report-total">0</strong>
+            </div>
+          </div>
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <span class="eyebrow">HISTORY</span>
+                <h2>Recent demo trades</h2>
+              </div>
+              <button class="text-button" id="reset-button" type="button">
+                Reset demo
+              </button>
+            </div>
+            <div id="history" class="history-table" tabindex="0"></div>
+          </section>
+        </section>
+
+        <section class="app-view" data-view="learn" hidden>
+          <div class="view-heading">
+            <div>
+              <span class="eyebrow">DEMO WORKSPACE / LEARN</span>
+              <h1>Risk before action.</h1>
+              <p>A short checklist for using this demo deliberately.</p>
+            </div>
+          </div>
+          <div class="learn-grid">
+            <section class="panel learn-card">
+              <span class="eyebrow">SESSION CHECKLIST</span>
+              <h2>Before you press Rise or Fall</h2>
+              <label
+                ><input type="checkbox" /> I know this is simulated data.</label
+              >
+              <label
+                ><input type="checkbox" /> I have set a stake I can afford to
+                lose in a real market.</label
+              >
+              <label
+                ><input type="checkbox" /> I understand the payout is
+                illustrative, not a promise.</label
+              >
+              <label
+                ><input type="checkbox" /> I will review a strategy's stop-loss
+                before using it.</label
+              >
+            </section>
+            <section class="panel learn-card">
+              <span class="eyebrow">GLOSSARY</span>
+              <h2>Plain terms</h2>
+              <dl>
+                <dt>Stake</dt>
+                <dd>The amount committed to a demo contract.</dd>
+                <dt>Payout</dt>
+                <dd>
+                  The illustrative return if the contract settles in your
+                  favour.
+                </dd>
+                <dt>Preset</dt>
+                <dd>An XML starting point, not a recommendation.</dd>
+                <dt>Demo balance</dt>
+                <dd>Simulated funds held in this browser session.</dd>
+              </dl>
+            </section>
+            <section class="panel learn-card">
+              <span class="eyebrow">BOUNDARY</span>
+              <h2>What this workspace does not do</h2>
+              <p>
+                It does not connect to Deriv, hold funds, execute real orders,
+                or provide investment advice. Live trading requires the Deriv
+                and Kenyan approval gates.
+              </p>
+            </section>
+          </div>
+        </section>
+
+        <section class="app-view" data-view="settings" hidden>
+          <div class="view-heading">
+            <div>
+              <span class="eyebrow">DEMO WORKSPACE / SETTINGS</span>
+              <h1>Demo settings</h1>
+              <p>Local preferences only. Nothing is sent to a provider.</p>
+            </div>
+          </div>
+          <div class="settings-grid">
+            <section class="panel">
+              <span class="eyebrow">APPEARANCE</span>
+              <h2>Theme</h2>
+              <p>Switch the local workspace theme.</p>
+              <div class="theme-options">
+                <button
+                  class="primary-button"
+                  data-theme-choice="light"
+                  type="button"
+                >
+                  Warm paper
+                </button>
+                <button
+                  class="ghost-button"
+                  data-theme-choice="dark"
+                  type="button"
+                >
+                  Deep ink
+                </button>
+              </div>
+            </section>
+            <section class="panel">
+              <span class="eyebrow">DERIV CONNECTION</span>
+              <h2>Not connected</h2>
+              <p id="deriv-status">
+                No Deriv session is connected in this browser.
+              </p>
+              <button class="ghost-button" id="settings-login" type="button">
+                Sign in with Deriv
+              </button>
+              <button
+                class="ghost-button"
+                id="settings-logout"
+                type="button"
+                hidden
+              >
+                Sign out of Deriv
+              </button>
+            </section>
+            <section class="panel">
+              <span class="eyebrow">LOCAL DATA</span>
+              <h2>Reset the demo</h2>
+              <p>Clear the simulated balance and trade history in this tab.</p>
+              <button class="ghost-button" id="settings-reset" type="button">
+                Reset demo
+              </button>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <nav class="mobile-nav" aria-label="Mobile workspace navigation">
+      <button data-route="overview" type="button">Overview</button>
+      <button data-route="markets" type="button">Markets</button>
+      <button data-route="trade" type="button">Trade</button>
+      <button data-route="strategies" type="button">Strategies</button>
+      <button data-route="signals" type="button">Signals</button>
+      <button data-route="reports" type="button">Reports</button>
+      <button data-route="learn" type="button">Learn</button>
+      <button data-route="settings" type="button">Settings</button>
+    </nav>
+
+    <footer class="trade-footer">
+      <p>
+        This is a simulated demo environment. Tradeintra is not a broker and
+        does not execute trades, hold funds, or provide investment advice. Deriv
+        is not affiliated with or responsible for this demo. Risk disclosure:
+        trading involves risk; never risk money you cannot afford to lose.
+      </p>
+      <span>Shared workspace · <span id="site-slug">demo</span></span>
+    </footer>
+
+    <dialog id="login-dialog" aria-labelledby="login-title">
+      <div class="dialog-heading">
+        <span class="eyebrow">DERIV ACCOUNT</span>
+        <h2 id="login-title">Open this from a published site to sign in.</h2>
+      </div>
+      <p>
+        Sign in with Deriv is available when the workspace is opened from a
+        published client site. This standalone demo continues with simulated
+        data.
+      </p>
+      <ul>
+        <li>This demo does not ask for Deriv credentials.</li>
+        <li>
+          No real account, balance, deposit, withdrawal, or trade is created.
+        </li>
+        <li>Model 2 live trading remains gated by Deriv and legal approval.</li>
+      </ul>
+      <button class="primary-button" id="close-login" type="button">
+        Continue in demo
+      </button>
+    </dialog>
+
+    <script src="./app.js?v=3" defer></script>
+  </body>
+</html>

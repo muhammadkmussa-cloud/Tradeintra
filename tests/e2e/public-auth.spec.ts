@@ -28,9 +28,7 @@ test("public marketing, signup, email verification, and Google mock sign-in", as
   ).toBeVisible();
   await page.getByRole("button", { name: "Verify email and continue" }).click();
   await expect(page).toHaveURL(/\/studio$/);
-  await expect(
-    page.getByRole("heading", { name: "Your operator desk." }),
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "My site." })).toBeVisible();
 
   await page.getByRole("button", { name: "Settings", exact: true }).click();
   await expect(page.getByText("Public Operator", { exact: false })).toHaveCount(

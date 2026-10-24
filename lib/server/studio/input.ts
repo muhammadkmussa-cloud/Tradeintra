@@ -1,16 +1,32 @@
 import { z } from "zod";
-import { LEGACY_SLUG_PATTERN, SLUG_PATTERN } from "../../studio";
+import {
+  LEGACY_SLUG_PATTERN,
+  LOGO_PATTERN,
+  MAX_LOGO_LENGTH,
+  SLUG_PATTERN,
+} from "../../studio";
+import { isModuleKey, normalizeModules } from "../../studio-modules";
 export const configSchema = z
   .object({
     name: z.string().trim().min(1).max(60),
     slug: z.string().regex(SLUG_PATTERN),
     color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+    theme: z.enum(["light", "dark"]).optional(),
+    logo: z
+      .string()
+      .max(MAX_LOGO_LENGTH)
+      .regex(LOGO_PATTERN, "Upload a smaller PNG, JPG, or WebP logo.")
+      .optional(),
     headline: z.string().trim().min(1).max(100),
     description: z.string().max(240),
     modules: z
-      .array(z.enum(["markets", "terminal", "about"]))
-      .max(3)
-      .refine((v) => new Set(v).size === v.length, "Choose each module once."),
+      .array(z.string().max(30))
+      .min(1)
+      .max(20)
+      .refine((v) => v.every(isModuleKey), "Choose supported modules only.")
+      .transform((v) => normalizeModules(v))
+      .refine((v) => v.length <= 20, "Choose at most 20 modules."),
+    moduleContent: z.record(z.string(), z.unknown()).optional(),
   })
   .strict();
 export const publishedConfigSchema = configSchema.extend({

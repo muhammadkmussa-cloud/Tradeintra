@@ -8,15 +8,12 @@ import type { StudioDb, Actor } from "../lib/server/studio/types";
 import {
   authenticate,
   createEmailVerification,
-  creditBalance,
   verifyEmail,
 } from "../lib/server/studio/auth";
 import {
   assignBot,
   createBot,
-  generateBot,
   listBots,
-  refineBot,
   removeBot,
   sandboxBot,
   validateBot,
@@ -34,7 +31,6 @@ beforeAll(async () => {
   process.env.STUDIO_DB_MODE = "local";
   process.env.STUDIO_ENV = "local";
   process.env.STUDIO_DATA_DIR = directory;
-  process.env.DEEPSEEK_MODE = "mock";
   db = await getStudioDb();
   actor = (
     await authenticate(db, "bots@example.test", "BotsPass1", true, {
@@ -64,7 +60,6 @@ beforeAll(async () => {
 }, 30000);
 
 afterAll(async () => {
-  delete process.env.DEEPSEEK_MODE;
   await db?.destroy();
   await rm(directory, { recursive: true, force: true });
   delete process.env.STUDIO_DB_MODE;
@@ -72,60 +67,51 @@ afterAll(async () => {
   delete process.env.STUDIO_DATA_DIR;
 });
 
-describe("server bot generation and library", () => {
-  it("generates a mock bot, debits credits, validates, and assigns it", async () => {
-    const generated = await generateBot(
+describe("server bot preset library", () => {
+  it("stores, validates, verifies, and assigns a Deriv preset", async () => {
+    const bot = await createBot(
       db,
       actor.id,
-      "A cautious volatility breakout with a fixed stake and stop loss.",
+      "1-3-2-6",
+      '<xml is_dbot="true"><block type="trade_definition"></block></xml>',
     );
-    expect(generated.provider).toBe("mock");
-    expect(generated.credits).toBe(20);
-    const bots = await listBots(db, actor.id);
-    expect(bots[0].xml).toContain("<xml");
-    await expect(
-      validateBot(db, actor.id, generated.botId),
-    ).resolves.toMatchObject({
+    await expect(validateBot(db, actor.id, bot.id)).resolves.toMatchObject({
+      valid: true,
+    });
+    await expect(verifyBot(db, actor.id, bot.id)).resolves.toMatchObject({
       valid: true,
     });
     await expect(
-      assignBot(db, actor.id, generated.botId, siteId),
+      assignBot(db, actor.id, bot.id, siteId),
     ).resolves.toMatchObject({ ok: true });
-    expect(await creditBalance(db, actor.id)).toBe(20);
+    expect(await listBots(db, actor.id)).toHaveLength(1);
   });
 
-  it("verifies unsafe XML, refines a bot, and runs sandbox checks", async () => {
+  it("accepts official block XML without adding a fake strategy block", async () => {
     const bot = await createBot(
       db,
       actor.id,
-      "Fixable bot",
-      '<xml><strategy name="fixable"></xml>',
+      "D’Alembert",
+      '<xml is_dbot="true"><block type="trade_definition"></block></xml>',
     );
     const verified = await verifyBot(db, actor.id, bot.id);
+    expect(verified.fixes).not.toContain("added strategy block");
     expect(verified.valid).toBe(true);
-    expect(verified.fixes).toContain("added strategy block");
-    const refined = await refineBot(
-      db,
-      actor.id,
-      bot.id,
-      "Tighten the stop loss and add a session filter.",
-    );
-    expect(refined.bot.xml).toContain("<xml>");
-    expect(refined.credits).toBe(14);
-    expect(
-      sandboxBot("<xml><strategy /><script>bad()</script></xml>"),
-    ).toMatchObject({ ok: false });
   });
 
-  it("stores, validates, and removes a manually supplied bot", async () => {
+  it("rejects unsafe XML and removes stored bots", async () => {
     const bot = await createBot(
       db,
       actor.id,
-      "Manual bot",
-      '<xml><strategy name="manual" /></xml>',
+      "Unsafe bot",
+      '<xml><block type="trade_definition"></block><script>bad()</script></xml>',
     );
-    expect(bot.compatibility).toBe("standard-dbot");
-    await validateBot(db, actor.id, bot.id);
+    await expect(verifyBot(db, actor.id, bot.id)).rejects.toMatchObject({
+      code: "UNSAFE_BOT",
+    });
+    expect(
+      sandboxBot("<xml><block /><script>bad()</script></xml>"),
+    ).toMatchObject({ ok: false });
     await removeBot(db, actor.id, bot.id);
     expect(
       (await listBots(db, actor.id)).some((item) => item.id === bot.id),

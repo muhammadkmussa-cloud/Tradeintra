@@ -676,13 +676,57 @@ export async function listDomainOrders(db: StudioDb, account: string) {
   );
 }
 
+function publicEntry<T extends object>(entry: T): Omit<T, "statement_csv"> {
+  const copy = { ...entry } as T & { statement_csv?: string | null };
+  delete copy.statement_csv;
+  return copy as Omit<T, "statement_csv">;
+}
+
+function summarizeCommissions<
+  T extends {
+    gross_commission: string;
+    platform_share: string;
+    status: string;
+  },
+>(entries: T[]) {
+  return {
+    entries: entries.map(publicEntry),
+    gross: entries.reduce((sum, row) => sum + Number(row.gross_commission), 0),
+    platformShare: entries.reduce(
+      (sum, row) => sum + Number(row.platform_share),
+      0,
+    ),
+    estimated: entries
+      .filter((row) => row.status === "estimated")
+      .reduce((sum, row) => sum + Number(row.platform_share), 0),
+    settled: entries
+      .filter((row) => row.status === "settled")
+      .reduce((sum, row) => sum + Number(row.platform_share), 0),
+    pending: entries
+      .filter((row) => row.status === "submitted")
+      .reduce((sum, row) => sum + Number(row.platform_share), 0),
+    approved: entries
+      .filter((row) => row.status === "approved")
+      .reduce((sum, row) => sum + Number(row.platform_share), 0),
+  };
+}
+
+export type CommissionStatus =
+  | "estimated"
+  | "imported"
+  | "settled"
+  | "reversed"
+  | "submitted"
+  | "approved"
+  | "rejected";
+
 export async function recordCommission(
   db: StudioDb,
   account: string,
   siteId: string | null,
   period: string,
   grossCommission: number,
-  status: "estimated" | "imported" | "settled" | "reversed" = "imported",
+  status: CommissionStatus = "imported",
   providerReference?: string,
 ) {
   const safeGross = Math.max(0, grossCommission);
@@ -708,7 +752,7 @@ export async function recordCommission(
       .orderBy("created_at", "desc")
       .execute();
     return {
-      entries,
+      entries: entries.map(publicEntry),
       gross: entries.reduce(
         (sum, row) => sum + Number(row.gross_commission),
         0,
@@ -727,14 +771,160 @@ export async function recordCommission(
   });
 }
 
-export async function listAllCommissions(db: StudioDb) {
-  return adminScope(db, (tx) =>
-    tx
+export function sanitizeCsv(csv: string) {
+  return csv
+    .split(/\r?\n/)
+    .map((line) => line.replace(/(^|,)(\s*"?)([=+\-@\t\r])/g, "$1$2'$3"))
+    .join("\n");
+}
+
+export async function submitCommissionStatement(
+  db: StudioDb,
+  account: string,
+  period: string,
+  grossCommission: number,
+  statementName: string,
+  statementSha256: string,
+  statementCsv: string,
+) {
+  const safeGross = Math.max(0, grossCommission);
+  const platformShare = +(safeGross * 0.15).toFixed(2);
+  if (!Number.isFinite(safeGross) || safeGross > 10_000_000)
+    throw new StudioError(422, "Enter a valid gross commission.", "VALIDATION");
+  return scope(db, account, async (tx) => {
+    const duplicate = await tx
+      .selectFrom("commission_entries")
+      .select("id")
+      .where("account_id", "=", account)
+      .where("statement_sha256", "=", statementSha256)
+      .executeTakeFirst();
+    if (duplicate)
+      throw new StudioError(
+        409,
+        "This statement was already submitted.",
+        "DUPLICATE_STATEMENT",
+      );
+    const existingPeriod = await tx
+      .selectFrom("commission_entries")
+      .select("id")
+      .where("account_id", "=", account)
+      .where("period", "=", period)
+      .where("status", "in", ["submitted", "approved", "settled"])
+      .executeTakeFirst();
+    if (existingPeriod)
+      throw new StudioError(
+        409,
+        "A statement for this period is already in review or approved.",
+        "PERIOD_ALREADY_SUBMITTED",
+      );
+    try {
+      await tx
+        .insertInto("commission_entries")
+        .values({
+          id: randomUUID(),
+          account_id: account,
+          site_id: null,
+          period,
+          gross_commission: String(safeGross),
+          platform_share: String(platformShare),
+          status: "submitted",
+          provider_reference: statementName,
+          statement_name: statementName,
+          statement_sha256: statementSha256,
+          statement_csv: sanitizeCsv(statementCsv),
+          submitted_at: new Date(),
+          reviewed_at: null,
+          reviewer_note: null,
+        })
+        .execute();
+    } catch (error) {
+      if ((error as { code?: string }).code === "23505")
+        throw new StudioError(
+          409,
+          "A statement for this period is already in review or approved.",
+          "PERIOD_ALREADY_SUBMITTED",
+        );
+      throw error;
+    }
+    await auditTx(
+      tx,
+      account,
+      account,
+      "commission.statement.submit",
+      `${period} · ${statementName}`,
+    );
+    const entries = await tx
+      .selectFrom("commission_entries")
+      .selectAll()
+      .where("account_id", "=", account)
+      .orderBy("created_at", "desc")
+      .execute();
+    return summarizeCommissions(entries);
+  });
+}
+
+export async function reviewCommission(
+  db: StudioDb,
+  entryId: string,
+  status: "approved" | "rejected" | "settled",
+  note: string,
+  actor: string,
+) {
+  return adminScope(db, async (tx) => {
+    const entry = await tx
+      .selectFrom("commission_entries")
+      .select(["id", "account_id", "status"])
+      .where("id", "=", entryId)
+      .executeTakeFirst();
+    if (!entry)
+      throw new StudioError(404, "Commission entry not found.", "NOT_FOUND");
+    await tx
+      .updateTable("commission_entries")
+      .set({
+        status,
+        reviewed_at: new Date(),
+        reviewer_note: note.slice(0, 500) || null,
+      })
+      .where("id", "=", entryId)
+      .execute();
+    await auditTx(
+      tx,
+      entry.account_id,
+      actor,
+      "commission.statement.review",
+      `${status} · ${note.slice(0, 200)}`,
+    );
+    const rows = await tx
       .selectFrom("commission_entries")
       .selectAll()
       .orderBy("created_at", "desc")
-      .execute(),
-  );
+      .execute();
+    return rows.map(publicEntry);
+  });
+}
+
+export async function listAllCommissions(db: StudioDb) {
+  return adminScope(db, async (tx) => {
+    const rows = await tx
+      .selectFrom("commission_entries")
+      .selectAll()
+      .orderBy("created_at", "desc")
+      .execute();
+    return rows.map(publicEntry);
+  });
+}
+
+export async function getCommissionStatement(db: StudioDb, entryId: string) {
+  return adminScope(db, async (tx) => {
+    const entry = await tx
+      .selectFrom("commission_entries")
+      .select(["statement_name", "statement_csv", "statement_sha256"])
+      .where("id", "=", entryId)
+      .executeTakeFirst();
+    if (!entry?.statement_csv)
+      throw new StudioError(404, "Statement not found.", "NOT_FOUND");
+    return entry;
+  });
 }
 
 export async function commissionSummary(db: StudioDb, account: string) {
@@ -746,7 +936,7 @@ export async function commissionSummary(db: StudioDb, account: string) {
       .orderBy("created_at", "desc")
       .execute();
     return {
-      entries: rows,
+      entries: rows.map(publicEntry),
       gross: rows.reduce((sum, row) => sum + Number(row.gross_commission), 0),
       platformShare: rows.reduce(
         (sum, row) => sum + Number(row.platform_share),
@@ -757,6 +947,12 @@ export async function commissionSummary(db: StudioDb, account: string) {
         .reduce((sum, row) => sum + Number(row.platform_share), 0),
       settled: rows
         .filter((row) => row.status === "settled")
+        .reduce((sum, row) => sum + Number(row.platform_share), 0),
+      pending: rows
+        .filter((row) => row.status === "submitted")
+        .reduce((sum, row) => sum + Number(row.platform_share), 0),
+      approved: rows
+        .filter((row) => row.status === "approved")
         .reduce((sum, row) => sum + Number(row.platform_share), 0),
     };
   });

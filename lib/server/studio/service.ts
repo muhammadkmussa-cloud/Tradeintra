@@ -1,6 +1,11 @@
 import { createHash, randomUUID } from "node:crypto";
-import type { Studio, Site, Config } from "../../studio";
-import { validateConfig, RESERVED_SLUGS } from "../../studio";
+import type { Studio, Site } from "../../studio";
+import {
+  normalizeConfig,
+  validateConfig,
+  RESERVED_SLUGS,
+  type Config,
+} from "../../studio";
 import {
   configSchema,
   publishedConfigSchema,
@@ -40,14 +45,14 @@ async function state(tx: StudioTrx, account: string): Promise<ServerState> {
     id: row.id,
     createdAt: new Date(row.created_at).toISOString(),
     updatedAt: new Date(row.updated_at).toISOString(),
-    draft: row.draft,
+    draft: normalizeConfig(row.draft),
     versions: versions
       .filter((v) => v.site_id === row.id)
       .map((v) => ({
         id: v.id,
         number: v.number,
         createdAt: new Date(v.created_at).toISOString(),
-        config: v.config,
+        config: normalizeConfig(v.config),
         ...(v.restored_from ? { restoredFrom: v.restored_from } : {}),
       })),
   }));
@@ -219,7 +224,9 @@ export async function applyAction(
           .where("account_id", "=", account)
           .execute();
     } else if (input.kind === "save") {
-      const config = configSchema.parse(input.config);
+      const config = normalizeConfig(
+        configSchema.parse(input.config) as Config,
+      );
       let id = input.id;
       if (id) await siteForUpdate(tx, account, id);
       else {
@@ -362,7 +369,7 @@ async function publishedForSite(
     if (!row) return null;
     const config = publishedConfigSchema.safeParse(row.config);
     return config.success && !RESERVED_SLUGS.has(config.data.slug)
-      ? config.data
+      ? normalizeConfig(config.data as Config)
       : null;
   });
 }

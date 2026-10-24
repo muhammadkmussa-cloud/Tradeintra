@@ -71,7 +71,7 @@ Names are indicative.
 | `MPESA_CONSUMER_KEY` / `MPESA_CONSUMER_SECRET`                                            | M-Pesa                                                           |
 | `MPESA_PASSKEY` / `MPESA_SHORTCODE`                                                       | M-Pesa                                                           |
 | `AI_PROVIDER_API_KEY`                                                                     | Optional AI                                                      |
-| `DERIV_MODE`                                                                              | `mock` or `live`                                                 |
+| `DERIV_MODE`                                                                              | `mock`, `demo`, or `real` (`live` accepted as real)              |
 | `DERIV_CLIENT_ID` / `DERIV_CLIENT_SECRET` / `DERIV_REDIRECT_URI`                          | Live only                                                        |
 | `FEATURE_LIVE_DERIV`                                                                      | Server-side gate                                                 |
 | `FEATURE_PAYMENT_AGENT`                                                                   | Must remain false                                                |

@@ -16,7 +16,6 @@ type Reply = {
   studio: Studio;
   revision: number;
   devVerificationToken?: string | null;
-  credits?: number;
 };
 class RequestError extends Error {
   constructor(
@@ -67,7 +66,6 @@ export function useServerWorkspace(
   const [verificationToken, setVerificationToken] = useState<string | null>(
     null,
   );
-  const [credits, setCredits] = useState(0);
   const callbacks = useRef({ onState, notify });
   callbacks.current = { onState, notify };
   const currentAccount = useRef<Account | null>(null);
@@ -85,7 +83,6 @@ export function useServerWorkspace(
     setEnabled(reply.enabled !== false);
     setMode(reply.mode);
     setUser(reply.user);
-    if (typeof reply.credits === "number") setCredits(reply.credits);
     if (reply.user && reply.studio) {
       setRevision(reply.revision);
       callbacks.current.onState(reply.studio);
@@ -201,7 +198,7 @@ export function useServerWorkspace(
     try {
       accept(await call("verify-email", { token }));
       setVerificationToken(null);
-      callbacks.current.notify("Email verified. 30 starter credits added.");
+      callbacks.current.notify("Email verified. Your studio is ready.");
     } catch (error) {
       callbacks.current.notify(
         error instanceof Error ? error.message : "Unable to verify email.",
@@ -260,7 +257,6 @@ export function useServerWorkspace(
     verifyEmail,
     resendVerification,
     verificationToken,
-    credits,
     mutate,
     signOut,
     serviceError,

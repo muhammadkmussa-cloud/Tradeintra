@@ -4,15 +4,18 @@ test("development mock domain, billing, and host workflows", async ({
   page,
 }) => {
   await page.goto("/studio");
-  await page.getByRole("button", { name: "Billing", exact: true }).click();
-  await expect(
-    page.getByRole("heading", { name: "Billing and credits." }),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "Switch plan" }).first().click();
-  await expect(
-    page.getByRole("button", { name: "Current plan" }),
-  ).toBeVisible();
-
+  await page.getByRole("button", { name: "Create site", exact: true }).click();
+  const setup = page.getByRole("dialog");
+  await setup.getByRole("button", { name: "Continue", exact: true }).click();
+  await setup.getByLabel("Site name").fill("Mock Ops Site");
+  await setup.getByRole("button", { name: "Continue", exact: true }).click();
+  await setup.getByRole("button", { name: "Continue", exact: true }).click();
+  await setup.getByLabel("Web address").fill("mock-ops-site");
+  await setup.getByRole("button", { name: "Continue", exact: true }).click();
+  await setup
+    .getByRole("button", { name: "Save demo locally", exact: true })
+    .click();
+  await expect(setup).toHaveCount(0);
   await page.getByRole("button", { name: "Domains", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "Domain desk." }),
@@ -56,13 +59,6 @@ test("development mock bots, signals, marketplace, support, admin, and identity 
     .filter({ hasText: "Mock momentum" });
   await botCard.getByRole("button", { name: "Validate" }).click();
   await expect(botCard.getByText("validated", { exact: true })).toBeVisible();
-
-  await page
-    .getByRole("button", { name: "AI Bot Generator", exact: true })
-    .click();
-  await page.getByRole("button", { name: /Generate · 10 credits/ }).click();
-  await expect(page.getByText("Generated strategy")).toBeVisible();
-  await expect(page.getByText("tradeintra-only")).toBeVisible();
 
   await page.getByRole("button", { name: "AI Signals", exact: true }).click();
   await page.getByRole("button", { name: "Start 24h trial" }).click();

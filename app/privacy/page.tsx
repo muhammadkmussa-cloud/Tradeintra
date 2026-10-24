@@ -18,8 +18,8 @@ export default function PrivacyPage() {
               <p>
                 This policy applies to Tradeintra-controlled pages and services.
                 It does not govern Deriv, Namecheap, Paystack, M-Pesa, Telegram,
-                Google, DeepSeek, or any other third-party service. Those
-                providers have their own privacy terms.
+                Google, or any other third-party service. Those providers have
+                their own privacy terms.
               </p>
             </>
           ),
@@ -72,10 +72,7 @@ export default function PrivacyPage() {
                   provide the studio, publishing, domain, billing, and
                   marketplace features;
                 </li>
-                <li>
-                  process payments, credits, commissions, earnings, and
-                  invoices;
-                </li>
+                <li>process payments, commissions, earnings, and invoices;</li>
                 <li>
                   deliver signals, marketplace files, and support responses;
                 </li>
@@ -108,8 +105,8 @@ export default function PrivacyPage() {
                 We share information with providers only as needed to deliver
                 the service: Namecheap for domain registration, Paystack or
                 M-Pesa for payments, Telegram for signal delivery, Google for
-                optional sign-in, DeepSeek for AI-assisted bot generation, and
-                hosting or infrastructure providers for storage and operation.
+                optional sign-in, and hosting or infrastructure providers for
+                storage and operation.
               </p>
               <p>
                 We may disclose information when required by law, to protect

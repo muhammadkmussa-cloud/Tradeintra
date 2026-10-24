@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getStudioDb, studioMode } from "@/lib/server/studio/database";
 import { StudioError } from "@/lib/server/studio/types";
 import {
-  creditBalance,
   rateLimit,
   sessionActor,
   SESSION_COOKIE,
@@ -11,10 +10,8 @@ import { checkOrigin, readJson } from "@/lib/server/studio/http";
 import {
   assignBot,
   createBot,
-  generateBot,
   listBots,
   removeBot,
-  refineBot,
   sandboxBot,
   validateBot,
   verifyBot,
@@ -48,10 +45,7 @@ function failure(error: unknown) {
 export async function GET(request: NextRequest) {
   try {
     const { db, session } = await actor(request);
-    return json({
-      bots: await listBots(db, session.id),
-      credits: await creditBalance(db, session.id),
-    });
+    return json({ bots: await listBots(db, session.id) });
   } catch (error) {
     return failure(error);
   }
@@ -62,14 +56,10 @@ export async function POST(request: NextRequest) {
     checkOrigin(request);
     const { db, session } = await actor(request);
     await rateLimit(db, `bots:${session.id}`, 40, 60);
-    const body = await readJson(request);
+    const body = await readJson(request, 262144);
     const input =
       body && typeof body === "object" ? (body as Record<string, unknown>) : {};
     const action = String(input.action ?? "");
-    if (action === "generate")
-      return json(
-        await generateBot(db, session.id, String(input.prompt ?? "")),
-      );
     if (action === "create")
       return json({
         bot: await createBot(
@@ -79,15 +69,6 @@ export async function POST(request: NextRequest) {
           String(input.xml ?? ""),
         ),
       });
-    if (action === "refine")
-      return json(
-        await refineBot(
-          db,
-          session.id,
-          String(input.botId ?? ""),
-          String(input.instruction ?? ""),
-        ),
-      );
     if (action === "verify")
       return json(await verifyBot(db, session.id, String(input.botId ?? "")));
     if (action === "sandbox") return json(sandboxBot(String(input.xml ?? "")));

@@ -41,18 +41,18 @@ Not in scope unless separately approved:
 
 ## 5. Confirmed product decisions
 
-| Decision | Status |
-|---|---|
-| Full DForge-style feature map | Owner-confirmed |
-| Deriv-only | Owner-confirmed |
-| Namecheap Stellar Plus / cPanel only | Owner-confirmed |
-| Namecheap Registrar API with manual fallback | Owner-confirmed |
+| Decision                                                          | Status          |
+| ----------------------------------------------------------------- | --------------- |
+| Full DForge-style feature map                                     | Owner-confirmed |
+| Deriv-only                                                        | Owner-confirmed |
+| Namecheap Stellar Plus / cPanel only                              | Owner-confirmed |
+| Namecheap Registrar API with manual fallback                      | Owner-confirmed |
 | Template + brand kit + module configuration, no free-form builder | Owner-confirmed |
-| One polished Deriv trading template first | Owner-confirmed |
-| Free subdomain on free plan, fair use | Owner-confirmed |
-| Domain price = registrar cost + configurable markup | Owner-confirmed |
-| Payment-agent feature deferred | Owner-confirmed |
-| Mock Deriv integration first | Owner-confirmed |
+| One polished Deriv trading template first                         | Owner-confirmed |
+| Free subdomain on free plan, fair use                             | Owner-confirmed |
+| Domain price = registrar cost + configurable markup               | Owner-confirmed |
+| Payment-agent feature deferred                                    | Owner-confirmed |
+| Mock Deriv integration first                                      | Owner-confirmed |
 
 ## 6. Functional requirements
 
@@ -130,7 +130,7 @@ Not in scope unless separately approved:
 - **FR-DEP-007 (Deferred):** Arbitrary generated AI apps are deferred.
 - **FR-DEP-008 (Proposed):** Publish history per site.
 
-### 6.7 XML bots and AI Bot Generator
+### 6.7 XML bots and Deriv preset library
 
 - **FR-BOT-001 (Proposed):** Upload XML bots with validation and malware checks.
 - **FR-BOT-002 (Proposed):** List, rename, describe, tag, and delete owned bots.
@@ -166,7 +166,7 @@ Not in scope unless separately approved:
 - **FR-BILL-002 (Confirmed):** Paystack + M-Pesa adapters; provider-hosted checkout where possible.
 - **FR-BILL-003 (Confirmed):** Webhooks verified and idempotent.
 - **FR-BILL-004 (Confirmed):** Domain purchase is a separate order type.
-- **FR-BILL-005 (Confirmed):** AI credits ledger with expiry policy (if any).
+- **FR-BILL-005 (Removed):** AI credits and credit packs are not offered.
 - **FR-BILL-006 (Confirmed):** Cancellation/failed payment/grace policy.
 - **FR-BILL-007 (Deferred):** Payment-agent share.
 

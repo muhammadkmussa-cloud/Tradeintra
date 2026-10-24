@@ -4,17 +4,17 @@
 
 ## 1. Revenue streams
 
-| Stream | Status | Notes |
-|---|---|---|
-| Plan subscriptions | Proposed | Free/paid plans, server-enforced entitlements |
-| Domain sales | Confirmed | Registrar cost + configurable markup |
-| AI Bot Generator credits | Proposed | Credit packs, per-action costs |
-| AI Builder top-ups | Deferred | Requires a safe generated-code runtime |
-| Marketplace commission | Deferred | Configurable platform fee |
-| Signal subscriptions | Deferred | Requires proven cron/job capacity |
-| Deriv partner commission | Deferred (live gate) | Requires Deriv partner approval |
-| App markup | Deferred (live gate) | Up to 3%; affects user payout |
-| Payment-agent share | Deferred | Do not implement the 22% share |
+| Stream                   | Status               | Notes                                             |
+| ------------------------ | -------------------- | ------------------------------------------------- |
+| Plan subscriptions       | Proposed             | Free/paid plans, server-enforced entitlements     |
+| Domain sales             | Confirmed            | Registrar cost + configurable markup              |
+| AI credits               | Removed              | Replaced by the MIT-licensed Deriv preset library |
+| AI Builder top-ups       | Deferred             | Requires a safe generated-code runtime            |
+| Marketplace commission   | Deferred             | Configurable platform fee                         |
+| Signal subscriptions     | Deferred             | Requires proven cron/job capacity                 |
+| Deriv partner commission | Deferred (live gate) | Requires Deriv partner approval                   |
+| App markup               | Deferred (live gate) | Up to 3%; affects user payout                     |
+| Payment-agent share      | Deferred             | Do not implement the 22% share                    |
 
 ## 2. Plans
 
@@ -52,16 +52,12 @@ Plan names, prices, and limits require owner approval. Do not publish prices unt
 
 See `domain-management.md`.
 
-## 4. AI credits
+## 4. Bot presets
 
-- Credits are purchased in packs (prices to be approved).
-- Costs are deducted before an AI action.
-- Failed actions may be refunded by policy.
-- Credits have no cash value and are not transferable.
-- Track every debit/credit in `CreditLedger`.
-- Enforce concurrency and daily limits.
-
-Reference-observed DForge costs (for comparison only, not Tradeintra pricing): 13 credits per generate+verify run; 30/$4.99, 65/$9.99, 150/$19.99.
+- Bot presets are MIT-licensed Deriv DBot XML starting points.
+- There are no AI credits, credit packs, or per-action generation charges.
+- Operators review stake, stop-loss, and risk settings before running anything.
+- Validation and verification are free.
 
 ## 5. Payments
 
@@ -129,7 +125,6 @@ Keep ledgers separate:
 - Deriv partner commission;
 - app markup;
 - domain sales;
-- AI credits;
 - marketplace;
 - signals;
 - referrals.
@@ -146,20 +141,20 @@ Do not net them into one unexplained balance. Show source, period, status, and p
 
 ## 12. Integration inventory
 
-| Integration | Purpose | Status |
-|---|---|---|
-| Namecheap Stellar Plus | Hosting, PostgreSQL, files, email, cron, SSL | Confirmed |
-| Namecheap API | Domain lifecycle | Confirmed direction; API access unverified |
-| PostgreSQL (Stellar Plus) | Database | Confirmed |
-| DB jobs + cPanel cron | Background work | Confirmed |
-| Auth.js | Auth + DB sessions | Proposed |
-| cPanel SMTP | Transactional email | Proposed |
-| Paystack | Cards/mobile money | Proposed |
-| M-Pesa/Daraja | Kenya payments | Proposed |
-| Telegram | Signal delivery | Deferred |
-| Deriv | OAuth/API/trading | Mock only |
-| AI provider | Optional bot/config assistance | Optional |
-| File logs / cPanel logs | Monitoring | Confirmed |
+| Integration               | Purpose                                      | Status                                     |
+| ------------------------- | -------------------------------------------- | ------------------------------------------ |
+| Namecheap Stellar Plus    | Hosting, PostgreSQL, files, email, cron, SSL | Confirmed                                  |
+| Namecheap API             | Domain lifecycle                             | Confirmed direction; API access unverified |
+| PostgreSQL (Stellar Plus) | Database                                     | Confirmed                                  |
+| DB jobs + cPanel cron     | Background work                              | Confirmed                                  |
+| Auth.js                   | Auth + DB sessions                           | Proposed                                   |
+| cPanel SMTP               | Transactional email                          | Proposed                                   |
+| Paystack                  | Cards/mobile money                           | Proposed                                   |
+| M-Pesa/Daraja             | Kenya payments                               | Proposed                                   |
+| Telegram                  | Signal delivery                              | Deferred                                   |
+| Deriv                     | OAuth/API/trading                            | Mock only                                  |
+| AI provider               | Optional bot/config assistance               | Optional                                   |
+| File logs / cPanel logs   | Monitoring                                   | Confirmed                                  |
 
 For each integration record: owner, scopes, data exchanged, secrets, sandbox, costs, rate limits, webhooks, retry, retention, and compliance.
 
@@ -167,7 +162,6 @@ For each integration record: owner, scopes, data exchanged, secrets, sandbox, co
 
 - Subscriptions: per approved plan terms.
 - Domain registrations: non-refundable after success; refund/credit if Tradeintra fails to deliver.
-- AI credits: per approved policy; unused credits may be non-refundable.
 - Marketplace/signals: separate policy.
 
 ## 14. Acceptance criteria
@@ -176,6 +170,5 @@ For each integration record: owner, scopes, data exchanged, secrets, sandbox, co
 - [ ] Webhooks are signed and idempotent.
 - [ ] A redirect cannot grant paid access.
 - [ ] Domain orders reconcile with payments.
-- [ ] AI credit ledger balances.
 - [ ] Payouts are not executed by MCP.
 - [ ] Prices shown to users match the approved rules.

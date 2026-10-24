@@ -4,10 +4,8 @@ import { readFile, mkdir, chmod, lstat, realpath } from "node:fs/promises";
 import path from "node:path";
 import { homedir } from "node:os";
 import type { StudioDatabaseWithCommerce, StudioDb, StudioTrx } from "./types";
-import { assertMockOnly } from "../poc-config";
 
 export function studioMode(): "local" | "postgres" | "disabled" {
-  assertMockOnly();
   const mode =
     process.env.STUDIO_DB_MODE ||
     (process.env.NODE_ENV === "development" ? "local" : "disabled");
@@ -186,6 +184,8 @@ async function createDatabase(): Promise<StudioDb> {
       "032-signal-cron-policy.sql",
       "033-invoices.sql",
       "034-retention-revocation.sql",
+      "035-commission-statements.sql",
+      "036-deriv-oauth.sql",
     ]) {
       if (applied.has(file)) continue;
       await engine.exec(

@@ -335,3 +335,101 @@ Deploy Tradeintra itself to Stellar Plus, prove wildcard routing/SSL, publish se
 - Refunds block downloaded goods and open seller payouts; purge detaches site-linked domains, bots, and commissions.
 - `FINANCE_EMAILS` and `SUPPORT_EMAILS` provide scoped admin access.
 - `npm run account:purge` executes due 30-day deletion requests, including sites, versions, routing, sessions, account, and credential rows.
+
+## 2026-10-23 — Step 2/3 module system
+
+- Added the 15-module registry, canonical aliases, per-module operator content, and default template.
+- Added the module editor with ordered cards and draft-safe content textareas.
+- Published rendering now follows module order, honours header/hero/footer toggles, hides empty testimonials/stats/FAQ, and supports dark/light site themes.
+- Server boundary rejects unsupported modules, normalizes legacy aliases, and guarantees risk disclosure.
+- Verified 135 unit tests, 27 E2E tests, typecheck/format, and public-page axe checks in both dark and warm-paper themes.
+- Preview now uses the same PublishedSite renderer as the public route, removing preview/published drift.
+- Remaining: DeepSeek/credit removal, Deriv preset bot library, shared demo trading SPA, cPanel host check, commission ledger, Deriv OAuth, legal review.
+
+## 2026-10-23 — Deriv presets replace AI bot generation
+
+- Added 9 MIT-licensed Deriv DBot XML presets from `deriv-com/trading-bot-template`, with attribution and risk copy in `public/deriv-presets/`.
+- Added the preset library UI: load, inspect/edit XML, store, validate, verify, and assign.
+- Removed the AI Bot Generator page, DeepSeek provider, AI usage credits, bot generation/refinement charging, and the visible credit-pack billing surface.
+- Raised the bot request limit to 256 KB so official preset XML saves correctly.
+- Updated bot validation to accept official block XML while retaining script rejection.
+- Started marketing/terms/auth copy migration away from AI credits and DeepSeek.
+- Verified 133 unit tests, 27 E2E tests, production build, typecheck, and formatting.
+- Removed the credits API, visible billing/credit surfaces, starter-credit grants, and AI provider status. Legacy credit tables remain only for database compatibility; they are not reachable from the product.
+
+## 2026-10-23 — Shared demo trading workspace
+
+- Added a dependency-free static demo SPA at `public/trade/` for the future `trade.tradeintra.com` cPanel subdomain.
+- Demo only: simulated ticks, simulated balance, simulated Rise/Fall contracts, settlement, history, and reset. No Deriv credentials, deposits, withdrawals, balances, or real orders.
+- Branding comes from sanitized query parameters (`site`, `name`, `accent`, `theme`).
+- Added `/trade` local preview route that serves the same static artifact with corrected asset paths.
+- Published sites now link the Trade module to `/trade` with the operator's brand parameters.
+- Added `.htaccess`, MIT-safe static deployment notes, and cPanel acceptance steps.
+- Added E2E coverage for branding, Deriv login notice, trade settlement, reset, mobile overflow, and axe.
+- Verified 134 unit tests, 28 E2E tests, production build, typecheck, and formatting.
+- Host checks remain blocked until the Namecheap Staging host/subdomain is available.
+
+## 2026-10-23 — Commission statements and Finance review
+
+- Added migration `035-commission-statements.sql` for submitted/approved/rejected statuses plus statement metadata.
+- Owners can upload a monthly CSV from their own Deriv partner account; the server sums `gross_commission`/`commission`, records the 15% platform share, rejects duplicate files/periods, and stores an account-scoped copy for review.
+- Finance/Super Admin can download the CSV, approve, or reject with a reviewer note.
+- Added owner UI inside Earnings and Finance controls inside Admin commerce.
+- Added audit events, duplicate-period uniqueness, Finance-only statement download, and public response redaction.
+- Verified 135 unit tests, 28 E2E tests, production build, typecheck, and formatting.
+
+## 2026-10-23 — cPanel release packaging hardening
+
+- Excluded tracked root screenshots from the standalone release (99 MB -> 66 MB with runtime dependencies).
+- Added a release verifier for required files, migrations, SPA assets, forbidden secret files, removed AI surfaces, image leakage, and oversize files.
+- Copied the full `pg`/`postgres-*` runtime dependency tree and PGlite into the package because Turbopack tracing omitted package internals.
+- Added commit, migration count, demo-only, and Trade SPA metadata to `RELEASE.json`.
+- Smoke-tested the packaged `cpanel-start.js`: `/`, `/trade`, and `/api/health` return 200.
+- Actual Namecheap cPanel/AutoSSL/Passenger validation is still blocked until host access.
+
+## 2026-10-23 — Product-led landing and shared app shell
+
+- Expanded the module registry to 20 and made new sites default to an 18-module product-led layout.
+- Added capability grid, workspace showcase, strategy library, onboarding steps, access model, nav links, stronger hero, trust chips, and fuller footer behavior.
+- Added a public workspace preview with accessible Overview/Markets/Strategies tabs.
+- Upgraded the wizard thumbnail and module editor with features/steps content.
+- Refactored `/trade` into a hash-routed demo app: Overview, Markets, Trade, Strategies, Signals, Reports, Learn, Settings, with desktop rail and mobile bottom navigation.
+- Preserved the simulated trade engine, reports CSV export, demo reset, branding query parameters, and Deriv login notice.
+- Added responsive, contrast, focus-retention, and navigation-state tests.
+- Verified 139 unit tests and 30 E2E tests.
+
+## 2026-10-23 — End-to-end builder audit (Mwangaza Markets)
+
+- Created a second server-backed demo site through the actual builder: Mwangaza Markets, steel accent, deep-ink theme.
+- Verified the published page renders 18 enabled modules (14 content sections plus chrome), 4 feature cards, 9 preset cards, 3 steps, access model, FAQ, trade launch, and risk.
+- Verified the shared app routes: Overview, Markets, Trade, Strategies, Signals, Reports, Learn, Settings on desktop and mobile; trade settlement, report CSV export, theme switching, reset, back/forward, and focus retention.
+- Audit fixes: client now blocks site creation before a Deriv link with a clear message; signup copy updated from 15 to 20 modules; steel accent text now passes dark-theme contrast; app preset links use the production preset base on the trading subdomain.
+- Verified 139 unit tests, 31 E2E tests, axe on the new dark site/app (desktop and mobile), production build, and cPanel package verification.
+
+## 2026-10-24 — Logo, no-code editor, and Deriv OAuth scaffold
+
+- Added optional client logo upload: PNG/JPEG/WebP, client-side resize/WebP, config persistence, public builder preview, published header, shared-app logo endpoint, and app fallback monogram.
+- Replaced pipe-delimited content fields with plain-language cards, add/remove controls, ticker chips, destination dropdowns, and advanced custom links.
+- Added migration 036 for OAuth state and short-lived Deriv trader sessions.
+- Added PKCE OAuth start/callback, encrypted verifier/token storage, HttpOnly session cookie, browser-bound state cookie, account listing, OTP endpoint, logout/revocation, CORS controls, and mock flow.
+- OAuth sessions are bound to published site slugs; mock mode issues a clearly labelled demo session. Live execution remains gated by Deriv approval and the live feature flag.
+- Added logo/editor/OAuth unit and E2E coverage.
+
+## 2026-10-24 — True live builder preview
+
+- Replaced the decorative wizard `MiniSite` with the real `PublishedSite` renderer.
+- Preview now updates live for name, headline, description, logo, colour, theme, module toggles/order, and all operator content.
+- Added page/phone preview modes, independent scrolling, sticky desktop preview, single-dialog full preview, and a clear live indicator.
+- Added container-query layout rules so the real site renders correctly inside the narrow preview pane and phone frame.
+- Moved and renamed the colour controls to “Brand colour”, grouped with theme, and added keyboard focus styling.
+- Added tests for live headline/colour/theme/logo/feature updates, full-preview single dialog, mobile preview overflow, and 360px axe.
+
+## 2026-10-24 — Full-screen live builder
+
+- Converted the wizard modal into a full-screen builder with a fixed header/footer, scrollable form, and persistent preview.
+- Added mobile/tablet Edit and Live preview tabs.
+- Added a true device-width preview canvas: 1280px desktop and 390px phone, scaled to fit, with container layout switching at the real device width.
+- Added auto-scroll from the active editor section to the matching preview section.
+- Fields for disabled sections are hidden; clearing text fields now clears the preview; focus trap includes links and FAQ summaries.
+- Simplified user-facing labels around sections, title, colour, address, and saving a demo version.
+- Added live-preview, full-preview, mobile-tab, overflow, and 360px axe coverage.

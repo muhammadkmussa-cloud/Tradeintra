@@ -112,24 +112,21 @@ export default function TermsPage() {
           ),
         },
         {
-          id: "credits",
-          title: "6. Credits, payments, and taxes",
+          id: "bots",
+          title: "6. Bots, presets, and payments",
           body: (
             <>
               <p>
-                AI credits are a usage balance, not money, a security, or a
-                stored-value account. Verified accounts receive 30 starter
-                credits. Additional packs are 30 credits for $4.99, 65 for
-                $9.99, and 150 for $19.99, unless a different price is shown at
-                checkout.
+                Bot presets are editable DBot XML starting points, not advice or
+                a promise of performance. You are responsible for reviewing
+                stake, stop-loss, and risk settings before running anything.
+                There are no AI credits, credit packs, or generation charges.
               </p>
               <p>
-                Payments may be processed by third-party providers such as
-                Paystack or M-Pesa. You authorize the applicable charge and
-                agree to the provider&rsquo;s terms. Taxes are shown where
-                required. Credits are consumed by generation, refinement, and
-                verification actions. Failed actions are refunded in credits as
-                described in the product.
+                Domain and marketplace payments may be processed by third-party
+                providers such as Paystack or M-Pesa. You authorize the
+                applicable charge and agree to the provider&rsquo;s terms. Taxes
+                are shown where required.
               </p>
             </>
           ),
@@ -177,8 +174,7 @@ export default function TermsPage() {
                   sanctions;
                 </li>
                 <li>
-                  abuse reviews, payments, credits, domains, or marketplace
-                  delivery.
+                  abuse reviews, payments, domains, or marketplace delivery.
                 </li>
               </ul>
               <p>

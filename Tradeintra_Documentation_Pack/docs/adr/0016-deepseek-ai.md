@@ -1,6 +1,6 @@
 # ADR 0016: DeepSeek as the AI Provider for Bots
 
-- **Status:** Accepted, subject to API key and safety review
+- **Status:** Superseded. AI generation, DeepSeek, and credits were removed in favour of the MIT-licensed Deriv preset library.
 - **Date:** 2026-10-20
 
 ## Context

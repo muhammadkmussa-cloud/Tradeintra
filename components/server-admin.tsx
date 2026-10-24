@@ -23,6 +23,7 @@ type Commission = {
   gross_commission: string;
   platform_share: string;
   status: string;
+  statement_name: string | null;
 };
 type Transfer = {
   id: string;
@@ -441,10 +442,59 @@ export function ServerAdmin({
               <div className="mock-list-row" key={entry.id}>
                 <span>
                   {entry.period}
-                  <small>{entry.account_id}</small>
+                  <small>
+                    {entry.account_id}
+                    {entry.statement_name ? ` · ${entry.statement_name}` : ""}
+                  </small>
                 </span>
                 <strong>{money(entry.platform_share)}</strong>
                 <span className="badge neutral">{entry.status}</span>
+                {entry.statement_name ? (
+                  <a
+                    className="text-link"
+                    href={`/api/studio/admin/commissions/${entry.id}`}
+                  >
+                    Download
+                  </a>
+                ) : null}
+                {entry.status === "submitted" ? (
+                  <span className="mock-actions">
+                    <button
+                      className="text-link"
+                      disabled={busy}
+                      onClick={() =>
+                        void act(
+                          {
+                            action: "review-commission",
+                            id: entry.id,
+                            status: "approved",
+                            note: "Statement reviewed and approved.",
+                          },
+                          "Commission statement approved.",
+                        )
+                      }
+                    >
+                      Approve
+                    </button>
+                    <button
+                      className="text-link danger"
+                      disabled={busy}
+                      onClick={() =>
+                        void act(
+                          {
+                            action: "review-commission",
+                            id: entry.id,
+                            status: "rejected",
+                            note: "Statement rejected; upload a corrected CSV.",
+                          },
+                          "Commission statement rejected.",
+                        )
+                      }
+                    >
+                      Reject
+                    </button>
+                  </span>
+                ) : null}
               </div>
             ))
           ) : (

@@ -17,7 +17,7 @@ const principles = [
   {
     n: "03",
     title: "Make complexity disappear",
-    text: "Domains, publishing, AI-assisted tools, signals, and marketplace workflows belong in one calm operating space — not across ten disconnected tabs.",
+    text: "Domains, publishing, Deriv preset tools, signals, and marketplace workflows belong in one calm operating space — not across ten disconnected tabs.",
   },
   {
     n: "04",

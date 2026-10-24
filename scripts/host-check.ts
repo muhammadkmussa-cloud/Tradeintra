@@ -7,7 +7,6 @@ import { emailMode } from "../lib/server/providers/email";
 import { paymentMode } from "../lib/server/providers/payments";
 import { scanMode } from "../lib/server/providers/malware";
 import { telegramMode } from "../lib/server/providers/telegram";
-import { aiMode } from "../lib/server/providers/ai";
 
 async function main() {
   const report: Record<string, unknown> = {
@@ -15,7 +14,6 @@ async function main() {
     nodeOk: Number(process.versions.node.split(".")[0]) >= 22,
     accountMode: studioMode(),
     providers: {
-      ai: aiMode(),
       email: emailMode(),
       domains: domainMode(),
       payments: paymentMode(),

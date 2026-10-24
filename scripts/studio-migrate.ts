@@ -42,6 +42,8 @@ async function main() {
         "032-signal-cron-policy.sql",
         "033-invoices.sql",
         "034-retention-revocation.sql",
+        "035-commission-statements.sql",
+        "036-deriv-oauth.sql",
       ].map((file) =>
         readFile(new URL(`../database/${file}`, import.meta.url), "utf8"),
       ),
@@ -89,6 +91,8 @@ async function main() {
         "032-signal-cron-policy.sql",
         "033-invoices.sql",
         "034-retention-revocation.sql",
+        "035-commission-statements.sql",
+        "036-deriv-oauth.sql",
       ];
       for (let i = 0; i < files.length; i += 1) {
         if (applied.has(files[i])) continue;

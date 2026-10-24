@@ -28,7 +28,7 @@
 - **OAuth 2.0 + PKCE:** Delegated authorization flow used by Deriv.
 - **OTP:** One-time password used to authenticate a Deriv WebSocket connection.
 - **WebSocket:** Persistent connection for Deriv market data/trading.
-- **AI Bot Generator:** Plain-English/video-to-XML bot generation.
+- **Deriv preset library:** MIT-licensed DBot XML starting points with operator review.
 - **AI Builder:** Prompt-to-generated-app product; deferred until a safe runtime exists.
 - **AI Signals:** AI-generated signals delivered to Telegram.
 - **Marketplace/Bot Store:** Selling bots and digital products.

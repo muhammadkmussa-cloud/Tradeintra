@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bot, Check, Sparkles, Trash2 } from "lucide-react";
+import { Bot, Check, Download, ShieldCheck, Trash2 } from "lucide-react";
+import { DERIV_BOT_PRESETS } from "@/lib/deriv-bot-presets";
 
 type BotRecord = {
   id: string;
@@ -14,21 +15,15 @@ type BotRecord = {
 type SiteRef = { id: string; name: string };
 
 export function ServerBots({
-  mode,
   sites,
   notify,
 }: {
-  mode: "library" | "generator";
   sites: SiteRef[];
   notify: (message: string) => void;
 }) {
   const [bots, setBots] = useState<BotRecord[]>([]);
-  const [credits, setCredits] = useState(0);
-  const [prompt, setPrompt] = useState(
-    "A cautious volatility breakout with a fixed stake and stop loss.",
-  );
   const [name, setName] = useState("Momentum starter");
-  const [xml, setXml] = useState('<xml><strategy name="momentum" /></xml>');
+  const [xml, setXml] = useState("<xml><strategy /></xml>");
   const [siteId, setSiteId] = useState(sites[0]?.id ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -41,7 +36,6 @@ export function ServerBots({
     const body = await response.json();
     if (!response.ok) throw new Error(body.error ?? "Unable to load bots.");
     setBots(body.bots ?? []);
-    setCredits(body.credits ?? 0);
   }
   useEffect(() => {
     load().catch((reason: Error) => setError(reason.message));
@@ -71,103 +65,123 @@ export function ServerBots({
     }
   }
 
+  async function loadPreset(file: string, presetName: string) {
+    setBusy(true);
+    setError("");
+    try {
+      const response = await fetch(file, { cache: "no-store" });
+      if (!response.ok) throw new Error("Preset file unavailable.");
+      setXml(await response.text());
+      setName(presetName);
+      notify(`${presetName} loaded. Review stake and stop-loss before saving.`);
+    } catch (reason) {
+      setError(
+        reason instanceof Error ? reason.message : "Preset file unavailable.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <div className="mock-stack">
       <div className="mock-banner">
         <div>
-          <span className="eyebrow">SERVER BOT LIBRARY / DEEPSEEK</span>
-          <strong>Generated bots are stored and credit-metered.</strong>
+          <span className="eyebrow">DERIV PRESET LIBRARY / MIT</span>
+          <strong>
+            Start from a reviewed DBot template, not generated code.
+          </strong>
           <p>
-            Generate 10 credits · refine 3 · verify 3. Mock mode returns a
-            deterministic XML fixture; live mode calls DeepSeek only when the
-            key is configured.
+            Imported from Deriv&apos;s MIT-licensed trading-bot-template.
+            Validate, review the risk controls, then assign to your active site.
+            No AI credits or generation charges.
           </p>
         </div>
-        <span className="badge neutral">{credits} credits</span>
+        <span className="badge neutral">Demo only</span>
       </div>
       {error ? (
         <p className="auth-error" role="alert">
           {error}
         </p>
       ) : null}
+
+      <section className="panel mock-panel">
+        <div className="section-heading">
+          <div>
+            <h2>Deriv presets</h2>
+            <p>
+              Editable starting points. They are not profit claims or
+              personalised advice.
+            </p>
+          </div>
+        </div>
+        <div className="mock-preset-grid">
+          {DERIV_BOT_PRESETS.map((preset) => (
+            <article className="mock-preset-card" key={preset.id}>
+              <span className="badge neutral">{preset.family}</span>
+              <strong>{preset.name}</strong>
+              <p>{preset.summary}</p>
+              <small>{preset.risk}</small>
+              <button
+                className="text-link"
+                disabled={busy}
+                onClick={() => void loadPreset(preset.file, preset.name)}
+              >
+                <Download size={13} /> Load preset
+              </button>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <div className="mock-two-col">
-        {mode === "generator" ? (
-          <section className="panel mock-panel">
-            <div className="section-heading">
-              <div>
-                <h2>Generate a bot</h2>
-                <p>Describe the strategy; credits are debited first.</p>
-              </div>
+        <section className="panel mock-panel">
+          <div className="section-heading">
+            <div>
+              <h2>Add a bot</h2>
+              <p>Load a preset above, paste DBot XML, or open a local file.</p>
             </div>
-            <label className="field">
-              Strategy prompt
-              <textarea
-                rows={4}
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-              />
-            </label>
-            <button
-              className="btn primary"
-              disabled={busy || credits < 10}
-              onClick={() =>
-                void act(
-                  { action: "generate", prompt },
-                  "Mock bot generated and 10 credits debited.",
-                )
-              }
-            >
-              <Sparkles size={14} /> Generate · 10 credits
-            </button>
-          </section>
-        ) : (
-          <section className="panel mock-panel">
-            <div className="section-heading">
-              <div>
-                <h2>Add a bot</h2>
-                <p>Paste DBot XML or load a local file.</p>
-              </div>
-            </div>
-            <label className="field">
-              Name
-              <input value={name} onChange={(e) => setName(e.target.value)} />
-            </label>
-            <label className="field">
-              XML
-              <textarea
-                rows={5}
-                value={xml}
-                onChange={(e) => setXml(e.target.value)}
-              />
-            </label>
-            <label className="field">
-              Load local file
-              <input
-                type="file"
-                accept=".xml,text/xml"
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    setName(file.name.replace(/\.xml$/i, ""));
-                    setXml(await file.text());
-                  }
-                }}
-              />
-            </label>
-            <button
-              className="btn primary"
-              disabled={busy}
-              onClick={() =>
-                void act(
-                  { action: "create", name, xml },
-                  "Bot stored in your server library.",
-                )
-              }
-            >
-              <Bot size={14} /> Store bot
-            </button>
-          </section>
-        )}
+          </div>
+          <label className="field">
+            Name
+            <input value={name} onChange={(e) => setName(e.target.value)} />
+          </label>
+          <label className="field">
+            XML
+            <textarea
+              rows={5}
+              value={xml}
+              onChange={(e) => setXml(e.target.value)}
+            />
+          </label>
+          <label className="field">
+            Load local file
+            <input
+              type="file"
+              accept=".xml,text/xml"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  setName(file.name.replace(/\.xml$/i, ""));
+                  setXml(await file.text());
+                }
+              }}
+            />
+          </label>
+          <button
+            className="btn primary"
+            disabled={busy}
+            onClick={() =>
+              void act(
+                { action: "create", name, xml },
+                "Bot stored in your server library.",
+              )
+            }
+          >
+            <Bot size={14} /> Store bot
+          </button>
+        </section>
+
         <section className="panel mock-panel">
           <div className="section-heading">
             <div>
@@ -211,28 +225,7 @@ export function ServerBots({
                         )
                       }
                     >
-                      Verify & fix · 3
-                    </button>
-                    <button
-                      className="text-link"
-                      disabled={busy}
-                      onClick={() => {
-                        const instruction = window.prompt(
-                          "Describe the refinement:",
-                          "Improve risk controls and tighten stops.",
-                        );
-                        if (instruction)
-                          void act(
-                            {
-                              action: "refine",
-                              botId: bot.id,
-                              instruction,
-                            },
-                            "Bot refined with 3 credits debited.",
-                          );
-                      }}
-                    >
-                      Refine · 3
+                      <ShieldCheck size={13} /> Verify &amp; fix
                     </button>
                     <label className="field mock-inline-field">
                       Assign

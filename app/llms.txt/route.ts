@@ -16,8 +16,7 @@ execute trades, hold funds, or provide investment advice.
 ## Rules
 - One active site per account.
 - Email verification and Deriv linking are required before site creation.
-- Free credits: 30 starter; referral reward: 30.
-- Credit packs: 30/$4.99, 65/$9.99, 150/$19.99.
+- Bot presets: 9 MIT-licensed Deriv DBot XML starting points. No AI credits.
 - Domain prices include a 15% platform markup.
 - Deriv partner commission: 15% platform share.
 - Marketplace and signal providers: 85% provider share after review.

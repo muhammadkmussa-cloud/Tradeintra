@@ -1,3 +1,16 @@
+import {
+  DEFAULT_MODULES,
+  defaultModuleContent,
+  isModuleKey,
+  normalizeModuleContent,
+  normalizeModules,
+  validateModuleContent,
+  type ModuleContent,
+  type ModuleKey,
+} from "./studio-modules";
+
+export type { ModuleKey, ModuleContent } from "./studio-modules";
+
 export const STORAGE_KEY = "tradeintra-studio-v1";
 export const SLUG_PATTERN = /^(?!.*--)[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$/;
 export const LEGACY_SLUG_PATTERN = /^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$/;
@@ -23,9 +36,11 @@ export const RESERVED_SLUGS = new Set([
   "tradeintra",
   "by-host",
 ]);
+export const MAX_LOGO_LENGTH = 180_000;
+export const LOGO_PATTERN =
+  /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/;
 export const RISK =
   "Trading involves significant risk and may result in the loss of your capital. This is a mock demonstration, not investment advice. Tradeintra is independent of Deriv and does not execute trades or hold funds.";
-export type ModuleKey = "markets" | "terminal" | "about";
 export type Config = {
   name: string;
   slug: string;
@@ -33,6 +48,9 @@ export type Config = {
   headline: string;
   description: string;
   modules: ModuleKey[];
+  theme?: "light" | "dark";
+  logo?: string;
+  moduleContent?: ModuleContent;
 };
 export type Version = {
   id: string;
@@ -54,10 +72,12 @@ export const defaultConfig: Config = {
   name: "",
   slug: "",
   color: "#B08D57",
+  theme: "dark",
   headline: "Your markets. Your next move.",
   description:
     "A clear, focused space to explore the markets. Built around you.",
-  modules: ["markets", "terminal", "about"],
+  modules: [...DEFAULT_MODULES],
+  moduleContent: structuredClone(defaultModuleContent),
 };
 export const slugify = (name: string) =>
   name
@@ -96,13 +116,26 @@ export function validateConfig(
     errors.color = "Select a valid six-digit hex color.";
   if (!config.headline.trim() || config.headline.length > 100)
     errors.headline = "Enter a headline between 1 and 100 characters.";
+  if (
+    config.logo &&
+    (config.logo.length > MAX_LOGO_LENGTH || !LOGO_PATTERN.test(config.logo))
+  )
+    errors.logo = "Upload a smaller PNG, JPG, or WebP logo.";
   if (config.description.length > 240)
     errors.description = "Keep the description under 240 characters.";
   if (
     !Array.isArray(config.modules) ||
-    config.modules.some((m) => !["markets", "terminal", "about"].includes(m))
+    config.modules.some((m) => !isModuleKey(String(m)))
   )
     errors.modules = "Choose supported modules only.";
+  else if (!config.modules.includes("risk"))
+    errors.modules = "Risk disclosure is required.";
+  else if (config.moduleContent) {
+    const contentError = validateModuleContent(
+      normalizeModuleContent(config.moduleContent),
+    );
+    if (contentError) errors.modules = contentError;
+  }
   return errors;
 }
 export function publishSite(
@@ -151,41 +184,33 @@ export function rollbackSite(
   };
 }
 export function initialStudio(): Studio {
-  const now = new Date().toISOString();
   return {
     workspace: "My workspace",
     derivLinked: false,
-    sites: [
-      {
-        id: "sample-aurora",
-        sample: true,
-        createdAt: now,
-        updatedAt: now,
-        draft: {
-          ...structuredClone(defaultConfig),
-          name: "Aurora Markets",
-          slug: "aurora-markets",
-          color: "#B08D57",
-        },
-        versions: [],
-      },
-      {
-        id: "sample-nova",
-        sample: true,
-        createdAt: now,
-        updatedAt: now,
-        draft: {
-          ...structuredClone(defaultConfig),
-          name: "Nova Trading",
-          slug: "nova-trading",
-          color: "#2F6B4F",
-          headline: "A fresh perspective on the markets.",
-        },
-        versions: [],
-      },
-    ],
+    sites: [],
   };
 }
+export function normalizeConfig(config: Config): Config {
+  let modules = normalizeModules(config.modules);
+  if (config.theme === undefined) {
+    if (!modules.includes("header")) modules.unshift("header");
+    if (!modules.includes("hero")) modules.splice(1, 0, "hero");
+    if (!modules.includes("footer")) modules.push("footer");
+  }
+  modules = [...modules.filter((key) => key !== "risk"), "risk"];
+  return {
+    ...config,
+    modules,
+    logo:
+      config.logo &&
+      config.logo.length <= MAX_LOGO_LENGTH &&
+      LOGO_PATTERN.test(config.logo)
+        ? config.logo
+        : undefined,
+    moduleContent: normalizeModuleContent(config.moduleContent),
+  };
+}
+
 export function readStudio(raw: string): Studio {
   const data = JSON.parse(raw);
   if (
@@ -202,7 +227,7 @@ export function readStudio(raw: string): Studio {
         !s.draft ||
         !Array.isArray(s.versions) ||
         Object.keys(
-          validateConfig(s.draft, [], s.id, {
+          validateConfig(normalizeConfig(s.draft), [], s.id, {
             allowReserved: true,
             allowLegacySlug: true,
           }),
@@ -211,7 +236,7 @@ export function readStudio(raw: string): Studio {
           (v) =>
             !v.config ||
             Object.keys(
-              validateConfig(v.config, [], s.id, {
+              validateConfig(normalizeConfig(v.config), [], s.id, {
                 allowReserved: true,
                 allowLegacySlug: true,
               }),
@@ -220,7 +245,18 @@ export function readStudio(raw: string): Studio {
     )
   )
     throw new Error("Invalid site data");
-  return data as Studio;
+  const studio = data as Studio;
+  return {
+    ...studio,
+    sites: studio.sites.slice(0, 1).map((site) => ({
+      ...site,
+      draft: normalizeConfig(site.draft),
+      versions: site.versions.map((version) => ({
+        ...version,
+        config: normalizeConfig(version.config),
+      })),
+    })),
+  };
 }
 export const relativeTime = (date: string) => {
   const m = Math.max(
@@ -255,7 +291,7 @@ const contrastOnInk = (hex: string) =>
 /** Lift an accent until it clears 4.5:1 against the ink surface. */
 export function accentOnDark(hex: string): string {
   if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return hex;
-  if (contrastOnInk(hex) >= 4.5) return hex;
+  if (contrastOnInk(hex) >= 5) return hex;
   for (let amount = 0.05; amount <= 1; amount += 0.05) {
     const channels = [1, 3, 5].map((offset) =>
       Math.round(
@@ -264,7 +300,7 @@ export function accentOnDark(hex: string): string {
       ),
     );
     const lifted = `#${channels.map((value) => value.toString(16).padStart(2, "0")).join("")}`;
-    if (contrastOnInk(lifted) >= 4.5) return lifted;
+    if (contrastOnInk(lifted) >= 5) return lifted;
   }
   return "#F3F2F2";
 }
